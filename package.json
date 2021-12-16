@@ -1,0 +1,19 @@
+{
+  "name": "dependingstate",
+  "version": "1.0.0",
+  "description": "likewise redux",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlorianGrimm/dependingState.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FlorianGrimm/dependingState/issues"
+  },
+  "homepage": "https://github.com/FlorianGrimm/dependingState#readme"
+}
