@@ -8,7 +8,18 @@ export {
     IStateRoot,
     TStateBase,
     IStateVersion,
-    StateVersion
+    StateVersion,
+    UIProps,
+    UIPropsGetViewProps,
+    UIPropsBase,
+    UIViewState,
+    UIViewStateBase,
+    FnStateVersion,
+    FnGetValue,
+    FnSetValue,
+    FnGetStateVersion,
+    FnSetStateVersion,
+    IViewStateVersion
 } from './types';
 
 export {
@@ -25,5 +36,15 @@ export {
 
 export {
     testAndSet,
-    testAndSetProp
+    testAndSetProp,
+    initStateVersion
 } from './utility';
+
+export{
+    UIViewStateVersion
+} from './UIViewStateVersion';
+
+export{
+    StateBase
+} from './StateBase';
+

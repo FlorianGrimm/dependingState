@@ -1,4 +1,5 @@
 import { deepEquals } from "./deepEquals";
+import { TStateVersion } from "./types";
 
 export function testAndSet<T>(newValue: T, oldValue: T, setter: (newValue: T) => void, hasChanged:boolean): boolean {
     if (deepEquals(oldValue, newValue, true)) {
@@ -17,4 +18,9 @@ export function testAndSetProp<TInstance extends any, TKey extends keyof TInstan
         instance[key] = newValue;
         return true;
     }
+}
+
+export function initStateVersion<T>(state:Exclude<T, TStateVersion>):T{
+    (state as unknown as TStateVersion).stateVersion  = 1;
+    return state as unknown as T;
 }

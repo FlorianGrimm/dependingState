@@ -5,18 +5,24 @@ import {
     IStateTransformator,
     ActionHandler,
     ActionInvoker,
-    IStateRoot
+    IStateRoot,
+    FnGetValue,
+    FnSetValue
 } from "./types";
 
-import { StateTransformator } from "./StateTransformator";
+import {
+    StateTransformator
+} from "./StateTransformator";
+import { UIViewStateVersion } from "./UIViewStateVersion";
 
-type TProcessState<TState extends TStateBase> = {
-    stateName: keyof (TState);
-    mapSuccDirty: Map<keyof (TState), TProcessState<TState>>;
+type TProcessState<TState extends TStateBase, TKey extends keyof TState = any> = {
+    stateName: TKey;//keyof (TState);
+    mapSuccDirty: Map<keyof (TState), TProcessState<TState, any>>;
     isDirty: boolean;
     stateVersion: number;
     arrTransformator: TArrayTransformatorDefinition<TState>;
     arrSideEffect: ((state: any) => void)[];
+    viewStateVersion: UIViewStateVersion<TState[TKey]>;
 }
 
 type TArrayTransformatorDefinition<TState extends TStateBase> = (TTransformatorDefinition<TState>)[];
@@ -45,9 +51,10 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
     mapProcessState: Map<keyof (TState), TProcessState<TState>>;
     mapAction: Map<string, ActionHandler<any, TState, any>>
     handleActionLevel: number;
+    isTransformatorOrderBuild: boolean;
 
-    constructor(initialState?: TState) {
-        this.states = initialState ?? ({} as TState)
+    constructor(initialState: undefined | (TState) | ((that: IStateRoot<TState>) => TState)) {
+        this.states = ({} as TState);
         this.stateVersion = 1;
         this.nextStateVersion = 2;
         this.arrTransformationDefinition = [];
@@ -56,9 +63,16 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         this.mapProcessState = new Map();
         this.mapAction = new Map();
         this.handleActionLevel = 0;
-
+        this.isTransformatorOrderBuild = false;
+        //
         if ((initialState !== undefined) && (typeof initialState === "object")) {
-            for (const key in initialState) {
+            this.states = initialState;
+        } else if ((initialState !== undefined) && (typeof initialState === "function")) {
+            this.states = (initialState as ((that: IStateRoot<TState>) => TState))(this);
+        }
+
+        {
+            for (const key in this.states) {
                 if (Object.prototype.hasOwnProperty.call(initialState, key)) {
                     this.getStateDefinition(key);
                     this.getProcessState(key);
@@ -103,6 +117,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
                 }
             );
         });
+        this.isTransformatorOrderBuild = false;
     }
 
     addSideEffect<TKey extends keyof (TState)>(key: TKey, sideEffect: (state: TState[TKey]) => void) {
@@ -126,16 +141,23 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         return transformatorOrder;
     }
 
-    getProcessState(key: keyof (TState)): TProcessState<TState> {
+    getProcessState<TKey extends keyof TState>(key: TKey): TProcessState<TState> {
         let activeState = this.mapProcessState.get(key);
         if (activeState === undefined) {
+            const getValueSV: FnGetValue<TState[TKey]> = () => ({ instance: this.states[key], stateVersion: this.mapProcessState.get(key)!.stateVersion });
+            const setValueSV: FnSetValue<TState[TKey]> = (instance: TState[TKey], stateVersion: number) => {
+                this.states[key]=instance;
+                this.mapProcessState.get(key)!.stateVersion=stateVersion
+             };
+
             activeState = {
                 stateName: key,
                 mapSuccDirty: new Map(),
                 isDirty: true,
                 stateVersion: 1,
                 arrTransformator: [],
-                arrSideEffect: []
+                arrSideEffect: [],
+                viewStateVersion: new UIViewStateVersion<TState[TKey]>(getValueSV, setValueSV)
             };
             this.mapProcessState.set(key, activeState);
         }
@@ -177,10 +199,11 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
             }
             return activeState;
         });
+        this.isTransformatorOrderBuild = true;
     }
 
     process() {
-        if ((this.stateVersion === 1) && (this.arrProcessState.length == 0)) {
+        if (!(this.isTransformatorOrderBuild)) {
             this.buildTransformatorOrder();
         }
         this.stateVersion = this.nextStateVersion;
@@ -254,7 +277,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         actionType: string,
         actionHandler: ActionHandler<TPayload, TState, TResult>
     ): ActionInvoker<TPayload, TResult> {
-        if (this.mapAction.has(actionType)){
+        if (this.mapAction.has(actionType)) {
             throw new Error(`Action with actionType ${actionType} has been already added.`);
         }
         this.mapAction.set(actionType, actionHandler);
@@ -284,7 +307,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
                 if (added) { added = false; this.handleActionLevel--; }
                 return undefined!;
             }
-        } catch (error){
+        } catch (error) {
             if (added) { added = false; this.handleActionLevel--; }
             throw (error);
         }
