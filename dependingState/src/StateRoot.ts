@@ -15,6 +15,7 @@ import {
     StateTransformator
 } from "./StateTransformator";
 import { UIViewStateVersion } from "./UIViewStateVersion";
+import { ActionLevelHandling } from "./ActionLevelHandling";
 
 type TProcessState<TState extends TStateBase, TKey extends keyof TState = any> = {
     stateName: TKey;//keyof (TState);
@@ -147,9 +148,9 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         if (activeState === undefined) {
             const getValueSV: FnGetValue<TState[TKey]> = () => ({ instance: this.states[key], stateVersion: this.mapProcessState.get(key)!.stateVersion });
             const setValueSV: FnSetValue<TState[TKey]> = (instance: TState[TKey], stateVersion: number) => {
-                this.states[key]=instance;
-                this.mapProcessState.get(key)!.stateVersion=stateVersion
-             };
+                this.states[key] = instance;
+                this.mapProcessState.get(key)!.stateVersion = stateVersion
+            };
 
             activeState = {
                 stateName: key,
@@ -288,9 +289,9 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         return actionInvoker;
     }
 
+    // event-handlers calls this
     handleAction<TPayload, TResult extends Promise<void> | void = any>(actionType: string, payload: TPayload): TResult {
-        this.handleActionLevel++;
-        let added = true;
+        const actionLevelHandling=ActionLevelHandling.create((diff)=>{this.handleActionLevel+=diff;})
         try {
             const result = this.executeAction(actionType, payload);
             if (result !== undefined && typeof result.then === "function") {
@@ -299,31 +300,47 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
                     try {
                         this.process();
                     } finally {
-                        if (added) { added = false; this.handleActionLevel--; }
+                        actionLevelHandling.stop();
                     }
                 });
                 return pResult as any;
             } else {
                 this.process();
-                if (added) { added = false; this.handleActionLevel--; }
+                actionLevelHandling.stop();
                 return undefined!;
             }
         } catch (error) {
-            if (added) { added = false; this.handleActionLevel--; }
+            actionLevelHandling.stop();
             throw (error);
         }
     }
 
-    executeAction<TPayload>(actionType: string, payload: TPayload): void | Promise<void> {
+    handleActions<TResult extends Promise<void> | void = any>(actionType: string, payload: TPayload): TResult {
+        const actionLevelHandling=ActionLevelHandling.create((diff)=>{this.handleActionLevel+=diff;})
+        try {
+            here
+        } catch (error) {
+            actionLevelHandling.stop();
+            throw (error);
+        }
+    }
+    //
+    async executeAction<TPayload>(actionType: string, payload: TPayload): Promise<void> {
         const actionHandler = this.mapAction.get(actionType) as (ActionHandler<TPayload, TState, Promise<any | void> | void> | undefined);
         if (actionHandler === undefined) {
             throw new Error(`actionType: ${actionType} is unknown`);
         } else {
-            const actionResult = actionHandler(payload, this);
-            if (actionResult && typeof actionResult.then === "function") {
-                return actionResult;
-            } else {
-                return;
+            this.handleActionLevel++;
+            try {
+                let pActionResult = actionHandler(payload, this);
+                if (pActionResult && typeof pActionResult.then === "function") {
+                    //
+                } else {
+                    pActionResult = Promise.resolve();
+                }
+                return await pActionResult;
+            } finally {
+                this.handleActionLevel--;
             }
         }
     }
