@@ -7,7 +7,8 @@ import {
     ActionInvoker,
     IStateRoot,
     FnGetValue,
-    FnSetValue
+    FnSetValue,
+    FnStateGenerator
 } from "./types";
 
 import {
@@ -53,7 +54,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
     handleActionLevel: number;
     isTransformatorOrderBuild: boolean;
 
-    constructor(initialState: undefined | (TState) | ((that: IStateRoot<TState>) => TState)) {
+    constructor(initialState: undefined | (TState) | FnStateGenerator<TState>) {
         this.states = ({} as TState);
         this.stateVersion = 1;
         this.nextStateVersion = 2;

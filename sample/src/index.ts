@@ -13,14 +13,16 @@ import AppView from './component/App/AppView';
 
 function main() {
     console.trace("main()");
-    const initalState = getInitalState();
-    const appState = new AppRootState(initalState);
-    const appProps = {};
-    const u=    appState.states["uiRoot"];
-    
+
+    // const initalState = getInitalState();
+    // const appState = new AppRootState(initalState);
+    // const appProps = {};
+    // const u = appState.states["uiRoot"];
+
+    const appState = new AppRootState(getInitalState);
     const rootElement = React.createElement(
         AppView,
-        appProps
+        appState.states.uiRoot.getViewProps()
     );
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {

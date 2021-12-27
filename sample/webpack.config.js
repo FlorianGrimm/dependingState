@@ -46,6 +46,9 @@ const config = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      dependingState: path.resolve(process.cwd(), "../dependingState/src/"),
+    },
   },
 };
 

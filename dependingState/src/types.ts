@@ -64,9 +64,9 @@ export type TStateVersion = {
     stateVersion: number;
 };
 
-export type StateVersion<T={}> = T & TStateVersion;
+export type StateVersion<T = {}> = T & TStateVersion;
 
-export type UIViewState<T=any> = T & UIViewStateBase;
+export type UIViewState<T = any> = T & UIViewStateBase;
 
 export type UIViewStateBase = {
     stateVersion: number;
@@ -74,27 +74,31 @@ export type UIViewStateBase = {
 
 export type FnStateVersion = (() => number);
 
-export type FnGetValue<TInstance> = (() => {instance:TInstance, stateVersion:number});
-export type FnSetValue<TInstance> = ((instance:TInstance, stateVersion:number) => void);
+export type FnGetValue<TInstance> = (() => { instance: TInstance, stateVersion: number });
+export type FnSetValue<TInstance> = ((instance: TInstance, stateVersion: number) => void);
 
-export type FnGetStateVersion<TInstance> = ((instance:TInstance) => number);
-export type FnSetStateVersion<TInstance> = ((instance:TInstance, stateVersion:number) => void);
+export type FnGetStateVersion<TInstance> = ((instance: TInstance) => number);
+export type FnSetStateVersion<TInstance> = ((instance: TInstance, stateVersion: number) => void);
 
 // react props
 export type UIProps<TUIProps = any> = {
     getViewProps: UIPropsGetViewProps<TUIProps>;
-    wireStateVersion(component: React.Component<TUIProps>): void;
-    unwireStateVersion(component: React.Component<TUIProps>): void;
-    stateVersion:number
+    // wireStateVersion(component: React.Component<TUIProps>): void;
+    // unwireStateVersion(component: React.Component<TUIProps>): void;
+    wireStateVersion(component: React.Component): void;
+    unwireStateVersion(component: React.Component): void;
+    getStateVersion(): number;
 };
 
 export type UIPropsGetViewProps<TUIPropsInner = any> = () => TUIPropsInner;
 
 export type UIPropsBase<T> = Exclude<T, UIProps<T>>;
 
-export interface IViewStateVersion<TUIProps = any>{
+export interface IViewStateVersion<TUIProps = any> {
     getViewProps(): UIProps<TUIProps>;
 }
+
+export type FnStateGenerator<TState> = (that: IStateRoot<TState>) => TState;
 
 /*
 export type LazyEvent<

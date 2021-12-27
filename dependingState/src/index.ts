@@ -19,7 +19,8 @@ export {
     FnSetValue,
     FnGetStateVersion,
     FnSetStateVersion,
-    IViewStateVersion
+    IViewStateVersion,
+    FnStateGenerator
 } from './types';
 
 export {

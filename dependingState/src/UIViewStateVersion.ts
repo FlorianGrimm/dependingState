@@ -1,10 +1,10 @@
-import { 
-    FnGetStateVersion, 
-    FnGetValue, 
-    FnSetStateVersion, 
-    FnSetValue, 
-    IViewStateVersion, 
-    UIProps, 
+import {
+    FnGetStateVersion,
+    FnGetValue,
+    FnSetStateVersion,
+    FnSetValue,
+    IViewStateVersion,
+    UIProps,
     UIPropsGetViewProps
 } from "./types";
 
@@ -32,7 +32,7 @@ export class UIViewStateVersionContainer<TUIProps = any>{
 }
 */
 
-export class UIViewStateVersion<TUIProps = any> implements IViewStateVersion{
+export class UIViewStateVersion<TUIProps = any> implements IViewStateVersion {
     getValueSV: FnGetValue<TUIProps>;
     setValueSV: FnSetValue<TUIProps>;
     value: TUIProps | undefined;
@@ -43,7 +43,7 @@ export class UIViewStateVersion<TUIProps = any> implements IViewStateVersion{
     constructor(
         getValueSV: FnGetValue<TUIProps>,
         setValueSV: FnSetValue<TUIProps>
-        ) {
+    ) {
         this.getValueSV = getValueSV;
         this.setValueSV = setValueSV;
         this.value = undefined;
@@ -53,16 +53,16 @@ export class UIViewStateVersion<TUIProps = any> implements IViewStateVersion{
     }
 
     getViewProps(): UIProps<TUIProps> {
-        const {instance, stateVersion: viewStateVersion} = this.getValueSV();
-        if (this._ViewProps !== undefined) {
-            if (this._ViewProps.stateVersion !== viewStateVersion){
-                this._ViewProps = undefined;
-            }
-        }
+        // const { instance, stateVersion: viewStateVersion } = this.getValueSV();
+        // if (this._ViewProps !== undefined) {
+        //     if (this._ViewProps.stateVersion !== viewStateVersion) {
+        //         this._ViewProps = undefined;
+        //     }
+        // }
         if (this._ViewProps === undefined) {
             const fnGetViewProps: UIPropsGetViewProps<TUIProps> = (() => {
-                //return this.getValueSV().instance;
-                return instance;
+                return this.getValueSV().instance;
+                // return instance;
             });
             const fnWireStateVersion: ((component: React.Component<TUIProps>) => void) = ((
                 component: React.Component<TUIProps>
@@ -97,19 +97,22 @@ export class UIViewStateVersion<TUIProps = any> implements IViewStateVersion{
                     }
                 }
             });
+            const fnGetStateVersion: (() => number) = (() => {
+                return this.getValueSV().stateVersion;
+            });
             //
             this._ViewProps = {
                 getViewProps: fnGetViewProps,
                 wireStateVersion: fnWireStateVersion,
                 unwireStateVersion: fnUnwireStateVersion,
-                stateVersion: viewStateVersion,
+                getStateVersion: fnGetStateVersion,
             };
         }
         return this._ViewProps;
     }
 
     trigger() {
-        const {instance, stateVersion: viewStateVersion} = this.getValueSV();
+        const { instance, stateVersion: viewStateVersion } = this.getValueSV();
         if (this.component === undefined) {
             //
         } else {
@@ -117,11 +120,11 @@ export class UIViewStateVersion<TUIProps = any> implements IViewStateVersion{
                 //
             } else {
                 this.stateVersion = viewStateVersion;
-                if (this.component === undefined){
+                if (this.component === undefined) {
                     //
-                } else if (Array.isArray(this.component)) {                    
+                } else if (Array.isArray(this.component)) {
                     for (const component of this.component) {
-                        component.setState({ stateVersion: viewStateVersion });    
+                        component.setState({ stateVersion: viewStateVersion });
                     }
                 } else {
                     this.component.setState({ stateVersion: viewStateVersion });

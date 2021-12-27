@@ -1,10 +1,9 @@
 // import { StateRoot } from "dependingState";
 import {
-    AppRootState,
-    getInitalState
+    AppRootState
 } from '../AppRootState';
 
 test('AppState', () => {
-    const initalState = getInitalState();
-    const appState = new AppRootState(initalState);
+    //const appState = new AppRootState(getInitalState);
+    const appState = new AppRootState();
 });
