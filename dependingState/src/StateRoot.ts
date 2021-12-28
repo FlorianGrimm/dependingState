@@ -8,7 +8,8 @@ import {
     IStateRoot,
     FnGetValue,
     FnSetValue,
-    FnStateGenerator
+    FnStateGenerator,
+    Action
 } from "./types";
 
 import {
@@ -290,24 +291,35 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
     }
 
     // event-handlers calls this
-    handleAction<TPayload, TResult extends Promise<void> | void = any>(actionType: string, payload: TPayload): TResult {
+    handleAction<
+        Payload = undefined,
+        ActionType extends string = string,
+        ResultType = undefined
+        >(
+        action : Action<Payload, ActionType, ResultType>
+        ): Promise<ResultType|undefined> {
         const actionLevelHandling=ActionLevelHandling.create((diff)=>{this.handleActionLevel+=diff;})
         try {
-            const result = this.executeAction(actionType, payload);
-            if (result !== undefined && typeof result.then === "function") {
-                //result.then(()=>{},()=>{}).finally(()=>{
-                const pResult = result.finally(() => {
+            const pExecute = this.executeAction(action);
+            if (pExecute !== undefined && typeof pExecute.then === "function") {
+                const pResult = pExecute.then((resultValue)=>{
+                    
+
+                }, (reason)=>{
+
+                });
+                const pProcess = pResult.finally(() => {
                     try {
                         this.process();
                     } finally {
                         actionLevelHandling.stop();
                     }
                 });
-                return pResult as any;
+                return pProcess as any;
             } else {
                 this.process();
                 actionLevelHandling.stop();
-                return undefined!;
+                return Promise.resolve(undefined);
             }
         } catch (error) {
             actionLevelHandling.stop();
@@ -315,24 +327,31 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         }
     }
 
-    handleActions<TResult extends Promise<void> | void = any>(actionType: string, payload: TPayload): TResult {
+    handleActions<TResult extends Promise<void> | void = any>(actions: Action[] ): Promise<any[]> {
         const actionLevelHandling=ActionLevelHandling.create((diff)=>{this.handleActionLevel+=diff;})
         try {
-            here
+            //here
         } catch (error) {
             actionLevelHandling.stop();
             throw (error);
         }
+        return Promise.resolve([]);
     }
     //
-    async executeAction<TPayload>(actionType: string, payload: TPayload): Promise<void> {
-        const actionHandler = this.mapAction.get(actionType) as (ActionHandler<TPayload, TState, Promise<any | void> | void> | undefined);
+    async executeAction<
+        Payload = undefined,
+        ActionType extends string = string,
+        ResultType = undefined
+    >(
+        action: Action<Payload, ActionType, ResultType>
+    ): Promise<void> {
+        const actionHandler = this.mapAction.get(action.type) as (ActionHandler<Payload, TState, Promise<any | void> | void> | undefined);
         if (actionHandler === undefined) {
-            throw new Error(`actionType: ${actionType} is unknown`);
+            throw new Error(`actionType: ${action.type} is unknown`);
         } else {
             this.handleActionLevel++;
             try {
-                let pActionResult = actionHandler(payload, this);
+                let pActionResult = actionHandler(action.payload, this);
                 if (pActionResult && typeof pActionResult.then === "function") {
                     //
                 } else {

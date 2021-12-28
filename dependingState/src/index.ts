@@ -3,6 +3,7 @@ export {
     TransformationLink,
     TransformationDefinition,
     Transformator,
+    TAction,
     ActionInvoker,
     ActionHandler,
     IStateRoot,

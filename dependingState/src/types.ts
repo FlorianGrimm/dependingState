@@ -41,7 +41,13 @@ export interface IStateRoot<TState extends TStateBase> {
     setStateHasChanged(key: keyof (TState), hasChanged: boolean): void;
     setStateDirty(key: keyof (TState)): void;
     setStateFromAction<TKey extends keyof (TState)>(key: TKey, newState: TState[TKey]): void;
-    executeAction<TPayload>(actionType: string, payload: TPayload): void | Promise<void>;
+    executeAction<        
+        TPayload = undefined,
+        TActionType extends string = string,
+        TStateKey extends string = string
+    >(
+        action: TAction<TPayload, TActionType, TStateKey>
+    ): Promise<void>
 }
 
 export type TransformatorResult<TState> = {
@@ -100,14 +106,38 @@ export interface IViewStateVersion<TUIProps = any> {
 
 export type FnStateGenerator<TState> = (that: IStateRoot<TState>) => TState;
 
-/*
-export type LazyEvent<
-    Payload = void,
-    ActionType extends string = string
+export type TActionType<
+        TState, 
+        TStateKey extends keyof(TState),
+        ActionType extends string = string
+    >={
+    state: TStateKey;
+    type: ActionType
+}
+
+export type TAction<
+    TPayload = undefined,
+    TActionType extends string = string,
+    TStateKey extends string = string
     > = {
-        type: ActionType;
-        payload: Payload;
+        state: TStateKey;
+        type: TActionType;
+        payload: TPayload;
     };
+
+/*
+    export type Action<
+        Payload = undefined,
+        ResultType = undefined,
+        TState = TStateBase, 
+        TKey extends keyof(TState) = keyof(TState),
+        ActionType extends string = string,
+        > = {
+            state: TKey;
+            type: ActionType;
+            payload: Payload;
+            result: ResultType;
+        };
 */
 
 /*
