@@ -19,22 +19,24 @@ export type TransformationDefinition<TState> = {
     transformationName: string;
     sourceNames: (keyof (TState))[];
     targetNames: (keyof (TState))[];
-    transformator: Transformator<TState>;
+    transformator: FnTransformator<TState>;
 }
 
-export type Transformator<TState> = (
+export type FnTransformator<TState> = (
     stateTransformator: IStateTransformator<TState>,
     state: TState,
 ) => TransformatorResult<Partial<TState>> | void;
 
-export type ActionInvoker<TPayload, TResult extends Promise<any | void> | void> = (
-    payload: TPayload,
-) => TResult;
+export type ActionResultBase = (any | undefined);
 
-export type ActionHandler<TPayload, TState, TResult extends Promise<any | void> | void> = (
+export type FnActionInvoker<TPayload, TResult extends ActionResultBase> = (
+    payload: TPayload,
+) => Promise<TResult>;
+
+export type FnActionHandler<TPayload, TState, TResult extends ActionResultBase> = (
     payload: TPayload,
     stateRoot: IStateRoot<TState>,
-) => TResult;
+) => Promise<TResult>;
 
 export interface IStateRoot<TState extends TStateBase> {
     states: TState;
@@ -106,23 +108,36 @@ export interface IViewStateVersion<TUIProps = any> {
 
 export type FnStateGenerator<TState> = (that: IStateRoot<TState>) => TState;
 
+
 export type TActionType<
-        TState, 
-        TStateKey extends keyof(TState),
-        ActionType extends string = string
+    TStateKey extends string = string,
+    TActionType extends string = string
     >={
     state: TStateKey;
-    type: ActionType
+    type: TActionType;
 }
 
 export type TAction<
     TPayload = undefined,
-    TActionType extends string = string,
-    TStateKey extends string = string
+    TStateKey extends string = string,
+    TActionType extends string = string
     > = {
-        state: TStateKey;
+        stateKey: TStateKey;
         type: TActionType;
         payload: TPayload;
+    };
+
+export type TActionProcessed<
+    TPayload = undefined,
+    TStateKey extends string = string,
+    TActionType extends string = string,
+    TResultType extends ActionResultBase = undefined
+    > = {
+        stateKey: TStateKey;
+        type: TActionType;
+        payload: TPayload;
+        result?: TResultType;
+        error?: any;
     };
 
 /*

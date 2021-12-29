@@ -13,9 +13,6 @@ import {
 } from './types';
 
 export class AppRootState extends StateRoot<TAppStates>{
-    // constructor(initalState?: TAppStates) {
-    //     super(initalState);
-    // }
     constructor(initalState?: FnStateGenerator<TAppStates>) {
         super(initalState || getInitalState);
     }

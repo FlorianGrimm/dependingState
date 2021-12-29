@@ -1,15 +1,16 @@
-import {
-    Transformator,
+import type {
+    FnTransformator,
     TransformationDefinition,
     TStateBase,
     IStateTransformator,
-    ActionHandler,
-    ActionInvoker,
+    TAction,
+    FnActionHandler,
+    FnActionInvoker,
     IStateRoot,
     FnGetValue,
     FnSetValue,
     FnStateGenerator,
-    Action
+    ActionResultBase
 } from "./types";
 
 import {
@@ -17,6 +18,7 @@ import {
 } from "./StateTransformator";
 import { UIViewStateVersion } from "./UIViewStateVersion";
 import { ActionLevelHandling } from "./ActionLevelHandling";
+import { TActionProcessed } from ".";
 
 type TProcessState<TState extends TStateBase, TKey extends keyof TState = any> = {
     stateName: TKey;//keyof (TState);
@@ -32,7 +34,7 @@ type TArrayTransformatorDefinition<TState extends TStateBase> = (TTransformatorD
 
 type TTransformatorDefinition<TState extends TStateBase> = {
     transformationName: string;
-    transformator: Transformator<TState>;
+    transformator: FnTransformator<TState>;
 }
 
 type TStateDefinition<TState extends TStateBase> = {
@@ -52,7 +54,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
     mapStateDefinition: Map<keyof (TState), TStateDefinition<TState>>;
     arrProcessState: (TProcessState<TState>)[];
     mapProcessState: Map<keyof (TState), TProcessState<TState>>;
-    mapAction: Map<string, ActionHandler<any, TState, any>>
+    mapAction: Map<string, FnActionHandler<any, TState, any>>
     handleActionLevel: number;
     isTransformatorOrderBuild: boolean;
 
@@ -88,7 +90,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         transformationName: string,
         sourceNames: (keyof (TState))[],
         targetNames: (keyof (TState))[],
-        transformator: Transformator<TState>
+        transformator: FnTransformator<TState>
     ) {
         let transformationDefinition: TransformationDefinition<TState> = {
             transformationName: transformationName,
@@ -276,37 +278,52 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         }
     }
 
-    addAction<TPayload, TResult extends Promise<any | void> | void>(
-        actionType: string,
-        actionHandler: ActionHandler<TPayload, TState, TResult>
-    ): ActionInvoker<TPayload, TResult> {
+    addAction<
+        TPayload = undefined,
+        TStateKey extends string = string,
+        TActionType extends string = string,
+        TResultType extends ActionResultBase = void
+    >(
+        stateKey: TStateKey,
+        actionType: TActionType,
+        actionHandler: FnActionHandler<TPayload, TState, TResultType>
+    ): FnActionInvoker<TPayload, TResultType> {
         if (this.mapAction.has(actionType)) {
             throw new Error(`Action with actionType ${actionType} has been already added.`);
         }
         this.mapAction.set(actionType, actionHandler);
-        const actionInvoker = (payload: TPayload) => {
-            return this.handleAction(actionType, payload);
-        }
+        const actionInvoker: FnActionInvoker<TPayload, TResultType> = ((payload: TPayload) => {
+            const action: TAction<TPayload, TStateKey, TActionType> = {
+                stateKey: stateKey,
+                type: actionType,
+                payload: payload
+            };
+            const pResult: Promise<TResultType> = this.handleAction<TPayload, TStateKey, TActionType, TResultType>(action);
+            return pResult;
+        });
         return actionInvoker;
     }
 
     // event-handlers calls this
     handleAction<
-        Payload = undefined,
-        ActionType extends string = string,
-        ResultType = undefined
-        >(
-        action : Action<Payload, ActionType, ResultType>
-        ): Promise<ResultType|undefined> {
-        const actionLevelHandling=ActionLevelHandling.create((diff)=>{this.handleActionLevel+=diff;})
+        TPayload = undefined,
+        TStateKey extends string = string,
+        TActionType extends string = string,
+        TResultType extends ActionResultBase = undefined
+    >(
+        action: TAction<TPayload, TStateKey, TActionType>
+    ): Promise<TResultType> {
+        const actionLevelHandling = ActionLevelHandling.create((diff) => { this.handleActionLevel += diff; });
+        const actionProcessed: TActionProcessed<TPayload, TStateKey, TActionType, TResultType> = action;
         try {
-            const pExecute = this.executeAction(action);
+            const pExecute = this.executeAction<TPayload, TStateKey, TActionType, TResultType>(action);
             if (pExecute !== undefined && typeof pExecute.then === "function") {
-                const pResult = pExecute.then((resultValue)=>{
-                    
-
-                }, (reason)=>{
-
+                const pResult = pExecute.then((resultValue) => {
+                    actionProcessed.result = resultValue;
+                    return action;
+                }, (reason) => {
+                    actionProcessed.error = reason;
+                    return action;
                 });
                 const pProcess = pResult.finally(() => {
                     try {
@@ -319,7 +336,7 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
             } else {
                 this.process();
                 actionLevelHandling.stop();
-                return Promise.resolve(undefined);
+                return Promise.resolve(pExecute! as TResultType);
             }
         } catch (error) {
             actionLevelHandling.stop();
@@ -327,8 +344,8 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         }
     }
 
-    handleActions<TResult extends Promise<void> | void = any>(actions: Action[] ): Promise<any[]> {
-        const actionLevelHandling=ActionLevelHandling.create((diff)=>{this.handleActionLevel+=diff;})
+    handleActions<TResult extends ActionResultBase = any>(actions: TAction[]): Promise<any[]> {
+        const actionLevelHandling = ActionLevelHandling.create((diff) => { this.handleActionLevel += diff; })
         try {
             //here
         } catch (error) {
@@ -339,13 +356,14 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
     }
     //
     async executeAction<
-        Payload = undefined,
-        ActionType extends string = string,
-        ResultType = undefined
+        TPayload = undefined,
+        TStateKey extends string = string,
+        TActionType extends string = string,
+        TResultType extends ActionResultBase = undefined
     >(
-        action: Action<Payload, ActionType, ResultType>
-    ): Promise<void> {
-        const actionHandler = this.mapAction.get(action.type) as (ActionHandler<Payload, TState, Promise<any | void> | void> | undefined);
+        action: TAction<TPayload, TStateKey, TActionType>
+    ): Promise<TResultType> {
+        const actionHandler = this.mapAction.get(action.type) as (FnActionHandler<TPayload, TState, Promise<any | void> | void> | undefined);
         if (actionHandler === undefined) {
             throw new Error(`actionType: ${action.type} is unknown`);
         } else {
@@ -357,12 +375,18 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
                 } else {
                     pActionResult = Promise.resolve();
                 }
-                return await pActionResult;
+                const result = await pActionResult;
+                (action as TActionProcessed<TPayload, TStateKey, TActionType, TResultType>).result= result;
+                return result;
+            } catch(error){
+                (action as TActionProcessed<TPayload, TStateKey, TActionType, TResultType>).error = error;
+                return Promise.reject(error);
             } finally {
                 this.handleActionLevel--;
             }
         }
     }
+
     setStateFromAction<TKey extends keyof (TState)>(key: TKey, newState: TState[TKey]): void {
         const processState = this.getProcessState(key);
         const currentState = this.states[key];

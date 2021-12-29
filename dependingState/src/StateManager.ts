@@ -1,5 +1,19 @@
-//export enum x{};
+import { StateValue } from "./StateValue";
+import { StateValueBound } from "./StateValueBound";
 
+//export enum x{};
+export class StateManager {    
+    stateVersion: number;
+    nextStateVersion: number;
+    constructor() {
+        this.stateVersion = 1;
+        this.nextStateVersion = 2;
+    }
+    getLiveState<TValue>(value: StateValue<TValue>) {
+        return new StateValueBound<TValue>(this, value);
+    }
+}
+/*
 export class StateManager {
     stateVersion: number;
     nextStateVersion: number;
@@ -43,5 +57,5 @@ export class ValueState<T = any> {
         this.stateManager.setValueStateVersion(this);
         
     }
-
 }
+*/
