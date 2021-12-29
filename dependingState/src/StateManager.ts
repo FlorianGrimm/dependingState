@@ -1,8 +1,11 @@
 import { StateValue } from "./StateValue";
 import { StateValueBound } from "./StateValueBound";
 
+type InternalStateValue<TValue>{
+    stateValueBound?: StateValueBound<TValue>;
+}
 //export enum x{};
-export class StateManager {    
+export class StateManager {
     stateVersion: number;
     nextStateVersion: number;
     constructor() {
@@ -10,7 +13,13 @@ export class StateManager {
         this.nextStateVersion = 2;
     }
     getLiveState<TValue>(value: StateValue<TValue>) {
-        return new StateValueBound<TValue>(this, value);
+        const internalStateValue = (value as InternalStateValue<TValue>);
+        let result = internalStateValue.stateValueBound;
+        if (result === undefined) {
+            result = new StateValueBound<TValue>(this, value);
+            internalStateValue.stateValueBound = result;
+        }
+        return result;
     }
 }
 /*
