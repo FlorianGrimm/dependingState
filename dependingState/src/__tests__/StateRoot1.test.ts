@@ -166,7 +166,7 @@ test('AppState1 action', () => {
         hasChanged = testAndSetProp(d, "dMsg", `a1:${a.a1}; a2:${a.a2}; c:${c.c};`, hasChanged);
         stateTransformator.setHasChanged("d", hasChanged)
     });
-    const gna = appState1.addAction("gna", (payload: number, stateRoot) => {
+    const gna = appState1.addAction("a", "gna", (payload: number, stateRoot) => {
         const { a } = stateRoot.states;
         let hasChanged = testAndSetProp(a, "a1", a.a1 + payload, false);
         stateRoot.setStateHasChanged("a", hasChanged);
@@ -202,12 +202,12 @@ test('AppState1 action 2', () => {
         hasChanged = testAndSetProp(d, "dMsg", `a1:${a.a1}; a2:${a.a2}; c:${c.c};`, hasChanged);
         stateTransformator.setHasChanged("d", hasChanged)
     });
-    const gna1 = appState1.addAction("gna1", (payload: number, stateRoot) => {
+    const gna1 = appState1.addAction<number>("a", "gna1", (payload, stateRoot) => {
         const { a } = stateRoot.states;
         let hasChanged = testAndSetProp(a, "a1", a.a1 + payload, false);
         stateRoot.setStateHasChanged("a", hasChanged);        
     });
-    const gna2 = appState1.addAction("gna2", (payload: number, stateRoot) => {
+    const gna2 = appState1.addAction<number, void>("a", "gna2", (payload, stateRoot) => {
         const { a } = stateRoot.states;
         let hasChanged = testAndSetProp(a, "a1", a.a1 + payload, false);
         stateRoot.setStateHasChanged("a", hasChanged);

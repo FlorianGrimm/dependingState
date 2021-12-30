@@ -23,7 +23,11 @@ export {
     FnGetStateVersion,
     FnSetStateVersion,
     IViewStateVersion,
-    FnStateGenerator
+    FnStateGenerator,
+
+    IStateManager, 
+    IStateValue, 
+    IStateValueBound 
 } from './types';
 
 export {

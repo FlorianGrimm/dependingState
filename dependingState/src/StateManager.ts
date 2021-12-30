@@ -1,19 +1,22 @@
-import { StateValue } from "./StateValue";
+import type { 
+    TInternalStateValue,
+    IStateManager, 
+    IStateValue, 
+    IStateValueBound 
+} from "./types";
+
 import { StateValueBound } from "./StateValueBound";
 
-type InternalStateValue<TValue>{
-    stateValueBound?: StateValueBound<TValue>;
-}
-//export enum x{};
-export class StateManager {
+// 2cd attempt
+export class StateManager implements IStateManager {
     stateVersion: number;
     nextStateVersion: number;
     constructor() {
         this.stateVersion = 1;
         this.nextStateVersion = 2;
     }
-    getLiveState<TValue>(value: StateValue<TValue>) {
-        const internalStateValue = (value as InternalStateValue<TValue>);
+    getLiveState<TValue>(value: IStateValue<TValue>) : IStateValueBound<TValue> {
+        const internalStateValue = (value as TInternalStateValue<TValue>);
         let result = internalStateValue.stateValueBound;
         if (result === undefined) {
             result = new StateValueBound<TValue>(this, value);

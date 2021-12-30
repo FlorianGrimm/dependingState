@@ -10,7 +10,8 @@ import type {
     FnGetValue,
     FnSetValue,
     FnStateGenerator,
-    ActionResultBase
+    ActionResultBase,
+    ActionResult
 } from "./types";
 
 import {
@@ -280,25 +281,26 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
 
     addAction<
         TPayload = undefined,
+        TResultType extends ActionResultBase = void,
         TStateKey extends string = string,
-        TActionType extends string = string,
-        TResultType extends ActionResultBase = void
+        TActionType extends string = string
     >(
         stateKey: TStateKey,
         actionType: TActionType,
         actionHandler: FnActionHandler<TPayload, TState, TResultType>
-    ): FnActionInvoker<TPayload, TResultType> {
+    ): FnActionInvoker<TPayload, TResultType, TStateKey, TActionType> {
         if (this.mapAction.has(actionType)) {
             throw new Error(`Action with actionType ${actionType} has been already added.`);
         }
         this.mapAction.set(actionType, actionHandler);
-        const actionInvoker: FnActionInvoker<TPayload, TResultType> = ((payload: TPayload) => {
+        const actionInvoker/*: FnActionInvoker<TPayload, TResultType>*/ = ((payload: TPayload) => {
             const action: TAction<TPayload, TStateKey, TActionType> = {
                 stateKey: stateKey,
                 type: actionType,
                 payload: payload
             };
-            const pResult: Promise<TResultType> = this.handleAction<TPayload, TStateKey, TActionType, TResultType>(action);
+            //const pResult: Promise<TResultType> = this.handleAction<TPayload, TStateKey, TActionType, TResultType>(action);
+            const pResult = this.handleAction<TPayload, TStateKey, TActionType, TResultType>(action);
             return pResult;
         });
         return actionInvoker;
@@ -312,32 +314,32 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
         TResultType extends ActionResultBase = undefined
     >(
         action: TAction<TPayload, TStateKey, TActionType>
-    ): Promise<TResultType> {
+    ): Promise<TActionProcessed<TPayload, TStateKey, TActionType, TResultType>> {
         const actionLevelHandling = ActionLevelHandling.create((diff) => { this.handleActionLevel += diff; });
         const actionProcessed: TActionProcessed<TPayload, TStateKey, TActionType, TResultType> = action;
         try {
-            const pExecute = this.executeAction<TPayload, TStateKey, TActionType, TResultType>(action);
-            if (pExecute !== undefined && typeof pExecute.then === "function") {
-                const pResult = pExecute.then((resultValue) => {
-                    actionProcessed.result = resultValue;
-                    return action;
-                }, (reason) => {
-                    actionProcessed.error = reason;
-                    return action;
-                });
-                const pProcess = pResult.finally(() => {
-                    try {
-                        this.process();
-                    } finally {
-                        actionLevelHandling.stop();
-                    }
-                });
-                return pProcess as any;
-            } else {
-                this.process();
-                actionLevelHandling.stop();
-                return Promise.resolve(pExecute! as TResultType);
-            }
+            const pExecute = this.executeAction<TPayload, TResultType, TStateKey, TActionType>(action);
+            //if (pExecute !== undefined && typeof pExecute.then === "function") {
+            const pResult = pExecute.then((resultValue) => {
+                actionProcessed.result = resultValue;
+                return actionProcessed;
+            }, (reason) => {
+                actionProcessed.error = reason;
+                return actionProcessed;
+            });
+            const pProcess = pResult.finally(() => {
+                try {
+                    this.process();
+                } finally {
+                    actionLevelHandling.stop();
+                }
+            });
+            return pProcess;
+            // } else {
+            //     this.process();
+            //     actionLevelHandling.stop();
+            //     return Promise.resolve(pExecute! as TResultType);
+            // }
         } catch (error) {
             actionLevelHandling.stop();
             throw (error);
@@ -357,28 +359,29 @@ export class StateRoot<TState extends TStateBase> implements IStateRoot<TState>{
     //
     async executeAction<
         TPayload = undefined,
+        TResultType extends ActionResultBase = void,
         TStateKey extends string = string,
-        TActionType extends string = string,
-        TResultType extends ActionResultBase = undefined
+        TActionType extends string = string
     >(
         action: TAction<TPayload, TStateKey, TActionType>
     ): Promise<TResultType> {
-        const actionHandler = this.mapAction.get(action.type) as (FnActionHandler<TPayload, TState, Promise<any | void> | void> | undefined);
+        const actionHandler = this.mapAction.get(action.type) as (FnActionHandler<TPayload, TState, TResultType> | undefined);
         if (actionHandler === undefined) {
             throw new Error(`actionType: ${action.type} is unknown`);
         } else {
             this.handleActionLevel++;
             try {
-                let pActionResult = actionHandler(action.payload, this);
-                if (pActionResult && typeof pActionResult.then === "function") {
-                    //
+                const pActionResult: ActionResult<TResultType> = actionHandler(action.payload, this);
+                if (pActionResult && typeof (pActionResult as any).then === "function") {
+                    const result = (await pActionResult) as TResultType;
+                    (action as TActionProcessed<TPayload, TStateKey, TActionType, TResultType>).result = result;
+                    return result;
                 } else {
-                    pActionResult = Promise.resolve();
+                    const result = pActionResult as TResultType;
+                    (action as TActionProcessed<TPayload, TStateKey, TActionType, TResultType>).result = result;
+                    return result;
                 }
-                const result = await pActionResult;
-                (action as TActionProcessed<TPayload, TStateKey, TActionType, TResultType>).result= result;
-                return result;
-            } catch(error){
+            } catch (error) {
                 (action as TActionProcessed<TPayload, TStateKey, TActionType, TResultType>).error = error;
                 return Promise.reject(error);
             } finally {

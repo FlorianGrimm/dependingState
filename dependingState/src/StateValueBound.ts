@@ -1,19 +1,24 @@
 import { StateManager } from "./StateManager";
-import { StateValue } from "./StateValue";
+import { 
+    IStateValue,
+    IStateValueBound 
+} from "./types";
 
-export class StateValueBound<TValue>{
+// 2cd attempt
+
+export class StateValueBound<TValue> implements IStateValueBound<TValue> {
     stateManager: StateManager;
-    stateValue: StateValue<TValue>;
+    stateValue: IStateValue<TValue>;
 
     constructor(
         stateManager: StateManager,
-        stateValue: StateValue<TValue>
+        stateValue: IStateValue<TValue>
     ) {
         this.stateManager = stateManager;
         this.stateValue = stateValue;
     }
 
-    execute() {
+    execute(): void {
         this.stateValue.execute(this.stateManager);
     }
 }

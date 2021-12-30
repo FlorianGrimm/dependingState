@@ -17,7 +17,10 @@ test('StateValue1', () => {
     const liveStateA2 = stateManager.getLiveState(stateA2);
     const stateB3 = new StateValue<StateB>();
     const liveStateB3 = stateManager.getLiveState(stateB3);
-    // stateB3.addParameterDependency(stateA1);
+    function calcB(a1: StateValue<StateA>, a2: StateValue<StateA>) {
+
+    }
+    //stateB3.addParameterDependency(stateA1);
     // stateB3.addParameterDependency(stateA2);
-    liveStateB3.addParameterDependency(liveStateA1);
+    //liveStateB3.addParameterDependency(liveStateA1);
 });

@@ -27,23 +27,33 @@ export type FnTransformator<TState> = (
     state: TState,
 ) => TransformatorResult<Partial<TState>> | void;
 
-export type ActionResultBase = (any | undefined);
+export type ActionResultBase = (any | void);
 
-export type FnActionInvoker<TPayload, TResult extends ActionResultBase> = (
+export type PromiseActionResultOrVoid<TResult extends ActionResultBase> =TResult extends void ?  Promise<void> : Promise<TResult>;
+
+export type ActionResult<TResult extends ActionResultBase> = TResult extends void ? (void | Promise<void>) : (Promise<TResult> | TResult);
+// (any | void | undefined);
+
+export type FnActionInvoker<
+    TPayload, 
+    TResultType extends ActionResultBase,
+    TStateKey extends string, 
+    TActionType extends string
+    > = (
     payload: TPayload,
-) => Promise<TResult>;
+) => Promise<TActionProcessed<TPayload, TStateKey, TActionType, TResultType>>
 
 export type FnActionHandler<TPayload, TState, TResult extends ActionResultBase> = (
     payload: TPayload,
     stateRoot: IStateRoot<TState>,
-) => Promise<TResult>;
+) => ActionResult<TResult>;
 
 export interface IStateRoot<TState extends TStateBase> {
     states: TState;
     setStateHasChanged(key: keyof (TState), hasChanged: boolean): void;
     setStateDirty(key: keyof (TState)): void;
     setStateFromAction<TKey extends keyof (TState)>(key: TKey, newState: TState[TKey]): void;
-    executeAction<        
+    executeAction<
         TPayload = undefined,
         TActionType extends string = string,
         TStateKey extends string = string
@@ -112,10 +122,10 @@ export type FnStateGenerator<TState> = (that: IStateRoot<TState>) => TState;
 export type TActionType<
     TStateKey extends string = string,
     TActionType extends string = string
-    >={
-    state: TStateKey;
-    type: TActionType;
-}
+    > = {
+        state: TStateKey;
+        type: TActionType;
+    }
 
 export type TAction<
     TPayload = undefined,
@@ -139,6 +149,27 @@ export type TActionProcessed<
         result?: TResultType;
         error?: any;
     };
+
+    // 2cd attempt
+
+export interface IStateValue<TValue = any> {
+    execute(stateManager: IStateManager): void;
+    setValue(stateManager: IStateManager, value: TValue | undefined, changed?: (boolean | undefined) /*= undefined*/): void;
+}
+
+export type TInternalStateValue<TValue> = {
+    stateValueBound?: IStateValueBound<TValue>;
+}
+
+export interface IStateValueBound<TValue = any> {
+    execute(): void;
+}
+
+export interface IStateManager {
+    stateVersion: number;
+    nextStateVersion: number;
+    getLiveState<TValue>(value: IStateValue<TValue>): IStateValueBound<TValue>;
+}
 
 /*
     export type Action<

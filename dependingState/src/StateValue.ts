@@ -1,7 +1,13 @@
-import { deepEquals } from ".";
-import { StateManager } from "./StateManager";
+import {
+    IStateManager,
+    IStateValue
+} from "./types";
 
-export class StateValue<TValue = any>{
+import { deepEquals } from ".";
+
+// 2cd attempt
+
+export class StateValue<TValue = any> implements IStateValue<TValue>{
     value: TValue | undefined;
     isDirty: boolean;
     stateVersion: number;
@@ -11,7 +17,7 @@ export class StateValue<TValue = any>{
         this.stateVersion = 0;
     }
 
-    execute(stateManager: StateManager) {
+    execute(stateManager: IStateManager) {
         if (this.isDirty) {
             this.process();
             this.isDirty = false;
@@ -21,7 +27,7 @@ export class StateValue<TValue = any>{
     process() {
     }
 
-    setValue(stateManager: StateManager, value: TValue | undefined, changed: boolean | undefined = undefined) {
+    setValue(stateManager: IStateManager, value: TValue | undefined, changed: boolean | undefined = undefined): void {
         if (changed === undefined) {
             changed = deepEquals(this.value, value, true);
         }
