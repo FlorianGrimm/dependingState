@@ -54,7 +54,6 @@ export class StateValue<TValue = any> implements IStateValue<TValue>{
                         if (value === undefined) {
                             //
                         } else {
-                            //
                             this.setValue(transformationProcessor, value, undefined);
                         }
                         return;
