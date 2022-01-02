@@ -1,5 +1,7 @@
 import { StateManager } from "../StateManager";
 import { StateValue } from "../StateValue";
+import { IStateValue } from "../types";
+import { testAndSet } from "../utility";
 
 type StateA = {
     a: number;
@@ -9,18 +11,29 @@ type StateB = {
 }
 test('StateValue1', () => {
     const stateManager = new StateManager();
-    const stateA1 = new StateValue<StateA>();
-    const stateA2 = new StateValue<StateA>();
-    stateA1.setValue(stateManager, { a: 1 }, true);
-    stateA2.setValue(stateManager, { a: 2 }, true);
+    const transformationProcessor = stateManager.getTransformationProcessor();
+    const stateA1 = new StateValue<StateA>({ a: 0 });
+    const stateA2 = new StateValue<StateA>({ a: 0 });
     const liveStateA1 = stateManager.getLiveState(stateA1);
     const liveStateA2 = stateManager.getLiveState(stateA2);
-    const stateB3 = new StateValue<StateB>();
+    const stateB3 = new StateValue<StateB>({ b: 0 });
     const liveStateB3 = stateManager.getLiveState(stateB3);
-    function calcB(a1: StateValue<StateA>, a2: StateValue<StateA>) {
-
+    function calcB1({ a1, a2 }: { a1: IStateValue<StateA>, a2: IStateValue<StateA> }, target: IStateValue<StateB>) {
+        target.setValue(null!, { b: a1.value!.a + a2.value!.a });
     }
-    //stateB3.addParameterDependency(stateA1);
-    // stateB3.addParameterDependency(stateA2);
-    //liveStateB3.addParameterDependency(liveStateA1);
+    // function calcB2(a1: IStateValue<StateA>, a2: IStateValue<StateA>, b: IStateValue<StateB>) {
+    //     let changed = false;
+    //     changed = testAndSet(a1.value!.a + a2.value!.a, b.value!.b, (v) => b.value!.b = v, changed);
+    //     return changed;
+    // }
+    // function calcB3(a1: StateA, a2: StateA) {
+    //     return { b: a1.a + a2.a };
+    // }
+    stateB3.setTransformation<{ a1: IStateValue<StateA>, a2: IStateValue<StateA> }>({
+        a1: stateA1,
+        a2: stateA2,
+    }, calcB1);
+    stateA1.setValue(transformationProcessor, { a: 1 }, true);
+    stateA2.setValue(transformationProcessor, { a: 2 }, true);
+
 });

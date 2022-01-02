@@ -29,19 +29,18 @@ export type FnTransformator<TState> = (
 
 export type ActionResultBase = (any | void);
 
-export type PromiseActionResultOrVoid<TResult extends ActionResultBase> =TResult extends void ?  Promise<void> : Promise<TResult>;
+export type PromiseActionResultOrVoid<TResult extends ActionResultBase> = TResult extends void ? Promise<void> : Promise<TResult>;
 
 export type ActionResult<TResult extends ActionResultBase> = TResult extends void ? (void | Promise<void>) : (Promise<TResult> | TResult);
-// (any | void | undefined);
 
 export type FnActionInvoker<
-    TPayload, 
+    TPayload,
     TResultType extends ActionResultBase,
-    TStateKey extends string, 
+    TStateKey extends string,
     TActionType extends string
     > = (
-    payload: TPayload,
-) => Promise<TActionProcessed<TPayload, TStateKey, TActionType, TResultType>>
+        payload: TPayload,
+    ) => Promise<TActionProcessed<TPayload, TStateKey, TActionType, TResultType>>
 
 export type FnActionHandler<TPayload, TState, TResult extends ActionResultBase> = (
     payload: TPayload,
@@ -150,11 +149,18 @@ export type TActionProcessed<
         error?: any;
     };
 
-    // 2cd attempt
+// 2cd attempt
+
+export type TStateValueObject = { [TKey: string]: IStateValue<any> };
+
+//export type TStateValueObject2<TObject, TKey extends keyof TObject> = { [TKey: string]: TObject[TKey] extends IStateValue ? TObject[TKey] : never };
 
 export interface IStateValue<TValue = any> {
-    execute(stateManager: IStateManager): void;
-    setValue(stateManager: IStateManager, value: TValue | undefined, changed?: (boolean | undefined) /*= undefined*/): void;
+    level: number;
+    isDirty: boolean;
+    value: TValue | undefined;
+    execute(transformationProcessor: ITransformationProcessor): void;
+    setValue(transformationProcessor: ITransformationProcessor, value: TValue | undefined, changed?: (boolean | undefined) /*= undefined*/): void;
 }
 
 export type TInternalStateValue<TValue> = {
@@ -171,6 +177,20 @@ export interface IStateManager {
     getLiveState<TValue>(value: IStateValue<TValue>): IStateValueBound<TValue>;
 }
 
+export type FnTransformationResult<TValue>
+    = (void | TValue | Promise<void> | Promise<TValue>);
+
+export type FnTransformationProcess<TValue, TSource extends TStateValueObject>
+    = (source: TSource, target: IStateValue<TValue>, transformationProcessor: ITransformationProcessor) => FnTransformationResult<TValue>;
+
+
+export interface ITransformationProcessor {
+    // stateVersion: number;
+    readonly nextStateVersion: number;
+
+    setProcessed(child: IStateValue<any>): void;
+    setDirty(child: IStateValue<any>): void;
+}
 /*
     export type Action<
         Payload = undefined,

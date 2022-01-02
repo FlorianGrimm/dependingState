@@ -1,5 +1,5 @@
-import { StateManager } from "./StateManager";
 import { 
+    IStateManager,
     IStateValue,
     IStateValueBound 
 } from "./types";
@@ -7,11 +7,11 @@ import {
 // 2cd attempt
 
 export class StateValueBound<TValue> implements IStateValueBound<TValue> {
-    stateManager: StateManager;
+    stateManager: IStateManager;
     stateValue: IStateValue<TValue>;
 
     constructor(
-        stateManager: StateManager,
+        stateManager: IStateManager,
         stateValue: IStateValue<TValue>
     ) {
         this.stateManager = stateManager;
@@ -19,6 +19,6 @@ export class StateValueBound<TValue> implements IStateValueBound<TValue> {
     }
 
     execute(): void {
-        this.stateValue.execute(this.stateManager);
+        // this.stateValue.execute(this.stateManager);
     }
 }

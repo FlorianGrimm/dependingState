@@ -27,7 +27,11 @@ export {
 
     IStateManager, 
     IStateValue, 
-    IStateValueBound 
+    IStateValueBound,
+
+    TStateValueObject,
+    
+    ITransformationProcessor
 } from './types';
 
 export {
@@ -56,3 +60,6 @@ export{
     StateBase
 } from './StateBase';
 
+export {
+    TransformationProcessor
+} from './TransformationProcessor';

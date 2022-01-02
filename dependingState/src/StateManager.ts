@@ -2,10 +2,12 @@ import type {
     TInternalStateValue,
     IStateManager, 
     IStateValue, 
-    IStateValueBound 
+    IStateValueBound, 
+    ITransformationProcessor
 } from "./types";
 
 import { StateValueBound } from "./StateValueBound";
+import { TransformationProcessor } from "./TransformationProcessor";
 
 // 2cd attempt
 export class StateManager implements IStateManager {
@@ -15,6 +17,7 @@ export class StateManager implements IStateManager {
         this.stateVersion = 1;
         this.nextStateVersion = 2;
     }
+    
     getLiveState<TValue>(value: IStateValue<TValue>) : IStateValueBound<TValue> {
         const internalStateValue = (value as TInternalStateValue<TValue>);
         let result = internalStateValue.stateValueBound;
@@ -23,6 +26,10 @@ export class StateManager implements IStateManager {
             internalStateValue.stateValueBound = result;
         }
         return result;
+    }
+
+    getTransformationProcessor():ITransformationProcessor{
+        return new TransformationProcessor(this);
     }
 }
 /*
