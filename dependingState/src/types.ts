@@ -1,4 +1,5 @@
 import type React from 'react';
+import { StateValue } from './StateValue';
 
 export interface IStateTransformator<TState> {
     setHasChanged(key: keyof (TState), hasChanged: boolean): void
@@ -158,9 +159,18 @@ export type TStateValueObject = { [TKey: string]: IStateValue<any> };
 export interface IStateValue<TValue = any> {
     level: number;
     isDirty: boolean;
-    value: TValue | undefined;
-    execute(transformationProcessor: ITransformationProcessor): void;
-    setValue(transformationProcessor: ITransformationProcessor, value: TValue | undefined, changed?: (boolean | undefined) /*= undefined*/): void;
+    value: TValue;
+
+    execute(transformationProcessor: ITransformationProcessor): Promise<void>;
+    setValue(transformationProcessor: ITransformationProcessor, value: TValue | undefined, hasChanged?: (boolean | undefined) /*= undefined*/): void;
+    setTransformation<TSource extends TStateValueObject>(
+        source: TSource,
+        fnProcess: FnTransformationProcess<TValue, TSource>
+        ):void;
+
+    addSuccessor(target: IStateValue<any>):void;
+    removeSuccessor(target: IStateValue<any>):void;
+    getSuccessors(): IStateValue<any>[];
 }
 
 export type TInternalStateValue<TValue> = {
@@ -168,20 +178,24 @@ export type TInternalStateValue<TValue> = {
 }
 
 export interface IStateValueBound<TValue = any> {
-    execute(): void;
+    execute(): Promise<void>;
 }
 
 export interface IStateManager {
     stateVersion: number;
     nextStateVersion: number;
     getLiveState<TValue>(value: IStateValue<TValue>): IStateValueBound<TValue>;
+    getTransformationProcessor(): ITransformationProcessor;
 }
 
 export type FnTransformationResult<TValue>
     = (void | TValue | Promise<void> | Promise<TValue>);
 
 export type FnTransformationProcess<TValue, TSource extends TStateValueObject>
-    = (source: TSource, target: IStateValue<TValue>, transformationProcessor: ITransformationProcessor) => FnTransformationResult<TValue>;
+    = ( source: TSource, 
+        target: IStateValue<TValue>, 
+        transformationProcessor: ITransformationProcessor
+        ) => FnTransformationResult<TValue>;
 
 
 export interface ITransformationProcessor {

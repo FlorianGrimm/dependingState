@@ -1,7 +1,8 @@
-import { 
+import {
     IStateManager,
     IStateValue,
-    IStateValueBound 
+    IStateValueBound,
+    ITransformationProcessor
 } from "./types";
 
 // 2cd attempt
@@ -18,7 +19,8 @@ export class StateValueBound<TValue> implements IStateValueBound<TValue> {
         this.stateValue = stateValue;
     }
 
-    execute(): void {
-        // this.stateValue.execute(this.stateManager);
+    execute(): Promise<void> {
+        const transformationProcessor: ITransformationProcessor = this.stateManager.getTransformationProcessor();
+        return this.stateValue.execute(transformationProcessor);
     }
 }

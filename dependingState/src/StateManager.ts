@@ -1,8 +1,8 @@
-import type { 
+import type {
     TInternalStateValue,
-    IStateManager, 
-    IStateValue, 
-    IStateValueBound, 
+    IStateManager,
+    IStateValue,
+    IStateValueBound,
     ITransformationProcessor
 } from "./types";
 
@@ -17,8 +17,8 @@ export class StateManager implements IStateManager {
         this.stateVersion = 1;
         this.nextStateVersion = 2;
     }
-    
-    getLiveState<TValue>(value: IStateValue<TValue>) : IStateValueBound<TValue> {
+
+    getLiveState<TValue>(value: IStateValue<TValue>): IStateValueBound<TValue> {
         const internalStateValue = (value as TInternalStateValue<TValue>);
         let result = internalStateValue.stateValueBound;
         if (result === undefined) {
@@ -28,7 +28,7 @@ export class StateManager implements IStateManager {
         return result;
     }
 
-    getTransformationProcessor():ITransformationProcessor{
+    getTransformationProcessor(): ITransformationProcessor {
         return new TransformationProcessor(this);
     }
 }

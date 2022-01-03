@@ -1,29 +1,30 @@
 import {
     FnTransformationProcess,
-    FnTransformationResult,
     IStateValue,
     ITransformationProcessor,
     TStateValueObject
-    //TStateValueObject2
 } from "./types";
 
 import { deepEquals } from ".";
 import { HasChanged } from "./HasChanged";
+import { StateValueTransformation } from "./StateValueTransformation";
 
 // 2cd attempt
 
 export class StateValue<TValue = any> implements IStateValue<TValue>{
-    value: TValue | undefined;
+    value: TValue;
     isDirty: boolean;
     stateVersion: number;
     transformation: StateValueTransformation<TValue, any> | undefined;
-    level:number;
+    level: number;
+    arrSucc: IStateValue<any>[];
 
     constructor(value: TValue) {
         this.value = value;
         this.isDirty = true;
         this.stateVersion = 0;
-        this.level=0;
+        this.level = 0;
+        this.arrSucc = [];
     }
 
     execute(transformationProcessor: ITransformationProcessor): Promise<void> {
@@ -40,102 +41,81 @@ export class StateValue<TValue = any> implements IStateValue<TValue>{
         if (this.transformation === undefined) {
             return Promise.resolve();
         } else {
-            var result = this.transformation.process(transformationProcessor);
-            if (result === undefined) {
-                return Promise.resolve();
-            }
-            if (result instanceof HasChanged) {
-                this.setHasChanged(result.hasChanged, transformationProcessor);
-                return Promise.resolve();
-            }
-            if (typeof (result as any).then === "function") {
-                return (result as Promise<void | TValue>).then(
-                    (value) => {
-                        if (value === undefined) {
-                            //
-                        } else {
-                            //
-                            this.setValue(transformationProcessor, value, undefined);
-                        }
-                        return;
-                    }
-                )
-            }
-            {
-                this.setValue(transformationProcessor, result as TValue, undefined);
-                return Promise.resolve();
-            }
+            var pProcess = this.transformation.process(transformationProcessor);
+            return pProcess.then((result) => {
+                if (result === undefined) {
+                    return;
+                }
+                if (result instanceof HasChanged) {
+                    this.setHasChanged(result.hasChanged, transformationProcessor);
+                    return;
+                }
+                {
+                    this.setValue(transformationProcessor, result as TValue, undefined);
+                    return;
+                }
+            });
         }
     }
 
     setHasChanged(hasChanged: boolean, transformationProcessor: ITransformationProcessor) {
-        this.isDirty = false;
-        if (hasChanged && this.transformation !== undefined) {
-            this.transformation.setChildrenDirty(transformationProcessor);
+        if (this.transformation === undefined){
+            this.isDirty = false;
+        } else{
+            transformationProcessor.setProcessed(this);
+            if (hasChanged) {
+                this.transformation.setSuccessorsDirty(transformationProcessor);
+            }
         }
     }
 
-    setValue(transformationProcessor: ITransformationProcessor, value: TValue | undefined, changed: boolean | undefined = undefined): void {
-        if (changed === undefined) {
-            changed = deepEquals(this.value, value, true);
+    setValue(transformationProcessor: ITransformationProcessor, value: TValue | undefined, hasChanged: boolean | undefined = undefined): void {
+        if (value === undefined){
+            transformationProcessor.setProcessed(this);
+            if (hasChanged === true){
+                if (this.transformation!==undefined){
+                    this.transformation.setSuccessorsDirty(transformationProcessor);
+                }
+            }
+            return;
         }
-        if (changed === false) {
+        if (hasChanged === undefined) {
+            hasChanged = deepEquals(this.value, value, true);
+        }
+        if (hasChanged === false) {
             return;
         } else {
             this.stateVersion = transformationProcessor.nextStateVersion;
             this.value = value;
             transformationProcessor.setProcessed(this);
+            if (this.transformation!==undefined){
+                this.transformation.setSuccessorsDirty(transformationProcessor);
+            }
         }
     }
 
     setTransformation<TSource extends TStateValueObject>(
         source: TSource,
         fnProcess: FnTransformationProcess<TValue, TSource> //(source: TSource, target: IStateValue<TValue>) => (void | TValue | Promise<void> | Promise<TValue>)
-    ) {
+    ): void {
+        if (this.transformation !== undefined) {
+            this.transformation.unregister();
+            this.transformation = undefined;
+        }
         this.transformation = new StateValueTransformation<TValue, TSource>(source, this, fnProcess);
         this.isDirty = true;
-        this.transformation.setLevel();
-    }
-}
-
-export class StateValueTransformation<TValue, TSource extends TStateValueObject>{
-    target: StateValue<TValue>;
-    source: TSource;
-    fnProcess: FnTransformationProcess<TValue, TSource>;
-
-    constructor(
-        source: TSource,
-        target: StateValue<TValue>,
-        fnProcess: FnTransformationProcess<TValue, TSource>
-    ) {
-        this.target = target;
-        this.source = source;
-        this.fnProcess = fnProcess;
+        this.transformation.register(true);
     }
 
-    process(transformationProcessor: ITransformationProcessor): FnTransformationResult<TValue> {
-        return this.fnProcess(this.source, this.target, transformationProcessor);
+    getSuccessors(): IStateValue<any>[]{
+        return this.arrSucc;
     }
 
-    setChildrenDirty(transformationProcessor: ITransformationProcessor) {
-        for (const key in this.source) {
-            if (Object.prototype.hasOwnProperty.call(this.source, key)) {
-                const child = this.source[key] as IStateValue;
-                transformationProcessor.setDirty(child);
-            }
-        }
+    addSuccessor(target: StateValue<any>): void {
+        this.arrSucc = this.arrSucc.concat([target]);
     }
 
-    setLevel() {
-        let level=1;
-        for (const key in this.source) {
-            if (Object.prototype.hasOwnProperty.call(this.source, key)) {
-                const child = this.source[key] as IStateValue;
-                child.level
-            }
-        }
-        this.target.level=1;
-        throw new Error("Method not implemented.");
+    removeSuccessor(target: StateValue<any>): void {
+        this.arrSucc = this.arrSucc.filter((item) => (item !== target));
     }
-
 }
