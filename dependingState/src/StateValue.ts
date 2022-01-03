@@ -41,20 +41,30 @@ export class StateValue<TValue = any> implements IStateValue<TValue>{
         if (this.transformation === undefined) {
             return Promise.resolve();
         } else {
-            var pProcess = this.transformation.process(transformationProcessor);
-            return pProcess.then((result) => {
-                if (result === undefined) {
-                    return;
-                }
-                if (result instanceof HasChanged) {
-                    this.setHasChanged(result.hasChanged, transformationProcessor);
-                    return;
-                }
-                {
-                    this.setValue(transformationProcessor, result as TValue, undefined);
-                    return;
-                }
-            });
+            var result = this.transformation.process(transformationProcessor);
+            if (result === undefined) {
+                return Promise.resolve();
+            }
+            if (result instanceof HasChanged) {
+                this.setHasChanged(result.hasChanged, transformationProcessor);
+                return Promise.resolve();
+            }
+            if (typeof (result as any).then === "function") {
+                return (result as Promise<void | TValue>).then(
+                    (value) => {
+                        if (value === undefined) {
+                            //
+                        } else {
+                            this.setValue(transformationProcessor, value, undefined);
+                        }
+                        return;
+                    }
+                )
+            }
+            {
+                this.setValue(transformationProcessor, result as unknown as TValue, undefined);
+                return Promise.resolve();
+            }
         }
     }
 

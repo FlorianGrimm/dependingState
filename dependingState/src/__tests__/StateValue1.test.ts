@@ -28,6 +28,18 @@ test('StateValue1', () => {
         ) {
         target.setValue(transformationProcessor, { b: a1.value!.a + a2.value!.a });
     }
+    stateB3.setTransformation<{ a1: IStateValue<StateA>, a2: IStateValue<StateA> }>({
+        a1: stateA1,
+        a2: stateA2,
+    }, calcB1);
+    stateA1.setValue(transformationProcessor, { a: 1 }, true);
+    stateA2.setValue(transformationProcessor, { a: 2 }, true);
+
+    stateB3.isDirty=true;
+    stateB3.execute(transformationProcessor);
+
+    expect(stateB3.isDirty).toBe(false);
+
     // function calcB2(a1: IStateValue<StateA>, a2: IStateValue<StateA>, b: IStateValue<StateB>) {
     //     let changed = false;
     //     changed = testAndSet(a1.value!.a + a2.value!.a, b.value!.b, (v) => b.value!.b = v, changed);
