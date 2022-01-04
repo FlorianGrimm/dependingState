@@ -41,7 +41,6 @@ export default class AppView extends React.Component<UIProps<AppViewProps>, AppV
         const aViewProps = viewProps.stateRoot.states.a.getViewProps();
         return (<div>
             App
-            <CompAView {...aViewProps}></CompAView>
             {
                 React.createElement(CompAView, aViewProps)
             }

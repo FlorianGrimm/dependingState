@@ -157,19 +157,20 @@ export type TStateValueObject = { [TKey: string]: IStateValue<any> };
 //export type TStateValueObject2<TObject, TKey extends keyof TObject> = { [TKey: string]: TObject[TKey] extends IStateValue ? TObject[TKey] : never };
 
 export interface IStateValue<TValue = any> {
-    level: number;
-    isDirty: boolean;
+    identity: number;
     value: TValue;
+    isDirty: boolean;
+    level: number;
 
     execute(transformationProcessor: ITransformationProcessor): Promise<void>;
     setValue(transformationProcessor: ITransformationProcessor, value: TValue | undefined, hasChanged?: (boolean | undefined) /*= undefined*/): void;
-    setTransformation<TSource extends TStateValueObject>(
-        source: TSource,
-        fnProcess: FnTransformationProcess<TValue, TSource>
-        ):void;
+    // setTransformation<TSource extends TStateValueObject>(
+    //     source: TSource,
+    //     fnProcess: FnTransformationProcess<TValue, TSource>
+    //     ):void;
 
-    addSuccessor(target: IStateValue<any>):void;
-    removeSuccessor(target: IStateValue<any>):void;
+    addSuccessor(successor: IStateValue<any>):void;
+    removeSuccessor(successor: IStateValue<any>):void;
     getSuccessors(): IStateValue<any>[];
 }
 
@@ -205,6 +206,20 @@ export interface ITransformationProcessor {
     setProcessed(child: IStateValue<any>): void;
     setDirty(child: IStateValue<any>): void;
 }
+
+export interface IStateValueTransformation<TValue,TSource> {
+        process(transformationProcessor: ITransformationProcessor): Promise<TValue | void>;
+        setSuccessorsDirty(transformationProcessor: ITransformationProcessor):void;
+
+        register(register?: boolean): boolean;
+        unregister(): void;
+}
+
+
+export type StateArrayChanged<TItem> = {
+    changed: IStateValue<TItem>[];
+};
+
 /*
     export type Action<
         Payload = undefined,
