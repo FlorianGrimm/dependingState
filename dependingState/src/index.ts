@@ -2,17 +2,19 @@ export type {
     DSEventName,
     DSEvent,
     DSEventHandlerResult,
-    DSEventHandler ,
+    DSEventHandler,
+    DSPayloadEntity,    
     DSEventValue,
     DSEventAttach,
     DSEventDetach,
-    DSUnlisten ,
+    DSDirtyHandler,
+    DSUnlisten,
     DSUIViewState,
     DSUIViewStateBase,
     DSUIProps,
 } from './types';
 
 export { DSStoreManager } from "./DSStoreManager";
-export { DSValueStore } from './DSValueStore';
+export { DSValueStore, DSObjectStore, DSArrayStore, DSMapStore } from './DSValueStore';
 export { DSStateValue } from './DSStateValue';
 export { DSUIStateValue } from './DSUIStateValue';

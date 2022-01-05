@@ -3,15 +3,18 @@ import type {
 } from "./DSValueStore";
 
 import { DSUIStateValue } from "./DSUIStateValue";
+import { DSPayloadEntity } from "./types";
 
 export class DSStateValue<Value>{
     _value: Value;
+    isDirty: boolean;
     store: DSValueStore<Value> | undefined;
     stateVersion: number;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
     constructor(value: Value) {
         this._value = value;
+        this.isDirty = false;
         this.store = undefined;
         this.stateVersion = 1;
         this.uiStateValue = undefined;
@@ -27,13 +30,18 @@ export class DSStateValue<Value>{
     }
 
     public valueChanged() {
+        this.isDirty = false;
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
-            this.store.emit<DSStateValue<Value>>({ storeName: this.store.storeName, event: "value", payload: this });
+            this.store.emitDirty(this);
+            this.store.emitEvent<DSPayloadEntity<Value>>({ storeName: this.store.storeName, event: "value", payload: {entity: this} });
         }
-        // delay or not??
-        if (this.uiStateValue !== undefined){
-            this.uiStateValue.triggerUIUpdate();
+        if (this.uiStateValue !== undefined) {
+            if (this.store === undefined) {
+                this.uiStateValue.triggerUIUpdate();
+            } else {
+                this.store.emitUIUpdate(this.uiStateValue);
+            }
         }
     }
 

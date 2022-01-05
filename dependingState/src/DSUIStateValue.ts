@@ -2,7 +2,7 @@ import type React from 'react';
 import type { DSStateValue } from './DSStateValue';
 import type { DSUIProps } from './types';
 
-export class DSUIStateValue<Value>{
+export class DSUIStateValue<Value=any>{
     _ViewProps: undefined | DSUIProps<Value>;
     component: undefined | (React.Component<Value>) | (React.Component<Value>[]);
     stateValue: DSStateValue<Value>;

@@ -15,10 +15,12 @@ export type DSEvent<Payload = any, EventType extends string = string> =
             payload: Payload;
         }
     );
-export type DSEventAttach<Payload = any> = DSEvent<DSStateValue<Payload>, "attach">;
-export type DSEventDetach<Payload = any> = DSEvent<DSStateValue<Payload>, "detach">;
-export type DSEventValue<Payload = any> = DSEvent<DSStateValue<Payload>, "value">;
+export type DSPayloadEntity<Entity = any> = { entity: DSStateValue<Entity>, key?: any, index?:number };
+export type DSEventAttach<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "attach">;
+export type DSEventDetach<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "detach">;
+export type DSEventValue<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "value">;
 
+export type DSDirtyHandler<Value = any> = (stateValue: DSStateValue<Value>) => void;
 export type DSEventHandlerResult = (Promise<any | void> | void);
 export type DSEventHandler<Payload = any, EventType extends string = string> = (event: DSEvent<Payload, EventType>) => DSEventHandlerResult;
 export type DSUnlisten = (() => void);
