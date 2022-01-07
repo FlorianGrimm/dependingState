@@ -12,7 +12,7 @@ import {
 } from './DSStateValue';
 import { DSEventName } from '.';
 import { DSUIStateValue } from './DSUIStateValue';
-
+//, StoreName extends string = string
 export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>>{
     storeName: string;
     storeManager: DSStoreManager | undefined;

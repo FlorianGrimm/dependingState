@@ -39,3 +39,91 @@ export type DSUIProps<Value = any> = {
 } & {
     key?:string|number;
 };
+
+
+/*
+import type React from 'react';
+import type { DSStateValue } from './DSStateValue';
+
+export type DSEventName<EventType extends string = string> = {
+    event: EventType;
+};
+
+export type DSEventNameStore<EventType extends string = string, StoreName extends string = string> = {
+    event: EventType;
+    storeName: StoreName;
+};
+
+export type DSEventNameType<EventType extends string = string, StoreName extends string | never = never>
+    = DSEventName<EventType>
+    | DSEventNameStore<EventType, StoreName>
+    ;
+
+export type DSEvent<Payload = any, EventType extends string = string, StoreName extends string | never = never> =
+    DSEventNameStore<EventType, StoreName> &
+    (
+        Payload extends never
+        ? {}
+        : {
+            payload: Payload;
+        }
+    );
+
+export type DSEventType<Payload = any, EventType extends string = string, StoreName extends string | never = never> =
+    DSEventNameType<EventType, StoreName> &
+    (
+        Payload extends never
+        ? {}
+        : {
+            payload: Payload;
+        }
+    );
+
+export type DSPayloadEntity<
+    Entity = any,
+    Key extends any | never = never,
+    Index extends number | never = never> = (
+        [Entity] extends [DSStateValue<Entity>]
+        ? {
+            entity: Entity;
+        } : {
+            entity: DSStateValue<Entity>;
+        })
+    & ([Key] extends [never]
+        ? {}
+        : {
+            key: Key;
+        }
+    )
+    & ([Index] extends [never]
+        ? {}
+        : {
+            index: number;
+        }
+    )
+    ;
+
+export type DSEventAttach<Entity = any, Key extends any | never = never, Index extends number | never = never> = DSEvent<DSPayloadEntity<Entity>, "attach">;
+export type DSEventDetach<Entity = any, Key extends any | never = never, Index extends number | never = never> = DSEvent<DSPayloadEntity<Entity>, "detach">;
+export type DSEventValue<Entity = any, Key extends any | never = never, Index extends number | never = never> = DSEvent<DSPayloadEntity<Entity>, "value">;
+
+export type DSDirtyHandler<Value = any> = (stateValue: DSStateValue<Value>) => void;
+export type DSEventHandlerResult = (Promise<any | void> | void);
+export type DSEventHandler<Payload = any, EventType extends string = string> = (event: DSEvent<Payload, EventType>) => DSEventHandlerResult;
+export type DSEventHandlerByEvent<Event extends DSEvent> = (event: Event) => DSEventHandlerResult;
+
+export type DSUnlisten = (() => void);
+
+export type DSUIViewState<T = any> = T & DSUIViewStateBase;
+
+export type DSUIViewStateBase = {
+    stateVersion: number;
+};
+
+export type DSUIProps<Value = any> = {
+    getViewProps: () => Value;
+    wireStateVersion<Props extends Value = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
+    unwireStateVersion<Props extends Value = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
+    getStateVersion(): number;
+};
+*/
