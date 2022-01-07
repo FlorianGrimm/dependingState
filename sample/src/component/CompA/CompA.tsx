@@ -1,4 +1,4 @@
-import { DSUIProps, DSUIViewStateBase } from "dependingState";
+import { DSEntityStore, DSStateValue, DSUIProps, DSUIViewStateBase } from "dependingState";
 import React from "react";
 import { getNotNice } from "../../dirtyharry";
 import { Project } from "../../types";
@@ -11,17 +11,31 @@ type CompAViewState = {
 & DSUIViewStateBase
 ;
 
-/*
-export class CompAUIState extends StateBase<CompAUIState> {
-    static getInitalState(): CompAUIState {
-        return new CompAUIState();
-    }
 
-    constructor() {
-        super();
+export class CompAUIState extends DSStateValue<CompAUIState> {
+    ProjectId:string;
+    ProjectName:string;
+    Magic:string;
+    constructor(project:Project) {
+        super(null!);
+        this.value=this;
+        this.ProjectId=project.ProjectId;
+        this.ProjectName=project.ProjectName;
+        this.Magic="";
+    }
+    
+    public get key() : string {
+        return this.ProjectId;
     }
 }
-*/
+
+export class CompAUIStore extends DSEntityStore<string, CompAUIState, CompAUIState>{
+    constructor(storeName: string) {
+        super(storeName, (item:CompAUIState)=>item, (item:CompAUIState)=>item.ProjectId);
+    }
+}
+
+
 export default class CompAView extends React.Component<CompAViewProps, CompAViewState>{
     constructor(props: CompAViewProps) {
         super(props);
@@ -38,7 +52,7 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
 
     handleClick(){
         const viewProps = this.props.getViewProps();
-        getNotNice().emitEvent({storeName:"project", event:"hugo", payload: viewProps});
+        getNotNice().emitEvent({storeName:"compAUI", event:"hugo", payload: viewProps});
 
         /*
         const prj = getNotNice().projectStore.get(viewProps.ProjectId);

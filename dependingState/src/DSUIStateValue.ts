@@ -55,12 +55,22 @@ export class DSUIStateValue<Value=any>{
                 return this.stateValue.stateVersion;
             });
             //
-            this._ViewProps = {
-                getViewProps: fnGetViewProps,
-                wireStateVersion: fnWireStateVersion,
-                unwireStateVersion: fnUnwireStateVersion,
-                getStateVersion: fnGetStateVersion,
-            };
+            if ((typeof (this.stateValue.value as any).key == "string") ||(typeof (this.stateValue.value as any).key == "number")){
+                this._ViewProps = {
+                    getViewProps: fnGetViewProps,
+                    wireStateVersion: fnWireStateVersion,
+                    unwireStateVersion: fnUnwireStateVersion,
+                    getStateVersion: fnGetStateVersion,
+                    key:(this.stateValue.value as any).key
+                };
+            } else {
+                this._ViewProps = {
+                    getViewProps: fnGetViewProps,
+                    wireStateVersion: fnWireStateVersion,
+                    unwireStateVersion: fnUnwireStateVersion,
+                    getStateVersion: fnGetStateVersion,
+                };
+            }
         }
         return this._ViewProps!;
     }
@@ -79,9 +89,13 @@ export class DSUIStateValue<Value=any>{
                 } else if (Array.isArray(this.component)) {
                     for (const component of this.component) {
                         component.setState({ stateVersion: stateVersion });
+
+                        console.log("triggerUIUpdate", (component as any).constructor.name, stateVersion);
                     }
                 } else {
                     this.component.setState({ stateVersion: stateVersion });
+                    
+                    console.log("triggerUIUpdate", (this.component as any).constructor.name, stateVersion);
                 }
             }
         }
