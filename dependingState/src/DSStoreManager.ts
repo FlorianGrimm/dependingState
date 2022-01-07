@@ -41,7 +41,7 @@ export class DSStoreManager {
     public emitEvent(event: DSEvent): DSEventHandlerResult {
         this.events.push(event);
         if (this.isProcessing === 0) {
-            const p = this.processEvents();
+            const p = this.process();
             if (p && typeof p.then === "function") {
                 return p;
             }
@@ -49,7 +49,7 @@ export class DSStoreManager {
         return;
     }
 
-    public async processEvents(fn?: () => DSEventHandlerResult) {
+    public async process(fn?: () => DSEventHandlerResult) {
         // if (this.isProcessing === 0) {
         //     this.stateVersion = (this.stateVersion & (Number.MAX_SAFE_INTEGER - 1)) + 2;
         //     this.nextStateVersion = this.stateVersion + 1;

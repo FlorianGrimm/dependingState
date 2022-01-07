@@ -6,7 +6,7 @@ import { DSUIStateValue } from "./DSUIStateValue";
 import { DSPayloadEntity } from "./types";
 
 export class DSStateValue<Value>{
-    _value: Value;
+    private _value: Value;
     isDirty: boolean;
     store: DSValueStore<Value> | undefined;
     stateVersion: number;

@@ -68,7 +68,7 @@ test('DSArrayStore process explicit', async () => {
         actA = dsEvent.payload.entity.value.a;
     });
 
-    storeManager.processEvents(() => {
+    storeManager.process(() => {
         valueA.value = { a: 2 };
         expect(storeManager.events.length).toBe(1);
 
@@ -151,7 +151,7 @@ test('DSArrayStore process promise', async () => {
         return result;
     });
 
-    await storeManager.processEvents(() => {
+    await storeManager.process(() => {
         valueA.value = { a: 1 };
         valueB.value = { b: 2 };
     });

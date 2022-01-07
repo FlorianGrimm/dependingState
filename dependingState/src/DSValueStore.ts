@@ -110,7 +110,7 @@ export class DSValueStore<Value = any>{
                 if (r === undefined) {
                     r = callback(event);
                 } else {
-                    r = r.catch((reason)=>{
+                    r = r.catch((reason) => {
                         debugger;
                         console.error(reason);
                     }).then(
@@ -119,10 +119,10 @@ export class DSValueStore<Value = any>{
                 }
             }
         }
-        if (r==undefined){
+        if (r == undefined) {
             return;
         } else {
-            return r.catch((reason)=>{
+            return r.catch((reason) => {
                 debugger;
                 console.error(reason);
             });
@@ -190,6 +190,10 @@ export class DSMapStore<Value = any, Key = any> extends DSValueStore<Value> {
         return result;
     }
 
+    get(key: Key): (DSStateValue<Value> | undefined) {
+        return this.entities.get(key);
+    }
+
     attach(key: Key, stateValue: DSStateValue<Value>): (DSStateValue<Value> | undefined) {
         if (stateValue.store === this) {
             return stateValue;
@@ -227,5 +231,12 @@ export class DSMapStore<Value = any, Key = any> extends DSValueStore<Value> {
             oldValue.store = undefined;
             this.emitEvent<DSPayloadEntity<Value>>({ storeName: this.storeName, event: "detach", payload: { entity: oldValue, key: key } });
         }
+    }
+}
+
+export class DSEntityStore<Value = any, Key = any> extends DSMapStore<Value, Key>{
+    constructor(storeName: string) {
+        super(storeName);
+
     }
 }
