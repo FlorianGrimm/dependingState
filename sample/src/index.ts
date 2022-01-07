@@ -30,7 +30,7 @@ function main() {
     (window as any).appStoreManager = appStoreManager;
 
     appUIStore.getProjects = (() => {
-        return Array.from(compAUIStore.entities.values()) as unknown[] as CompAUIState[];
+        return (Array.from(compAUIStore.entities.values()) as unknown[] as CompAUIState[]).slice(0,100);
     });
 
     compAUIStore.listenEvent<DSPayloadEntity<any>, "attach">({ storeName: "compAUI", event: "attach" }, (e: DSEventAttach<any>) => {

@@ -9,6 +9,7 @@ export class DSStoreManager {
     events: DSEvent[];
     isProcessing: number;
     arrUIStateValue: DSUIStateValue[];
+    lastPromise: Promise<any | void> | undefined;
 
     constructor() {
         //this.stateVersion = 0;
@@ -17,6 +18,7 @@ export class DSStoreManager {
         this.events = [];
         this.isProcessing = 0;
         this.arrUIStateValue = [];
+        this.lastPromise = undefined;
     }
 
     public getNextStateVersion(stateVersion: number): number {
@@ -81,17 +83,17 @@ export class DSStoreManager {
                         }
                     }
                 }
-                
+
                 for (const valueStore of this.valueStores.slice()) {
                     valueStore.processDirty();
                 }
-                
+
                 this.processUIUpdates();
                 if (result !== undefined) {
                     await Promise.allSettled(result);
-                }                
+                }
             }
-            
+
         } finally {
             this.isProcessing--;
         }
