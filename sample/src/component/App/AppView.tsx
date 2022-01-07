@@ -24,18 +24,23 @@ export class AppUIState extends DSStateValue<AppUIState> {
         this.language = "en";
     }
 
+    getOneProject(){
+        // pfusch
+        return Array.from((this.store!.storeManager! as AppStoreManager).projectStore.entities.values())[0];
+    }
 }
 
 export class AppUIStore extends DSObjectStore<AppUIState, AppUIState> {
     constructor(storeName: string, value: AppUIState) {
         super(storeName, value);
     }
-    getProject() {
-        //console.log("2");
-        // this.stateValue.value.hugo1();
-        //this.stateValue.hugo1();
-        return Array.from((this.storeManager! as AppStoreManager).projectStore.entities.values())[0];
-    }
+
+    // getProject() {
+    //     //console.log("2");
+    //     // this.stateValue.value.hugo1();
+    //     //this.stateValue.hugo1();
+    //     return Array.from((this.storeManager! as AppStoreManager).projectStore.entities.values())[0];
+    // }
 }
 
 type AppViewProps = {
@@ -62,20 +67,13 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
 
     render(): React.ReactNode {
         const viewProps = this.props.getViewProps();
-        // const aViewProps = viewProps.stateRoot.states.a.getViewProps();
-        // const x=()=>{
-        //     setTimeout(()=>{this.setState({stateVersion:this.state.stateVersion+1});},100);
-        // };
-        // x();
-        const aViewProps = { hugo: "xx" };
+        const aViewProps = viewProps.getOneProject().getUIStateValue().getViewProps();
         return (<div>
             App
             <div>
-                language:{viewProps.language}
+                language:{viewProps.language} - StateVersion: { this.props.getStateVersion() }
             </div>
-            {
-                React.createElement(CompAView, aViewProps)
-            }
-        </div>);
+            { React.createElement(CompAView, aViewProps) }
+      </div>);
     }
 }

@@ -22,7 +22,7 @@ export type DSEventValue<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "value
 
 export type DSDirtyHandler<Value = any> = (stateValue: DSStateValue<Value>) => void;
 export type DSEventHandlerResult = (Promise<any | void> | void);
-export type DSEventHandler<Payload = any, EventType extends string = string> = (event: DSEvent<Payload, EventType>) => DSEventHandlerResult;
+export type DSEventHandler<Payload = any, EventType extends string = any> = (event: DSEvent<Payload, EventType>) => DSEventHandlerResult;
 export type DSUnlisten = (() => void);
 
 export type DSUIViewState<T = any> = T & DSUIViewStateBase;
