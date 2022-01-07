@@ -13,7 +13,7 @@ import {
 import { DSEventName } from '.';
 import { DSUIStateValue } from './DSUIStateValue';
 
-export class DSValueStore<Value = any>{
+export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>>{
     storeName: string;
     storeManager: DSStoreManager | undefined;
     mapEventHandlers: Map<string, DSEventHandler[]>;
@@ -37,7 +37,7 @@ export class DSValueStore<Value = any>{
         }
     }
 
-    emitDirty(stateValue: DSStateValue<Value>) {
+    emitDirty(stateValue: StateValue) {
         for (const cb of this.arrDirtyHandler) {
             cb(stateValue);
         }
@@ -130,7 +130,7 @@ export class DSValueStore<Value = any>{
     }
 }
 
-export class DSObjectStore<Value = any> extends DSValueStore<Value> {
+export class DSObjectStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
     stateValue: DSStateValue<Value>
     constructor(storeName: string, value: Value) {
         super(storeName);
@@ -139,7 +139,7 @@ export class DSObjectStore<Value = any> extends DSValueStore<Value> {
     }
 }
 
-export class DSArrayStore<Value = any> extends DSValueStore<Value> {
+export class DSArrayStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
     entities: DSStateValue<Value>[];
     constructor(storeName: string) {
         super(storeName);
@@ -177,7 +177,7 @@ export class DSArrayStore<Value = any> extends DSValueStore<Value> {
     }
 }
 
-export class DSMapStore<Value = any, Key = any> extends DSValueStore<Value> {
+export class DSMapStore<Key = any, Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
     entities: Map<Key, DSStateValue<Value>>;
     constructor(storeName: string) {
         super(storeName);
@@ -234,9 +234,24 @@ export class DSMapStore<Value = any, Key = any> extends DSValueStore<Value> {
     }
 }
 
-export class DSEntityStore<Value = any, Key = any> extends DSMapStore<Value, Key>{
-    constructor(storeName: string) {
+export class DSEntityStore<Key = any, Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSMapStore<Key, Value, StateValue>{
+    constructor(
+        storeName: string,
+        public fnCreate: (Value: Value) => StateValue,
+        public fnGetKey: (value: Value) => Key
+    ) {
         super(storeName);
-
     }
+
+    public set(value: Value): StateValue {
+        const result = this.fnCreate(value);
+        const key = this.fnGetKey(value);
+        this.attach(key, result);
+        return result;
+    }
+
+    public setMany(values: Value[]) {
+        values.forEach(this.set, this);
+    }
+
 }
