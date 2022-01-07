@@ -3,7 +3,7 @@ export type {
     DSEvent,
     DSEventHandlerResult,
     DSEventHandler,
-    DSPayloadEntity,    
+    DSPayloadEntity,
     DSEventValue,
     DSEventAttach,
     DSEventDetach,
@@ -15,6 +15,6 @@ export type {
 } from './types';
 
 export { DSStoreManager } from "./DSStoreManager";
-export { DSValueStore, DSObjectStore, DSArrayStore, DSMapStore } from './DSValueStore';
+export { DSValueStore, DSObjectStore, DSArrayStore, DSMapStore, DSEntityStore } from './DSValueStore';
 export { DSStateValue } from './DSStateValue';
 export { DSUIStateValue } from './DSUIStateValue';

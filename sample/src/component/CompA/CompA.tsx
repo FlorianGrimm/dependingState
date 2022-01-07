@@ -1,10 +1,15 @@
-import { UIProps, StateBase, UIViewState, UIViewStateVersion } from "dependingState";
+import { DSUIViewStateBase } from "dependingState";
 import React from "react";
 
-type CompAViewProps = {};
+type CompAViewProps = {
+    hugo:string;
+};
 
-type CompAViewState = UIViewState<{}>;
+type CompAViewState = {}
+// & DSUIViewStateBase
+;
 
+/*
 export class CompAUIState extends StateBase<CompAUIState> {
     static getInitalState(): CompAUIState {
         return new CompAUIState();
@@ -14,22 +19,25 @@ export class CompAUIState extends StateBase<CompAUIState> {
         super();
     }
 }
-
-export default class CompAView extends React.Component<UIProps<CompAViewProps>, CompAViewState>{
-    constructor(props: UIProps<CompAViewProps>) {
+*/
+export default class CompAView extends React.Component<CompAViewProps, CompAViewState>{
+    constructor(props: CompAViewProps) {
         super(props);
-        this.state = {
-            stateVersion: this.props.getStateVersion()
-        };
-        this.props.wireStateVersion(this);
+        // this.state = {
+        //     stateVersion: this.props.getStateVersion()
+        // };
+        // this.props.wireStateVersion(this);
     }
-    componentWillUnmount() {
-        this.props.unwireStateVersion(this);
-    }
+    // componentWillUnmount() {
+    //     this.props.unwireStateVersion(this);
+    // }
     render(): React.ReactNode {
-        const viewProps = this.props.getViewProps();
+        // const viewProps = this.props.getViewProps();
+        // return (<div>
+        //     CompA - StateVersion: { this.props.getStateVersion() }
+        // </div>);
         return (<div>
-            CompA - StateVersion: { this.props.getStateVersion() }
+            CompA - hugo: { this.props.hugo }
         </div>);
     }
 }

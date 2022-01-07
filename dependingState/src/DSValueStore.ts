@@ -131,10 +131,11 @@ export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = 
 }
 
 export class DSObjectStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
-    stateValue: DSStateValue<Value>
-    constructor(storeName: string, value: Value) {
+    stateValue: StateValue
+    constructor(storeName: string, stateValue: StateValue) {
         super(storeName);
-        this.stateValue = new DSStateValue<Value>(value);
+        this.stateValue = stateValue;
+        // tbd test
         this.stateValue.store = this;
     }
 }

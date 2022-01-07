@@ -1,12 +1,13 @@
 import type React from 'react';
 import type { DSStateValue } from './DSStateValue';
-import type { DSUIProps } from './types';
+import type { DSUIProps, DSUIViewStateBase } from './types';
 
 export class DSUIStateValue<Value=any>{
     _ViewProps: undefined | DSUIProps<Value>;
     component: undefined | (React.Component<Value>) | (React.Component<Value>[]);
     stateValue: DSStateValue<Value>;
     viewStateVersion: number;
+    
     constructor(stateValue: DSStateValue<Value>) {
         this.component = undefined;
         this.stateValue = stateValue;
@@ -18,8 +19,8 @@ export class DSUIStateValue<Value=any>{
             const fnGetViewProps: (() => Value) = (() => {
                 return this.stateValue.value;
             });
-            const fnWireStateVersion: ((component: React.Component<Value>) => void) = ((
-                component: React.Component<Value>
+            const fnWireStateVersion: ((component: React.Component<any>) => void) = ((
+                component: React.Component<any>
             ) => {
                 if (this.component === undefined) {
                     this.component = component;
@@ -29,8 +30,8 @@ export class DSUIStateValue<Value=any>{
                     this.component = [this.component as React.Component<Value>, component];
                 }
             });
-            const fnUnwireStateVersion: ((component: React.Component<Value>) => void) = ((
-                component: React.Component<Value>
+            const fnUnwireStateVersion: ((component: React.Component<any>) => void) = ((
+                component: React.Component<any>
             ) => {
                 if (this.component === undefined) {
                     // done
@@ -61,7 +62,7 @@ export class DSUIStateValue<Value=any>{
                 getStateVersion: fnGetStateVersion,
             };
         }
-        return this._ViewProps;
+        return this._ViewProps!;
     }
 
     triggerUIUpdate() {

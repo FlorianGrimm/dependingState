@@ -33,7 +33,7 @@ export type DSUIViewStateBase = {
 
 export type DSUIProps<Value = any> = {
     getViewProps: () => Value;
-    wireStateVersion<Props extends Value = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
-    unwireStateVersion<Props extends Value = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
+    wireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
+    unwireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
     getStateVersion(): number;
 };

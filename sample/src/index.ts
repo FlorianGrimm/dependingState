@@ -2,27 +2,27 @@ import React from 'react';
 import ReactDom from 'react-dom';
 
 import {
-    IStateTransformator
+    DSEventValue
 } from 'dependingState';
 
-import {
-    AppRootState, getInitalState
-} from './AppRootState';
-
-import AppView from './component/App/AppView';
+import AppView, { AppUIState, AppUIStore } from './component/App/AppView';
+import { AppStoreManager } from './store/AppStoreManager';
+import { ProjectStore } from './store/ProjectStore';
 
 function main() {
     console.trace("main()");
 
-    // const initalState = getInitalState();
-    // const appState = new AppRootState(initalState);
-    // const appProps = {};
-    // const u = appState.states["uiRoot"];
+    const projectStore=new ProjectStore("project");
+    const appUIStore=new AppUIStore("AppUI", new AppUIState());
+    const appStoreManager=new AppStoreManager(
+        projectStore, 
+        appUIStore);
 
-    const appState = new AppRootState(getInitalState);
+    appStoreManager.projectStore.set({ProjectId:"1", ProjectName:"one"});
+   
     const rootElement = React.createElement(
         AppView,
-        appState.states.uiRoot.getViewProps()
+        appStoreManager.appUIStore.stateValue.getUIStateValue().getViewProps()
     );
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {
@@ -30,6 +30,11 @@ function main() {
     } else {
         console.error("'appRoot' not defined.");
     }
+
+    setTimeout(()=>{
+        appUIStore.stateValue.language = "HALLO";
+        appUIStore.stateValue.valueChanged();
+    }, 1000);
 }
 try {
     main();
