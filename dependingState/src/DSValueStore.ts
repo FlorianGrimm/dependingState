@@ -69,7 +69,11 @@ export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = 
         }
     }
 
-    emitEvent<Payload = any, EventType extends string = string>(event: DSEvent<Payload, EventType>) {
+    emitEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEvent<Payload, EventType, StoreName>) {
         if (this.storeManager === undefined) {
             this.processEvent(event);
         } else {
@@ -77,7 +81,11 @@ export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = 
         }
     }
 
-    listenEvent<Payload = any, EventType extends string = string>(event: DSEventName<EventType>, callback: DSEventHandler<Payload, EventType>): DSUnlisten {
+    listenEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten {
         const key = `${event.storeName}/${event.event}`;
         let arrEventHandlers = this.mapEventHandlers.get(key);
         if (arrEventHandlers === undefined) {
@@ -88,7 +96,11 @@ export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = 
         return this.unlistenEvent.bind(this, { storeName: event.storeName, event: event.event }, callback as DSEventHandler);
     }
 
-    unlistenEvent<Payload = any, EventType extends string = string>(event: DSEventName<EventType>, callback: DSEventHandler<Payload, EventType>): void {
+    unlistenEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): void {
         const key = `${event.storeName}/${event.event}`;
         let arrEventHandlers = this.mapEventHandlers.get(key);
         if (arrEventHandlers === undefined) {
@@ -98,7 +110,11 @@ export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = 
         }
     }
 
-    processEvent<Payload = any, EventType extends string = string>(event: DSEvent<Payload, EventType>): DSEventHandlerResult {
+    processEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult {
         const key = `${event.storeName}/${event.event}`;
         let r: DSEventHandlerResult;
         let result: undefined | Promise<any>[];
@@ -162,7 +178,15 @@ export class DSArrayStore<Value = any, StateValue extends DSStateValue<Value> = 
         }
         stateValue.store = this;
         this.entities.push(stateValue);
-        this.emitEvent<DSPayloadEntity<Value>>({ storeName: this.storeName, event: "attach", payload: { entity: stateValue, index: this.entities.length - 1 } });
+        this.emitEvent<DSPayloadEntity<Value, never, number>>(
+            {
+                storeName: this.storeName,
+                event: "attach",
+                payload: {
+                    entity: stateValue,
+                    index: this.entities.length - 1
+                }
+            });
         return stateValue;
     }
 

@@ -1,13 +1,27 @@
 import type React from 'react';
 import type { DSStateValue } from './DSStateValue';
 
-export type DSEventName<EventType extends string = string> = {
-    storeName: string;
-    event: EventType;
-};
+export type WrappedDSStateValue<Entity> = [Entity] extends [DSStateValue<infer T>] ? Entity : DSStateValue<Entity>;
+// export type WrappedDSStateValue2<Entity> = Entity extends (DSStateValue<infer T>) ? Entity : DSStateValue<Entity>;
 
-export type DSEvent<Payload = any, EventType extends string = string> =
-    DSEventName<EventType> &
+// export type  x1=WrappedDSStateValue2<boolean>;
+// export type  x2=WrappedDSStateValue2<DSStateValue<boolean>>;
+
+export type DSEventName<
+    EventType extends string = string,
+    StoreName extends string = string
+    > = {
+        storeName: StoreName;
+        event: EventType;
+    };
+
+
+export type DSEvent<
+    Payload = any,
+    EventType extends string = string,
+    StoreName extends string = string
+    > =
+    DSEventName<EventType, StoreName> &
     (
         Payload extends never
         ? {}
@@ -15,14 +29,63 @@ export type DSEvent<Payload = any, EventType extends string = string> =
             payload: Payload;
         }
     );
-export type DSPayloadEntity<Entity = any> = { entity: DSStateValue<Entity>, key?: any, index?:number };
-export type DSEventAttach<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "attach">;
-export type DSEventDetach<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "detach">;
-export type DSEventValue<Entity = any> = DSEvent<DSPayloadEntity<Entity>, "value">;
+
+
+
+// export type DSPayloadEntity<Entity = any> = { entity: DSStateValue<Entity>, key?: any, index?:number };
+export type DSPayloadEntity<
+    Entity = any,
+    Key extends any | never = never,
+    Index extends number | never = never> = (
+        [Entity] extends [DSStateValue<Entity>]
+        ? {
+            entity: Entity;
+        } : {
+            entity: DSStateValue<Entity>;
+        })
+    & ([Key] extends [never]
+        ? {
+            key?: any;
+        }
+        : {
+            key: Key;
+        }
+    )
+    & ([Index] extends [never]
+        ? {
+            index?: number;
+        }
+        : {
+            index: number;
+        }
+    )
+    ;
+
+export type DSEventAttach<
+    Entity = any,
+    Key extends any | never = never,
+    Index extends number | never = never
+    > = DSEvent<DSPayloadEntity<Entity>, "attach">;
+
+export type DSEventDetach<
+    Entity = any,
+    Key extends any | never = never,
+    Index extends number | never = never
+    > = DSEvent<DSPayloadEntity<Entity>, "detach">;
+
+export type DSEventValue<
+    Entity = any,
+    Key extends any | never = never,
+    Index extends number | never = never
+    > = DSEvent<DSPayloadEntity<Entity>, "value">;
 
 export type DSDirtyHandler<Value = any> = (stateValue: DSStateValue<Value>) => void;
 export type DSEventHandlerResult = (Promise<any | void> | void);
-export type DSEventHandler<Payload = any, EventType extends string = any> = (event: DSEvent<Payload, EventType>) => DSEventHandlerResult;
+export type DSEventHandler<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    > = (event: DSEvent<Payload, EventType,StoreName>) => DSEventHandlerResult;
 export type DSUnlisten = (() => void);
 
 export type DSUIViewState<T = any> = T & DSUIViewStateBase;
@@ -37,14 +100,11 @@ export type DSUIProps<Value = any> = {
     unwireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
     getStateVersion(): number;
 } & {
-    key?:string|number;
+    key?: string | number;
 };
 
 
 /*
-import type React from 'react';
-import type { DSStateValue } from './DSStateValue';
-
 export type DSEventName<EventType extends string = string> = {
     event: EventType;
 };
@@ -116,14 +176,5 @@ export type DSUnlisten = (() => void);
 
 export type DSUIViewState<T = any> = T & DSUIViewStateBase;
 
-export type DSUIViewStateBase = {
-    stateVersion: number;
-};
 
-export type DSUIProps<Value = any> = {
-    getViewProps: () => Value;
-    wireStateVersion<Props extends Value = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
-    unwireStateVersion<Props extends Value = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
-    getStateVersion(): number;
-};
 */
