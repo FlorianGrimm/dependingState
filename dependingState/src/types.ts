@@ -1,7 +1,18 @@
 import type React from 'react';
-import type { DSStateValue } from './DSStateValue';
+import type { DSValueStore } from './DSValueStore';
+import type { DSUIStateValue } from './DSUIStateValue';
 
-export type WrappedDSStateValue<Entity> = [Entity] extends [DSStateValue<infer T>] ? Entity : DSStateValue<Entity>;
+export interface IDSStateValue<Value>{
+    isDirty: boolean;
+    store: DSValueStore<Value> | undefined;
+    stateVersion: number;
+    uiStateValue: DSUIStateValue<Value> | undefined;
+    value:Value;
+    valueChanged():void;
+    getUIStateValue(): DSUIStateValue<Value>;
+}
+
+export type WrappedDSStateValue<Entity> = [Entity] extends [IDSStateValue<infer T>] ? Entity : IDSStateValue<Entity>;
 // export type WrappedDSStateValue2<Entity> = Entity extends (DSStateValue<infer T>) ? Entity : DSStateValue<Entity>;
 
 // export type  x1=WrappedDSStateValue2<boolean>;
@@ -37,11 +48,11 @@ export type DSPayloadEntity<
     Entity = any,
     Key extends any | never = never,
     Index extends number | never = never> = (
-        [Entity] extends [DSStateValue<Entity>]
+        [Entity] extends [IDSStateValue<Entity>]
         ? {
             entity: Entity;
         } : {
-            entity: DSStateValue<Entity>;
+            entity: IDSStateValue<Entity>;
         })
     & ([Key] extends [never]
         ? {
@@ -79,7 +90,7 @@ export type DSEventValue<
     Index extends number | never = never
     > = DSEvent<DSPayloadEntity<Entity>, "value">;
 
-export type DSDirtyHandler<Value = any> = (stateValue: DSStateValue<Value>) => void;
+export type DSDirtyHandler<Value = any> = (stateValue: IDSStateValue<Value>) => void;
 export type DSEventHandlerResult = (Promise<any | void> | void);
 export type DSEventHandler<
         Payload = any,

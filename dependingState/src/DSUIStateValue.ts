@@ -1,14 +1,13 @@
 import type React from 'react';
-import type { DSStateValue } from './DSStateValue';
-import type { DSUIProps, DSUIViewStateBase } from './types';
+import type { IDSStateValue, DSUIProps, DSUIViewStateBase } from './types';
 
-export class DSUIStateValue<Value=any>{
+export class DSUIStateValue<Value = any>{
     _ViewProps: undefined | DSUIProps<Value>;
     component: undefined | (React.Component<Value>) | (React.Component<Value>[]);
-    stateValue: DSStateValue<Value>;
+    stateValue: IDSStateValue<Value>;
     viewStateVersion: number;
-    
-    constructor(stateValue: DSStateValue<Value>) {
+
+    constructor(stateValue: IDSStateValue<Value>) {
         this.component = undefined;
         this.stateValue = stateValue;
         this.viewStateVersion = 0;
@@ -55,13 +54,13 @@ export class DSUIStateValue<Value=any>{
                 return this.stateValue.stateVersion;
             });
             //
-            if ((typeof (this.stateValue.value as any).key == "string") ||(typeof (this.stateValue.value as any).key == "number")){
+            if ((typeof (this.stateValue.value as any).key == "string") || (typeof (this.stateValue.value as any).key == "number")) {
                 this._ViewProps = {
                     getViewProps: fnGetViewProps,
                     wireStateVersion: fnWireStateVersion,
                     unwireStateVersion: fnUnwireStateVersion,
                     getStateVersion: fnGetStateVersion,
-                    key:(this.stateValue.value as any).key
+                    key: (this.stateValue.value as any).key
                 };
             } else {
                 this._ViewProps = {
@@ -94,7 +93,7 @@ export class DSUIStateValue<Value=any>{
                     }
                 } else {
                     this.component.setState({ stateVersion: stateVersion });
-                    
+
                     console.log("triggerUIUpdate", (this.component as any).constructor.name, stateVersion);
                 }
             }

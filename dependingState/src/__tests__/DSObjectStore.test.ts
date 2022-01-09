@@ -2,8 +2,8 @@ import {
     DSObjectStore,
     DSStoreManager,
     DSEventValue,
+    stateValue,
 } from "../index";
-import { } from "../types";
 
 type VSA = {
     a: number;
@@ -23,7 +23,7 @@ test('DSObjectStore process implicit', async () => {
     let actA = 1;
 
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSObjectStore<VSA>("a", { a: actA });
+    const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 

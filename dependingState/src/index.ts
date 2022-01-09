@@ -12,9 +12,10 @@ export type {
     DSUIViewState,
     DSUIViewStateBase,
     DSUIProps,
+    IDSStateValue,
 } from './types';
 
 export { DSStoreManager } from "./DSStoreManager";
 export { DSValueStore, DSObjectStore, DSArrayStore, DSMapStore, DSEntityStore } from './DSValueStore';
-export { DSStateValue } from './DSStateValue';
+export { DSStateValue, stateValue } from './DSStateValue';
 export { DSUIStateValue } from './DSUIStateValue';

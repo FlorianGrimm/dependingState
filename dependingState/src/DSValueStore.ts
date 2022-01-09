@@ -8,12 +8,12 @@ import type {
 } from './DSStoreManager';
 
 import {
-    DSStateValue
+    IDSStateValue
 } from './DSStateValue';
 import { DSEventName } from '.';
 import { DSUIStateValue } from './DSUIStateValue';
 //, StoreName extends string = string
-export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>>{
+export class DSValueStore<Value = any, StateValue extends IDSStateValue<Value> = IDSStateValue<Value>>{
     storeName: string;
     storeManager: DSStoreManager | undefined;
     mapEventHandlers: Map<string, DSEventHandler[]>;
@@ -146,7 +146,7 @@ export class DSValueStore<Value = any, StateValue extends DSStateValue<Value> = 
     }
 }
 
-export class DSObjectStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
+export class DSObjectStore<Value = any, StateValue extends IDSStateValue<Value> = IDSStateValue<Value>> extends DSValueStore<Value, StateValue> {
     stateValue: StateValue
     constructor(storeName: string, stateValue: StateValue) {
         super(storeName);
@@ -156,20 +156,20 @@ export class DSObjectStore<Value = any, StateValue extends DSStateValue<Value> =
     }
 }
 
-export class DSArrayStore<Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
-    entities: DSStateValue<Value>[];
+export class DSArrayStore<Value = any, StateValue extends IDSStateValue<Value> = IDSStateValue<Value>> extends DSValueStore<Value, StateValue> {
+    entities: IDSStateValue<Value>[];
     constructor(storeName: string) {
         super(storeName);
         this.entities = [];
     }
 
-    create(value: Value): DSStateValue<Value> {
+    create(value: Value): IDSStateValue<Value> {
         const result = new DSStateValue<Value>(value);
         this.attach(result);
         return result;
     }
 
-    attach(stateValue: DSStateValue<Value>): DSStateValue<Value> {
+    attach(stateValue: IDSStateValue<Value>): IDSStateValue<Value> {
         if (stateValue.store === this) {
             return stateValue;
         }
@@ -190,7 +190,7 @@ export class DSArrayStore<Value = any, StateValue extends DSStateValue<Value> = 
         return stateValue;
     }
 
-    detach(stateValue: DSStateValue<Value>): void {
+    detach(stateValue: IDSStateValue<Value>): void {
         const idx = this.entities.findIndex((item) => item === stateValue);
         if (idx < 0) {
             // do nothing
@@ -202,24 +202,24 @@ export class DSArrayStore<Value = any, StateValue extends DSStateValue<Value> = 
     }
 }
 
-export class DSMapStore<Key = any, Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSValueStore<Value, StateValue> {
-    entities: Map<Key, DSStateValue<Value>>;
+export class DSMapStore<Key = any, Value = any, StateValue extends IDSStateValue<Value> = IDSStateValue<Value>> extends DSValueStore<Value, StateValue> {
+    entities: Map<Key, IDSStateValue<Value>>;
     constructor(storeName: string) {
         super(storeName);
         this.entities = new Map();
     }
 
-    create(key: Key, value: Value): DSStateValue<Value> {
+    create(key: Key, value: Value): IDSStateValue<Value> {
         const result = new DSStateValue<Value>(value);
         this.attach(key, result);
         return result;
     }
 
-    get(key: Key): (DSStateValue<Value> | undefined) {
+    get(key: Key): (IDSStateValue<Value> | undefined) {
         return this.entities.get(key);
     }
 
-    attach(key: Key, stateValue: DSStateValue<Value>): (DSStateValue<Value> | undefined) {
+    attach(key: Key, stateValue: IDSStateValue<Value>): (IDSStateValue<Value> | undefined) {
         if (stateValue.store === this) {
             return stateValue;
         }
@@ -259,7 +259,7 @@ export class DSMapStore<Key = any, Value = any, StateValue extends DSStateValue<
     }
 }
 
-export class DSEntityStore<Key = any, Value = any, StateValue extends DSStateValue<Value> = DSStateValue<Value>> extends DSMapStore<Key, Value, StateValue>{
+export class DSEntityStore<Key = any, Value = any, StateValue extends IDSStateValue<Value> = IDSStateValue<Value>> extends DSMapStore<Key, Value, StateValue>{
     constructor(
         storeName: string,
         public fnCreate: (Value: Value) => StateValue,

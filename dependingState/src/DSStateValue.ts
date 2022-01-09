@@ -2,10 +2,14 @@ import type {
     DSValueStore
 } from "./DSValueStore";
 
+import { 
+    IDSStateValue,
+    DSPayloadEntity
+} from "./types";
 import { DSUIStateValue } from "./DSUIStateValue";
-import { DSPayloadEntity } from "./types";
 
-export class DSStateValue<Value>{
+
+export class DSStateValue<Value> implements IDSStateValue<Value>{
     private _value: Value;
     isDirty: boolean;
     store: DSValueStore<Value> | undefined;
@@ -52,4 +56,8 @@ export class DSStateValue<Value>{
             return this.uiStateValue;
         }
     }
+}
+
+export function stateValue<Value>(value:Value){
+    return new DSStateValue<Value>(value);
 }
