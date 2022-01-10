@@ -4,7 +4,8 @@ import type {
 
 import { 
     IDSStateValue,
-    DSPayloadEntity
+    DSPayloadEntity,
+    IDSValueStore
 } from "./types";
 import { DSUIStateValue } from "./DSUIStateValue";
 
@@ -12,7 +13,7 @@ import { DSUIStateValue } from "./DSUIStateValue";
 export class DSStateValue<Value> implements IDSStateValue<Value>{
     private _value: Value;
     isDirty: boolean;
-    store: DSValueStore<Value> | undefined;
+    store: IDSValueStore<Value> | undefined;
     stateVersion: number;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
@@ -38,7 +39,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitDirty(this);
-            this.store.emitEvent<DSPayloadEntity<Value>>({ storeName: this.store.storeName, event: "value", payload: {entity: this} });
+            this.store.emitEvent<DSPayloadEntity<DSStateValue<Value>>>({ storeName: this.store.storeName, event: "value", payload: {entity: this} });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {

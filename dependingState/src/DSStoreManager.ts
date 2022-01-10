@@ -1,14 +1,19 @@
-import type { DSEvent, DSEventHandlerResult } from "./types";
+import type { 
+    IDSStoreManager,
+    IDSValueStore,
+    DSEvent, 
+    DSEventHandlerResult, 
+    IDSUIStateValue
+} from "./types";
 import { DSValueStore } from "./DSValueStore";
-import type { DSUIStateValue } from "./DSUIStateValue";
 
-export class DSStoreManager {
+export class DSStoreManager implements IDSStoreManager {
     //stateVersion: number;
     nextStateVersion: number;
-    valueStores: DSValueStore[];
+    valueStores: IDSValueStore[];
     events: DSEvent[];
     isProcessing: number;
-    arrUIStateValue: DSUIStateValue[];
+    arrUIStateValue: IDSUIStateValue[];
     lastPromise: Promise<any | void> | undefined;
 
     constructor() {
@@ -26,13 +31,13 @@ export class DSStoreManager {
         //return (this.stateVersion & (Number.MAX_SAFE_INTEGER - 1)) + 1;
     }
 
-    public attach(valueStore: DSValueStore): this {
+    public attach(valueStore: IDSValueStore): this {
         this.valueStores.push(valueStore);
         valueStore.storeManager = this;
         return this;
     }
 
-    public emitUIUpdate(uiStateValue: DSUIStateValue) {
+    public emitUIUpdate(uiStateValue: IDSUIStateValue) {
         if (this.isProcessing === 0) {
             uiStateValue.triggerUIUpdate();
         } else {

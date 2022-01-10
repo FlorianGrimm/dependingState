@@ -4,7 +4,8 @@ import {
     DSStoreManager,
     DSEventValue,
     DSEventAttach,
-    DSStateValue
+    DSStateValue,
+    stateValue
 } from "../index";
 import { DSEventHandler, DSPayloadEntity } from "../types";
 
@@ -16,9 +17,9 @@ class Project {
     }
 }
 
-class ProjectStore extends DSEntityStore<string, Project>{
+class ProjectStore extends DSEntityStore<string, Project, DSStateValue<Project>>{
     constructor(storeName: string) {
-        super(storeName, ProjectStore.create, ProjectStore.getKey) ;
+        super(storeName, ProjectStore.create, ProjectStore.getKey);
     }
 
     public static create(project: Project): DSStateValue<Project> {
@@ -30,44 +31,45 @@ class ProjectStore extends DSEntityStore<string, Project>{
 }
 
 class ProjectUI extends DSStateValue<ProjectUI>{
-    t:number;
+    t: number;
     constructor(
-        public projectValue:DSStateValue<Project>
+        public projectValue: Project
     ) {
         super(null!);
         this.value = this;
-        this.t=0;
+        this.t = 0;
     }
-    
-    public get key() : string {
-        return this.projectValue.value.ProjectId;
+
+    public get key(): string {
+        return this.projectValue.ProjectId;
     }
 }
 
 class DSStoreManagerDirty extends DSStoreManager {
     constructor(
         public project: ProjectStore,
-        public projectUIStore:DSMapStore<string, ProjectUI, ProjectUI>
+        public projectUIStore: DSMapStore<string, ProjectUI, ProjectUI>
     ) {
         super();
         this.attach(project);
-        this.attach(projectUIStore); 
+        this.attach(projectUIStore);
     }
 }
 
 test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
-    const projectUIStore = new DSMapStore<string, ProjectUI>("projectUI");
+    const projectUIStore = new DSMapStore<string, ProjectUI, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
-    projectStore.listenEvent<DSPayloadEntity<Project>>({storeName:"project", event:"attach"}, (projectValue)=>{
-        projectUIStore.attach(projectValue.payload.entity.value.ProjectId, new ProjectUI(projectValue.payload.entity))
+    projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>>({ storeName: "project", event: "attach" }, (projectValue) => {
+        const project = projectValue.payload.entity.value;
+        projectUIStore.attach(project.ProjectId, new ProjectUI(project))
     });
-    projectStore.listenDirty((project)=>{
-        const projectUI = projectUIStore.get(project.value.ProjectId) as (ProjectUI|undefined);
-        if (projectUI){
-            projectUI.isDirty=true;
-            projectUIStore.isDirty=true;
-            projectUI.t=projectUI.t+1;
+    projectStore.listenDirty((project) => {
+        const projectUI = projectUIStore.get(project.value.ProjectId) as (ProjectUI | undefined);
+        if (projectUI) {
+            projectUI.isDirty = true;
+            projectUIStore.isDirty = true;
+            projectUI.t = projectUI.t + 1;
             //projectUI.valueChanged();
             //if (projectUI.isDirty){}
         }
@@ -82,11 +84,11 @@ test('Dirty', async () => {
     expect(projectUIStore.entities.size).toBe(3);
     await storeManager.process();
 
-    await storeManager.process(()=>{
-        var project1=projectStore.get("1");
-        var projectUI1=projectUIStore.get("1");
-        if(project1 && projectUI1){
-            project1.value.ProjectName="eins";
+    await storeManager.process(() => {
+        var project1 = projectStore.get("1");
+        var projectUI1 = projectUIStore.get("1");
+        if (project1 && projectUI1) {
+            project1.value.ProjectName = "eins";
             expect(project1.isDirty).toBe(false);
             expect(projectUI1.isDirty).toBe(false);
             project1.valueChanged();

@@ -1,3 +1,4 @@
+import { DSStateValue } from "../DSStateValue";
 import {
     DSObjectStore,
     DSStoreManager,
@@ -23,14 +24,14 @@ test('DSObjectStore process implicit', async () => {
     let actA = 1;
 
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
+    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     const valueA = valueStoreA.stateValue;
     expect(valueA.store).toBe(valueStoreA);
 
-    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<VSA>) => {
+    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
         actHit = true;
         actA = dsEvent.payload.entity.value.a;
     });
@@ -57,7 +58,7 @@ test('DSObjectStore process explicit', async () => {
     let actA = 1;
 
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSObjectStore<VSA>("a", { a: actA });
+    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -65,7 +66,7 @@ test('DSObjectStore process explicit', async () => {
     expect(valueA.store).toBe(valueStoreA);
 
     //const valueB = valueStoreA.create({ a: 2 });
-    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<VSA>) => {
+    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
         actHit = true;
         actA = dsEvent.payload.entity.value.a;
     });
@@ -92,21 +93,21 @@ test('DSObjectStore process explicit', async () => {
 test('DSObjectStore listen', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSObjectStore<VSA>("a", { a: 0 });
-    const valueStoreB = new DSObjectStore<VSB>("b", { b: 0 });
-    const valueStoreAB = new DSObjectStore<VSAB>("ab", { a: 0, b: 0, cnt: 0 });
+    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue( { a: 0 }));
+    const valueStoreB = new DSObjectStore<VSB, DSStateValue<VSB>>("b", stateValue({ b: 0 }));
+    const valueStoreAB = new DSObjectStore<VSAB, DSStateValue<VSAB>>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.stateValue;
     const valueB = valueStoreB.stateValue;
     const valueAB = valueStoreAB.stateValue;
 
-    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<VSA>) => {
+    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
         valueAB.value.a = dsEvent.payload.entity.value.a;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
-    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<VSB>) => {
+    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSB>>) => {
         valueAB.value.b = dsEvent.payload.entity.value.b;
         valueAB.value.cnt++;
         valueAB.valueChanged();
@@ -125,16 +126,16 @@ test('DSObjectStore listen', async () => {
 test('DSObjectStore process promise', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSObjectStore<VSA>("a", { a: 0 });
-    const valueStoreB = new DSObjectStore<VSB>("b", { b: 0 });
-    const valueStoreAB = new DSObjectStore<VSAB>("ab", { a: 0, b: 0, cnt: 0 });
+    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue({ a: 0 }));
+    const valueStoreB = new DSObjectStore<VSB, DSStateValue<VSB>>("b", stateValue({ b: 0 }));
+    const valueStoreAB = new DSObjectStore<VSAB, DSStateValue<VSAB>>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.stateValue;
     const valueB = valueStoreB.stateValue;
     const valueAB = valueStoreAB.stateValue;
 
-    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<VSA>) => {
+    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
         valueAB.value.a = dsEvent.payload.entity.value.a;
         valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
         var result = new Promise((resolve) => {
@@ -143,7 +144,7 @@ test('DSObjectStore process promise', async () => {
         });
         return result;
     });
-    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<VSB>) => {
+    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSB>>) => {
         valueAB.value.b = dsEvent.payload.entity.value.b;
         valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
         var result = new Promise((resolve) => {

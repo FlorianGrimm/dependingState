@@ -1,16 +1,23 @@
 import type React from 'react';
-import type { IDSStateValue, DSUIProps, DSUIViewStateBase } from './types';
+import type {
+    IDSUIStateValue,
+    IDSStateValue,
+    DSUIProps,
+    DSUIViewStateBase
+} from './types';
 
-export class DSUIStateValue<Value = any>{
+export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
     _ViewProps: undefined | DSUIProps<Value>;
     component: undefined | (React.Component<Value>) | (React.Component<Value>[]);
     stateValue: IDSStateValue<Value>;
     viewStateVersion: number;
+    triggerScheduled: boolean;
 
     constructor(stateValue: IDSStateValue<Value>) {
         this.component = undefined;
         this.stateValue = stateValue;
         this.viewStateVersion = 0;
+        this.triggerScheduled = false;
     }
 
     getViewProps(): DSUIProps<Value> {
@@ -74,7 +81,7 @@ export class DSUIStateValue<Value = any>{
         return this._ViewProps!;
     }
 
-    triggerUIUpdate() {
+    triggerUIUpdate(): void {
         const stateVersion = this.stateValue.stateVersion;
         if (this.component === undefined) {
             //

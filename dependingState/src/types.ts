@@ -1,18 +1,79 @@
 import type React from 'react';
-import type { DSValueStore } from './DSValueStore';
 import type { DSUIStateValue } from './DSUIStateValue';
 
-export interface IDSStateValue<Value>{
+export interface IDSStoreManager {
+    nextStateVersion: number;
+    valueStores: IDSValueStore[];
+    events: DSEvent[];
+    isProcessing: number;
+    arrUIStateValue: IDSUIStateValue[];
+    lastPromise: Promise<any | void> | undefined;
+
+    getNextStateVersion(stateVersion: number): number;
+    attach(valueStore: IDSValueStore): this;
+}
+
+export interface IDSValueStore<
+    Value = any,
+    StateValue extends IDSStateValue<Value> = IDSStateValue<Value>
+    > {
+    storeName: string;
+    storeManager: IDSStoreManager | undefined;
+    mapEventHandlers: Map<string, DSEventHandler[]>;
+    arrDirtyHandler: DSDirtyHandler<Value>[];
     isDirty: boolean;
-    store: DSValueStore<Value> | undefined;
+
+    getNextStateVersion(stateVersion: number): number;
+
+    emitDirty(stateValue: StateValue): void;
+    listenDirty(callback: DSDirtyHandler<Value>): DSUnlisten;
+    unlistenDirty(callback: DSDirtyHandler<Value>): void;
+    processDirty(): boolean;
+
+    emitUIUpdate(uiStateValue: DSUIStateValue<Value>): void;
+
+    emitEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult;
+
+    listenEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten;
+
+    unlistenEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): void;
+
+    processEvent<
+        Payload = any,
+        EventType extends string = string,
+        StoreName extends string = string
+    >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult;
+}
+
+export interface IDSStateValue<Value = any> {
+    isDirty: boolean;
+    store: IDSValueStore<Value> | undefined;
     stateVersion: number;
     uiStateValue: DSUIStateValue<Value> | undefined;
-    value:Value;
-    valueChanged():void;
+    value: Value;
+    valueChanged(): void;
     getUIStateValue(): DSUIStateValue<Value>;
 }
 
-export type WrappedDSStateValue<Entity> = [Entity] extends [IDSStateValue<infer T>] ? Entity : IDSStateValue<Entity>;
+export interface IDSUIStateValue<Value = any> {
+    getViewProps(): DSUIProps<Value>;
+    triggerUIUpdate(): void;
+    triggerScheduled: boolean;
+}
+
+export type WrappedDSStateValue<Entity> = Entity extends IDSStateValue<infer T> ? Entity : IDSStateValue<Entity>;
 // export type WrappedDSStateValue2<Entity> = Entity extends (DSStateValue<infer T>) ? Entity : DSStateValue<Entity>;
 
 // export type  x1=WrappedDSStateValue2<boolean>;
@@ -41,20 +102,12 @@ export type DSEvent<
         }
     );
 
-
-
-// export type DSPayloadEntity<Entity = any> = { entity: DSStateValue<Entity>, key?: any, index?:number };
 export type DSPayloadEntity<
     Entity = any,
-    Key extends any | never = never,
-    Index extends number | never = never> = (
-        [Entity] extends [IDSStateValue<Entity>]
-        ? {
-            entity: Entity;
-        } : {
-            entity: IDSStateValue<Entity>;
-        })
-    & ([Key] extends [never]
+    Key extends (any | never) = never,
+    Index extends (number | never) = never> = ({
+        entity: Entity;
+    }) & ([Key] extends [never]
         ? {
             key?: any;
         }
@@ -93,10 +146,10 @@ export type DSEventValue<
 export type DSDirtyHandler<Value = any> = (stateValue: IDSStateValue<Value>) => void;
 export type DSEventHandlerResult = (Promise<any | void> | void);
 export type DSEventHandler<
-        Payload = any,
-        EventType extends string = string,
-        StoreName extends string = string
-    > = (event: DSEvent<Payload, EventType,StoreName>) => DSEventHandlerResult;
+    Payload = any,
+    EventType extends string = string,
+    StoreName extends string = string
+    > = (event: DSEvent<Payload, EventType, StoreName>) => DSEventHandlerResult;
 export type DSUnlisten = (() => void);
 
 export type DSUIViewState<T = any> = T & DSUIViewStateBase;
