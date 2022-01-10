@@ -17,5 +17,6 @@ export type {
 
 export { DSStoreManager } from "./DSStoreManager";
 export { DSValueStore, DSObjectStore, DSArrayStore, DSMapStore, DSEntityStore } from './DSValueStore';
-export { DSStateValue, stateValue } from './DSStateValue';
+export { DSStateValue, stateValue, DSStateValueSelf } from './DSStateValue';
 export { DSUIStateValue } from './DSUIStateValue';
+export { DSReactContext } from './DSReactContext'

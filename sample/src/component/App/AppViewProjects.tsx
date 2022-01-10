@@ -1,55 +1,47 @@
-import {
-    DSObjectStore,
-    DSStateValue,
-    DSStateValueSelf,
-    DSUIProps,
-    DSUIViewStateBase
-} from "dependingState";
+import { DSObjectStore, DSStateValueSelf, DSUIProps, DSUIViewStateBase, IDSStateValue } from "dependingState";
 import React from "react";
-import { getAppStoreManager } from "../../singletonAppStoreManager";
-
+import { getAppStoreManager } from "src/singletonAppStoreManager";
+import { WrappedDSStateValue } from "../../../../dependingState/src/types";
 import CompAView, { CompAUIState } from "../CompA/CompA";
 
-/*
-import type { TStateRootAppStates } from "../../types";
-import { UIPropsGetStateVersion } from "dependingState";
-*/
-
-
-export class AppUIState extends DSStateValueSelf<AppUIState> {
-    language: string;
+export class AppViewProjectsUIStateValue extends DSStateValueSelf<AppViewProjectsUIStateValue>{
 
     constructor() {
         super();
-        this.language = "en";
     }
 
     getProjects(): CompAUIState[] {
-        return (this.store as AppUIStore).getProjects();
+        if (this.store === undefined){
+            return [];
+        } else {
+            return (this.store as AppViewProjectsUIStore).getProjects();
+        }
     }
 }
 
-export class AppUIStore extends DSObjectStore<AppUIState, AppUIState> {
+type x=WrappedDSStateValue<DSStateValueSelf<AppViewProjectsUIStateValue>>;
+const y:x = {} as any;
+export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, AppViewProjectsUIStateValue> {
     getProjects: () => CompAUIState[];
 
-    constructor(storeName: string, value: AppUIState) {
+    constructor(storeName: string, value: AppViewProjectsUIStateValue) {
         super(storeName, value);
         this.getProjects = (() => []);
     }
 }
 
-type AppViewProps = {
+type AppViewProjectsProps = {
     //stateRoot: TStateRootAppStates;
-} & DSUIProps<AppUIState>;
+} & DSUIProps<AppViewProjectsUIStateValue>;
 
-type AppViewState = {
+type AppViewProjectsState = {
 
 } & DSUIViewStateBase;
 
 //UIViewState<{}>;
 
-export default class AppView extends React.Component<AppViewProps, AppViewState>{
-    constructor(props: AppViewProps) {
+export default class AppViewProjects extends React.Component<AppViewProjectsProps, AppViewProjectsState>{
+    constructor(props: AppViewProjectsProps) {
         super(props);
         this.state = {
             stateVersion: this.props.getStateVersion()
@@ -78,15 +70,8 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         // const aViewProps = viewProps.getOneProject().getUIStateValue().getViewProps();
 
 
-        return (<div>
-            App
-            <div>
-                language:{viewProps.language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
-            </div>
-            <div>
-                <button onClick={this.handleClick}>add</button>
-            </div>
+        return (<>
             {viewProps.getProjects().map((compAUIState) => React.createElement(CompAView, compAUIState.getUIStateValue().getViewProps()))}
-        </div>);
+        </>);
     }
 }

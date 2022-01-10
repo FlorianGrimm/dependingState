@@ -1,16 +1,21 @@
 import type React from 'react';
+import type { DSStateValue, DSStateValueSelf } from './DSStateValue';
 import type { DSUIStateValue } from './DSUIStateValue';
 
 export interface IDSStoreManager {
-    nextStateVersion: number;
-    valueStores: IDSValueStore[];
-    events: DSEvent[];
-    isProcessing: number;
-    arrUIStateValue: IDSUIStateValue[];
-    lastPromise: Promise<any | void> | undefined;
+    //nextStateVersion: number;
+    //valueStores: IDSValueStore[];
+    //events: DSEvent[];
+    //isProcessing: number;
+    //arrUIStateValue: IDSUIStateValue[];
+    //lastPromise: Promise<any | void> | undefined;
 
     getNextStateVersion(stateVersion: number): number;
     attach(valueStore: IDSValueStore): this;
+    emitUIUpdate(uiStateValue: IDSUIStateValue) :void;
+    emitEvent(event: DSEvent): DSEventHandlerResult;
+    process(fn?: () => DSEventHandlerResult): DSEventHandlerResult;
+    processUIUpdates():void;
 }
 
 export interface IDSValueStore<
@@ -19,18 +24,18 @@ export interface IDSValueStore<
     > {
     storeName: string;
     storeManager: IDSStoreManager | undefined;
-    mapEventHandlers: Map<string, DSEventHandler[]>;
-    arrDirtyHandler: DSDirtyHandler<Value>[];
+    // mapEventHandlers: Map<string, DSEventHandler[]>;
+    // arrDirtyHandler: DSDirtyHandler<StateValue>[];
     isDirty: boolean;
 
     getNextStateVersion(stateVersion: number): number;
 
     emitDirty(stateValue: StateValue): void;
-    listenDirty(callback: DSDirtyHandler<Value>): DSUnlisten;
-    unlistenDirty(callback: DSDirtyHandler<Value>): void;
+    listenDirty(callback: DSDirtyHandler<StateValue>): DSUnlisten;
+    unlistenDirty(callback: DSDirtyHandler<StateValue>): void;
     processDirty(): boolean;
 
-    emitUIUpdate(uiStateValue: DSUIStateValue<Value>): void;
+    emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
 
     emitEvent<
         Payload = any,
@@ -61,10 +66,15 @@ export interface IDSStateValue<Value = any> {
     isDirty: boolean;
     store: IDSValueStore<Value> | undefined;
     stateVersion: number;
-    uiStateValue: DSUIStateValue<Value> | undefined;
+    //uiStateValue: DSUIStateValue<Value> | undefined;
     value: Value;
     valueChanged(): void;
     getUIStateValue(): DSUIStateValue<Value>;
+    setStore(store: IDSValueStore<Value>): boolean;
+
+    getViewProps(): DSUIProps<Value>;
+    triggerUIUpdate(): void;
+    triggerScheduled: boolean;
 }
 
 export interface IDSUIStateValue<Value = any> {
@@ -73,7 +83,9 @@ export interface IDSUIStateValue<Value = any> {
     triggerScheduled: boolean;
 }
 
-export type WrappedDSStateValue<Entity> = Entity extends IDSStateValue<infer T> ? Entity : IDSStateValue<Entity>;
+export type WrappedDSStateValue<Entity> = (Entity extends IDSStateValue<infer Value> ? (Value extends IDSStateValue<Value>? Value : Entity) : (IDSStateValue<Entity>));
+export type WrappedDSStateValue2<Entity> = Entity extends DSStateValueSelf<infer Value> ? Value : IDSStateValue<Entity>;
+export type WrappedDSStateValue3<Entity> = Entity extends IDSStateValue<infer Value> ? (Entity) : (IDSStateValue<Entity>);
 // export type WrappedDSStateValue2<Entity> = Entity extends (DSStateValue<infer T>) ? Entity : DSStateValue<Entity>;
 
 // export type  x1=WrappedDSStateValue2<boolean>;
@@ -143,7 +155,7 @@ export type DSEventValue<
     Index extends number | never = never
     > = DSEvent<DSPayloadEntity<Entity>, "value">;
 
-export type DSDirtyHandler<Value = any> = (stateValue: IDSStateValue<Value>) => void;
+export type DSDirtyHandler<StateValue> = (stateValue: StateValue) => void;
 export type DSEventHandlerResult = (Promise<any | void> | void);
 export type DSEventHandler<
     Payload = any,

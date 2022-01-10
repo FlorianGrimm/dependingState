@@ -5,13 +5,15 @@ import {
     DSEvent,
     DSEventAttach,
     DSEventValue,
-    DSPayloadEntity
+    DSPayloadEntity,
+    DSReactContext,
+    DSStateValue
 } from 'dependingState';
 
 import AppView, { AppUIState, AppUIStore } from './component/App/AppView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { ProjectStore } from './store/ProjectStore';
-import { setNotNice } from './dirtyharry';
+import { setAppStoreManager } from './singletonAppStoreManager';
 import { Project } from './types';
 import { CompAUIState, CompAUIStore } from './component/CompA/CompA';
 
@@ -25,23 +27,25 @@ function main() {
         projectStore,
         appUIStore,
         compAUIStore);
-    setNotNice(appStoreManager);
+    const dsReactContext = new DSReactContext(appStoreManager);
+
+    setAppStoreManager(appStoreManager);
 
     (window as any).appStoreManager = appStoreManager;
 
     appUIStore.getProjects = (() => {
-        return (Array.from(compAUIStore.entities.values()) as unknown[] as CompAUIState[]).slice(0,100);
+        return (Array.from(compAUIStore.entities.values()) as unknown[] as CompAUIState[]).slice(0, 100);
     });
 
-    compAUIStore.listenEvent<DSPayloadEntity<any>, "attach">({ storeName: "compAUI", event: "attach" }, (e: DSEventAttach<any>) => {
+    compAUIStore.listenEvent<DSPayloadEntity<any>, "attach">({ storeName: "compAUI", event: "attach" }, (e) => {
         appStoreManager.appUIStore.stateValue.valueChanged();
     });
 
-    projectStore.listenEvent<DSPayloadEntity<Project>, "attach">({ storeName: "project", event: "attach" }, (e: DSEventAttach<Project>) => {
+    projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>, "attach">({ storeName: "project", event: "attach" }, (e) => {
         appStoreManager.compAUIStore.set(new CompAUIState(e.payload.entity.value));
     });
 
-    projectStore.listenEvent<DSPayloadEntity<Project>, "value">({ storeName: "project", event: "value" }, (e: DSEventValue<Project>) => {
+    projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>, "value">({ storeName: "project", event: "value" }, (e) => {
         const prj = e.payload.entity.value;
         const compAUIState = appStoreManager.compAUIStore.get(prj.ProjectId);
         if (compAUIState) {
@@ -61,10 +65,13 @@ function main() {
 
     appStoreManager.projectStore.set({ ProjectId: "1", ProjectName: "one" });
 
+
     const rootElement = React.createElement(
-        AppView,
-        appStoreManager.appUIStore.stateValue.getUIStateValue().getViewProps()
-    );
+        dsReactContext.context.Provider, { value: dsReactContext.storeManager },
+        React.createElement(
+            AppView,
+            appStoreManager.appUIStore.stateValue.getViewProps()
+        ));
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {
         ReactDom.render(rootElement, appRootElement);
@@ -83,7 +90,7 @@ function main() {
             prj.value.ProjectName = "one - part 2";
             prj.valueChanged();
         }
-    }, 2000);
+    }, 5000);
 }
 try {
     main();

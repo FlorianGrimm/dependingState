@@ -9,28 +9,23 @@ import type {
     IDSValueStore,
     IDSStateValue,
     WrappedDSStateValue,
+    IDSStoreManager,
+    IDSUIStateValue,
 } from './types'
 
-import type {
-    DSStoreManager
-} from './DSStoreManager';
-
 import {
-    DSStateValue,
-    stateValue
+    DSStateValue
 } from './DSStateValue';
-
-import { DSUIStateValue } from './DSUIStateValue';
 
 //, StoreName extends string = string
 export class DSValueStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = IDSStateValue<Value>
-    > implements IDSValueStore<Value>{
+    Value,
+    StateValue extends IDSStateValue<Value>
+    > implements IDSValueStore<Value, StateValue>{
     storeName: string;
-    storeManager: DSStoreManager | undefined;
+    storeManager: IDSStoreManager | undefined;
     mapEventHandlers: Map<string, DSEventHandler[]>;
-    arrDirtyHandler: DSDirtyHandler<Value>[];
+    arrDirtyHandler: DSDirtyHandler<StateValue>[];
     isDirty: boolean;
 
     constructor(storeName: string) {
@@ -56,12 +51,12 @@ export class DSValueStore<
         }
     }
 
-    public listenDirty(callback: DSDirtyHandler<Value>): DSUnlisten {
+    public listenDirty(callback: DSDirtyHandler<StateValue>): DSUnlisten {
         this.arrDirtyHandler.push(callback);
         return this.unlistenDirty.bind(this, callback);
     }
 
-    public unlistenDirty(callback: DSDirtyHandler<Value>): void {
+    public unlistenDirty(callback: DSDirtyHandler<StateValue>): void {
         this.arrDirtyHandler = this.arrDirtyHandler.filter((cb) => cb !== callback);
     }
 
@@ -74,7 +69,7 @@ export class DSValueStore<
         }
     }
 
-    public emitUIUpdate(uiStateValue: DSUIStateValue<Value>) {
+    public emitUIUpdate(uiStateValue: IDSUIStateValue<Value>) {
         if (this.storeManager === undefined) {
             uiStateValue.triggerUIUpdate();
         } else {
@@ -161,17 +156,14 @@ export class DSValueStore<
 
 export class DSObjectStore<
     Value = any,
+    //StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
     StateValue extends IDSStateValue<Value> = IDSStateValue<Value>
     > extends DSValueStore<Value, StateValue> {
     stateValue: StateValue
     constructor(storeName: string, stateValue: StateValue) {
         super(storeName);
         this.stateValue = stateValue;
-        if (this.stateValue.store === undefined) {
-            this.stateValue.store = this;
-        } else {
-            throw new Error("store is already set.")
-        }
+        stateValue.setStore(this);
     }
 }
 
@@ -198,24 +190,19 @@ export class DSArrayStore<
     }
 
     attach(stateValue: StateValue): StateValue {
-        if (stateValue.store === this) {
-            return stateValue;
+        if (stateValue.setStore(this)) {
+            this.entities.push(stateValue);
+            const index = this.entities.length - 1;
+            this.emitEvent<DSPayloadEntity<StateValue, never, number>>(
+                {
+                    storeName: this.storeName,
+                    event: "attach",
+                    payload: {
+                        entity: stateValue,
+                        index: index
+                    }
+                });
         }
-        if (stateValue.store !== undefined) {
-            throw "already attached";
-        }
-        stateValue.store = this;
-        this.entities.push(stateValue);
-        const index = this.entities.length - 1;
-        this.emitEvent<DSPayloadEntity<StateValue, never, number>>(
-            {
-                storeName: this.storeName,
-                event: "attach",
-                payload: {
-                    entity: stateValue,
-                    index: index
-                }
-            });
         return stateValue;
     }
 
@@ -247,7 +234,7 @@ export class DSMapStore<
     constructor(
         storeName: string,
         public fnCreate?: ((value: Value) => StateValue)
-        ) {
+    ) {
         super(storeName);
         this.entities = new Map();
     }
@@ -265,47 +252,36 @@ export class DSMapStore<
     }
 
     attach(key: Key, stateValue: StateValue): (StateValue | undefined) {
-        if (stateValue.store === this) {
+        if (stateValue.setStore(this)) {
+            const oldValue = this.entities.get(key);
+            if (oldValue === undefined) {
+                this.entities.set(key, stateValue);
+                this.emitEvent<DSPayloadEntity<StateValue>>({
+                    storeName: this.storeName,
+                    event: "attach",
+                    payload: { entity: stateValue, key: key }
+                });
+            } else if (oldValue === stateValue) {
+                // do nothing
+            } else {
+                oldValue.store = undefined;
+
+                this.emitEvent<DSPayloadEntity<StateValue>>({
+                    storeName: this.storeName,
+                    event: "detach",
+                    payload: { entity: oldValue, key: key }
+                });
+                this.entities.set(key, stateValue);
+                this.emitEvent<DSPayloadEntity<Value>>({
+                    storeName: this.storeName,
+                    event: "attach",
+                    payload: { entity: stateValue.value, key: key }
+                });
+            }
+            return oldValue;
+        } else {
             return stateValue;
         }
-        if (stateValue.store !== undefined) {
-            throw "already attached";
-        }
-        if (stateValue.store === this) {
-            return this;
-        } else if (stateValue.store === undefined) {
-            stateValue.store = this;
-        } else {
-            throw "already attached."
-        }
-        const oldValue = this.entities.get(key);
-        if (oldValue === undefined) {
-            this.entities.set(key, stateValue);
-            this.emitEvent<DSPayloadEntity<StateValue>>({
-                storeName: this.storeName,
-                event: "attach",
-                payload: { entity: stateValue, key: key }
-            });
-        } else if (oldValue === stateValue) {
-            // do nothing
-        } else {
-            let x: DSPayloadEntity<StateValue, Key, never> = {} as any;
-
-            oldValue.store = undefined;
-            //this.emitEvent<DSPayloadEntity<StateValue, Key, never>>({
-            this.emitEvent<DSPayloadEntity<StateValue>>({
-                storeName: this.storeName,
-                event: "detach",
-                payload: { entity: oldValue, key: key }
-            });
-            this.entities.set(key, stateValue);
-            this.emitEvent<DSPayloadEntity<Value>>({
-                storeName: this.storeName,
-                event: "attach",
-                payload: { entity: stateValue.value, key: key }
-            });
-        }
-        return oldValue;
     }
 
     detach(key: Key): void {
@@ -333,7 +309,7 @@ export class DSEntityStore<
         fnCreate: (Value: Value) => StateValue,
         public fnGetKey: (value: Value) => Key
     ) {
-        super(storeName,fnCreate);
+        super(storeName, fnCreate);
     }
 
     public set(value: Value): StateValue {

@@ -5,7 +5,6 @@ import type {
     DSEventHandlerResult, 
     IDSUIStateValue
 } from "./types";
-import { DSValueStore } from "./DSValueStore";
 
 export class DSStoreManager implements IDSStoreManager {
     //stateVersion: number;
@@ -37,7 +36,7 @@ export class DSStoreManager implements IDSStoreManager {
         return this;
     }
 
-    public emitUIUpdate(uiStateValue: IDSUIStateValue) {
+    public emitUIUpdate(uiStateValue: IDSUIStateValue) :void {
         if (this.isProcessing === 0) {
             uiStateValue.triggerUIUpdate();
         } else {
@@ -104,7 +103,7 @@ export class DSStoreManager implements IDSStoreManager {
         }
     }
 
-    processUIUpdates() {
+    public processUIUpdates():void{
         if (this.arrUIStateValue.length > 0) {
             const arrUIStateValue = this.arrUIStateValue;
             this.arrUIStateValue = [];

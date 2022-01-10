@@ -1,6 +1,6 @@
 import { DSEntityStore, DSStateValue, DSUIProps, DSUIViewStateBase } from "dependingState";
 import React from "react";
-import { getNotNice } from "../../dirtyharry";
+import { getAppStoreManager } from "../../singletonAppStoreManager";
 import { Project } from "../../types";
 
 type CompAViewProps = DSUIProps<Project>;
@@ -52,7 +52,7 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
 
     handleClick(){
         const viewProps = this.props.getViewProps();
-        getNotNice().emitEvent({storeName:"compAUI", event:"hugo", payload: viewProps});
+        getAppStoreManager().emitEvent({storeName:"compAUI", event:"hugo", payload: viewProps});
 
         /*
         const prj = getNotNice().projectStore.get(viewProps.ProjectId);
@@ -66,7 +66,7 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
         const viewProps = this.props.getViewProps();
         
         return (<div>
-            CompA  - ProjectName:{viewProps.ProjectName} - StateVersion: { this.props.getStateVersion() }
+            CompA  - ProjectName:{viewProps.ProjectName} - StateVersion: { this.props.getStateVersion() } - dt:{(new Date()).toISOString()}
             <button onClick={this.handleClick}>ola</button>
         </div>);
 
