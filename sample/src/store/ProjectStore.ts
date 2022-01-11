@@ -10,7 +10,7 @@ function getKey(project:Project){
 
 export class ProjectStore extends DSEntityStore<string, Project>{
     constructor(storeName: string) {
-        super(storeName, create, getKey);
+        super(storeName, {create, getKey});
     }
 
     hugo(){

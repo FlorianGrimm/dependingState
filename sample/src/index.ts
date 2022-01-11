@@ -10,35 +10,44 @@ import {
     DSStateValue
 } from 'dependingState';
 
-import AppView, { AppUIState, AppUIStore } from './component/App/AppView';
+import AppView, { AppViewStateValue, AppViewStore } from './component/App/AppView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { ProjectStore } from './store/ProjectStore';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { Project } from './types';
 import { CompAUIState, CompAUIStore } from './component/CompA/CompA';
+import { AppViewProjectsUIStateValue, AppViewProjectsUIStore } from './component/App/AppViewProjects';
+import { AppState, AppStore } from './store/AppState';
 
 function main() {
     console.trace("main()");
 
     const projectStore = new ProjectStore("project");
     const compAUIStore = new CompAUIStore("compAUI");
-    const appUIStore = new AppUIStore("AppUI", new AppUIState());
+    const appState=new AppStore("appState", new AppState());
+    const appViewStore = new AppViewStore("appView", new AppViewStateValue());
+    const appViewProjectsUIStateValue=new AppViewProjectsUIStateValue();
+    const appViewProjectsUIStore = new AppViewProjectsUIStore("appViewProjectsUI",appViewProjectsUIStateValue);
     const appStoreManager = new AppStoreManager(
+        appState,
         projectStore,
-        appUIStore,
-        compAUIStore);
+        appViewStore,
+        compAUIStore,
+        appViewProjectsUIStore);
     const dsReactContext = new DSReactContext(appStoreManager);
 
     setAppStoreManager(appStoreManager);
 
     (window as any).appStoreManager = appStoreManager;
 
-    appUIStore.getProjects = (() => {
+    /*
+    appViewStore.getProjects = (() => {
         return (Array.from(compAUIStore.entities.values()) as unknown[] as CompAUIState[]).slice(0, 100);
     });
 
+
     compAUIStore.listenEvent<DSPayloadEntity<any>, "attach">({ storeName: "compAUI", event: "attach" }, (e) => {
-        appStoreManager.appUIStore.stateValue.valueChanged();
+        appStoreManager.appViewStore.stateValue.valueChanged();
     });
 
     projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>, "attach">({ storeName: "project", event: "attach" }, (e) => {
@@ -61,16 +70,17 @@ function main() {
             prj.valueChanged();
         }
     });
+    */
 
 
     appStoreManager.projectStore.set({ ProjectId: "1", ProjectName: "one" });
-
-
+    appStoreManager.process();
+    
     const rootElement = React.createElement(
         dsReactContext.context.Provider, { value: dsReactContext.storeManager },
         React.createElement(
             AppView,
-            appStoreManager.appUIStore.stateValue.getViewProps()
+            appStoreManager.appViewStore.stateValue.getViewProps()
         ));
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {
@@ -80,8 +90,8 @@ function main() {
     }
 
     setTimeout(() => {
-        appUIStore.stateValue.language = "HALLO";
-        appUIStore.stateValue.valueChanged();
+        appState.stateValue.language= "HALLO";
+        appState.stateValue.valueChanged();
     }, 1000);
 
     setTimeout(() => {

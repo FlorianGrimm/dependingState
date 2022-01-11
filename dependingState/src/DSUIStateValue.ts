@@ -22,7 +22,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
 
     getViewProps(): DSUIProps<Value> {
         if (this._ViewProps === undefined) {
-            const fnGetViewProps: (() => Value) = (() => {
+            const fnGetRenderProps: (() => Value) = (() => {
                 return this.stateValue.value;
             });
             const fnWireStateVersion: ((component: React.Component<any>) => void) = ((
@@ -63,7 +63,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
             //
             if ((typeof (this.stateValue.value as any).key == "string") || (typeof (this.stateValue.value as any).key == "number")) {
                 this._ViewProps = {
-                    getViewProps: fnGetViewProps,
+                    getRenderProps: fnGetRenderProps,
                     wireStateVersion: fnWireStateVersion,
                     unwireStateVersion: fnUnwireStateVersion,
                     getStateVersion: fnGetStateVersion,
@@ -71,7 +71,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
                 };
             } else {
                 this._ViewProps = {
-                    getViewProps: fnGetViewProps,
+                    getRenderProps: fnGetRenderProps,
                     wireStateVersion: fnWireStateVersion,
                     unwireStateVersion: fnUnwireStateVersion,
                     getStateVersion: fnGetStateVersion,

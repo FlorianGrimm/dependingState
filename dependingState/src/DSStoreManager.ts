@@ -1,8 +1,9 @@
-import type { 
+import { catchLog } from "./PromiseHelper";
+import type {
     IDSStoreManager,
     IDSValueStore,
-    DSEvent, 
-    DSEventHandlerResult, 
+    DSEvent,
+    DSEventHandlerResult,
     IDSUIStateValue
 } from "./types";
 
@@ -36,7 +37,13 @@ export class DSStoreManager implements IDSStoreManager {
         return this;
     }
 
-    public emitUIUpdate(uiStateValue: IDSUIStateValue) :void {
+    public postAttached(): void {
+        for (const valueStore of this.valueStores) {
+            valueStore.postAttached(this);
+        }
+    }
+
+    public emitUIUpdate(uiStateValue: IDSUIStateValue): void {
         if (this.isProcessing === 0) {
             uiStateValue.triggerUIUpdate();
         } else {
@@ -54,56 +61,59 @@ export class DSStoreManager implements IDSStoreManager {
         }
         return;
     }
-
     public async process(fn?: () => DSEventHandlerResult) {
         // if (this.isProcessing === 0) {
         //     this.stateVersion = (this.stateVersion & (Number.MAX_SAFE_INTEGER - 1)) + 2;
         //     this.nextStateVersion = this.stateVersion + 1;
         // }
+        console.log("process");
+        let result: any | undefined = undefined;
         this.isProcessing++;
         try {
+            if (this.lastPromise) {
+                await this.lastPromise;
+                this.lastPromise = undefined;
+            }
             if (fn) {
                 this.nextStateVersion++;
                 const p = fn();
                 if (p && typeof p.then === "function") {
-                    await p;
+                    // result = await catchLog(`process fn:${fn.name}`, p);
+                    result = await p;
                 }
             }
 
             for (let watchdog = 0; (this.events.length > 0) && (watchdog < 100); watchdog++) {
                 this.nextStateVersion++;
-                let result: undefined | Promise<any>[];
                 const events = this.events;
                 this.events = [];
+                debugger;
                 for (const event of events) {
                     for (const valueStore of this.valueStores.slice()) {
-                        const p = valueStore.processEvent(event);
-                        if (p && typeof p.then === "function") {
-                            if (result === undefined) {
-                                result = [p];
-                            } else {
-                                result.push(p);
+                        if (valueStore.listenEventAnyStore || (event.storeName === valueStore.storeName)){
+                            const p = valueStore.processEvent(event);
+                            if (p && typeof p.then === "function") {
+                                // await catchLog(`process valueStore:${valueStore.storeName}`, p);
+                                await p;
                             }
                         }
                     }
                 }
-
-                for (const valueStore of this.valueStores.slice()) {
-                    valueStore.processDirty();
-                }
-
-                this.processUIUpdates();
-                if (result !== undefined) {
-                    await Promise.allSettled(result);
+                {
+                    for (const valueStore of this.valueStores.slice()) {
+                        valueStore.processDirty();
+                    }
+                    this.processUIUpdates();
                 }
             }
 
         } finally {
             this.isProcessing--;
         }
+        return result;
     }
 
-    public processUIUpdates():void{
+    public processUIUpdates(): void {
         if (this.arrUIStateValue.length > 0) {
             const arrUIStateValue = this.arrUIStateValue;
             this.arrUIStateValue = [];

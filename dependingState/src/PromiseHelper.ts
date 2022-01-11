@@ -1,11 +1,12 @@
 import { DSEventHandlerResult } from "./types";
 
-export function catchLog(msg:string, promise:DSEventHandlerResult) : DSEventHandlerResult{
-    if (promise && typeof promise.then === "function"){
-        promise.then((v)=>{
-            return v;
-        },(reason)=>{
-            console.error(msg, reason);
-        })
-    }
+export function catchLog<T>(msg: string, promise: Promise<T>): Promise<T | void> {
+    //if (promise && typeof promise.then === "function") {
+    return promise.then((v) => {
+        return v;
+    }, (reason) => {
+        console.error(msg, reason);
+    })
+    // }
+    // return;
 }

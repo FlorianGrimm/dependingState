@@ -6,10 +6,11 @@ import {
     IDSStateValue,
     DSPayloadEntity,
     IDSValueStore,
-    DSUIProps
+    DSUIProps,
+    DSEvent
 } from "./types";
 import { DSUIStateValue } from "./DSUIStateValue";
-
+import { DSEventValue } from ".";
 
 export class DSStateValue<Value> implements IDSStateValue<Value>{
     private _value: Value;
@@ -40,7 +41,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitDirty(this);
-            this.store.emitEvent<DSPayloadEntity<DSStateValue<Value>>>({ storeName: this.store.storeName, event: "value", payload: { entity: this } });
+            this.store.emitEvent<DSEventValue<DSStateValue<Value>>>("value",  { entity: this });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
@@ -126,7 +127,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitDirty(this);
-            this.store.emitEvent<DSPayloadEntity<Value>>({ storeName: this.store.storeName, event: "value", payload: { entity: this as any } });
+            this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>>>("value",  { entity: this });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {

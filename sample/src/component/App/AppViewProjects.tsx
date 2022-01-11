@@ -1,32 +1,47 @@
 import { DSObjectStore, DSStateValueSelf, DSUIProps, DSUIViewStateBase, IDSStateValue } from "dependingState";
 import React from "react";
-import { getAppStoreManager } from "src/singletonAppStoreManager";
-import { WrappedDSStateValue } from "../../../../dependingState/src/types";
-import CompAView, { CompAUIState } from "../CompA/CompA";
+import { getAppStoreManager } from "../../singletonAppStoreManager";
+import { IAppStoreManager } from "../../store/AppStoreManager";
+
+import CompAView from "../CompA/CompA";
+
+import type { CompAUIState, CompAUIStore } from "../CompA/CompA";
 
 export class AppViewProjectsUIStateValue extends DSStateValueSelf<AppViewProjectsUIStateValue>{
+    compAUIStates: CompAUIState[];
 
     constructor() {
         super();
-    }
-
-    getProjects(): CompAUIState[] {
-        if (this.store === undefined){
-            return [];
-        } else {
-            return (this.store as AppViewProjectsUIStore).getProjects();
-        }
+        this.compAUIStates = [];
     }
 }
 
-type x=WrappedDSStateValue<DSStateValueSelf<AppViewProjectsUIStateValue>>;
-const y:x = {} as any;
 export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, AppViewProjectsUIStateValue> {
-    getProjects: () => CompAUIState[];
+    compAUIStore: CompAUIStore | undefined;
 
     constructor(storeName: string, value: AppViewProjectsUIStateValue) {
         super(storeName, value);
-        this.getProjects = (() => []);
+        this.compAUIStore = undefined;
+    }
+
+    public postAttached(): void {
+        super.postAttached();
+        this.compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+    }
+
+    public processDirty(): boolean {
+        if (super.processDirty()) {
+            if (this.compAUIStore !== undefined) {
+                const compAUIStates = (Array.from(this.compAUIStore.entities.values())
+                    .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))
+                );
+                this.stateValue.compAUIStates = compAUIStates;
+                this.stateValue.valueChanged();
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
@@ -66,12 +81,11 @@ export default class AppViewProjects extends React.Component<AppViewProjectsProp
     }
 
     render(): React.ReactNode {
-        const viewProps = this.props.getViewProps();
-        // const aViewProps = viewProps.getOneProject().getUIStateValue().getViewProps();
-
+        const viewProps = this.props.getRenderProps();
+        const { compAUIStates } = viewProps;
 
         return (<>
-            {viewProps.getProjects().map((compAUIState) => React.createElement(CompAView, compAUIState.getUIStateValue().getViewProps()))}
+            {compAUIStates.map((compAUIState) => React.createElement(CompAView, compAUIState.getViewProps()))}
         </>);
     }
 }

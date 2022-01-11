@@ -1,7 +1,7 @@
 import type { 
     DSValueStore
  } from "dependingState";
-import type { AppUIState } from "./component/App/AppView";
+import type { AppViewStateValue } from "./component/App/AppView";
 // import type { CompAUIState } from "./component/CompA/CompA";
 // import type { CompBUIState } from "./component/CompB/CompB";
 

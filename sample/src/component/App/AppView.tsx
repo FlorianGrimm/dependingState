@@ -6,9 +6,11 @@ import {
     DSUIViewStateBase
 } from "dependingState";
 import React from "react";
+import type { AppState } from "src/store/AppState";
+import { IAppStoreManager } from "src/store/AppStoreManager";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
 
-import CompAView, { CompAUIState } from "../CompA/CompA";
+import CompAView, { CompAUIState, CompAUIStore } from "../CompA/CompA";
 
 /*
 import type { TStateRootAppStates } from "../../types";
@@ -16,31 +18,65 @@ import { UIPropsGetStateVersion } from "dependingState";
 */
 
 
-export class AppUIState extends DSStateValueSelf<AppUIState> {
-    language: string;
+export class AppViewStateValue extends DSStateValueSelf<AppViewStateValue> {
+    appState: AppState | undefined;
+    compAUIStates: CompAUIState[];
 
     constructor() {
         super();
-        this.language = "en";
-    }
-
-    getProjects(): CompAUIState[] {
-        return (this.store as AppUIStore).getProjects();
+        this.compAUIStates=[];
     }
 }
 
-export class AppUIStore extends DSObjectStore<AppUIState, AppUIState> {
+export class AppViewStore extends DSObjectStore<AppViewStateValue, AppViewStateValue> {
     getProjects: () => CompAUIState[];
+    appStateStateVersion: number;
+    compAUIStoreStateVersion: number;
 
-    constructor(storeName: string, value: AppUIState) {
+    constructor(storeName: string, value: AppViewStateValue) {
         super(storeName, value);
+        this.appStateStateVersion = 0;
+        this.compAUIStoreStateVersion = 0;
         this.getProjects = (() => []);
+    }
+
+    public postAttached(): void {
+        super.postAttached();
+
+        const appState = (this.storeManager! as unknown as IAppStoreManager).appState;
+        appState.listenDirtyRelated(this);
+
+        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        compAUIStore.listenDirtyRelated(this);
+
+        this.stateValue.appState = appState.stateValue;
+        this.isDirty = true;
+    }
+
+    public processDirty(): boolean {
+        const result = super.processDirty();
+        if (result) {
+            const appState = (this.storeManager! as unknown as IAppStoreManager).appState;
+            const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+            let changed=false;
+            if (this.appStateStateVersion !== appState.stateVersion) {
+                this.appStateStateVersion = appState.stateVersion;
+                this.stateValue.appState = appState.stateValue;
+                changed=true;
+            }
+            if (this.compAUIStoreStateVersion !== compAUIStore.stateVersion) {
+                this.compAUIStoreStateVersion = compAUIStore.stateVersion;
+                this.stateValue.compAUIStates = compAUIStore.compAUIStates;
+                changed=true;
+            }
+        }
+        return result;
     }
 }
 
 type AppViewProps = {
     //stateRoot: TStateRootAppStates;
-} & DSUIProps<AppUIState>;
+} & DSUIProps<AppViewStateValue>;
 
 type AppViewState = {
 
@@ -74,19 +110,18 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
     }
 
     render(): React.ReactNode {
-        const viewProps = this.props.getViewProps();
-        // const aViewProps = viewProps.getOneProject().getUIStateValue().getViewProps();
-
+        const viewProps = this.props.getRenderProps();
+        let language = (viewProps.appState?.language) || "";
 
         return (<div>
             App
             <div>
-                language:{viewProps.language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+                language:{language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
             <div>
                 <button onClick={this.handleClick}>add</button>
             </div>
-            {viewProps.getProjects().map((compAUIState) => React.createElement(CompAView, compAUIState.getUIStateValue().getViewProps()))}
+            {viewProps.compAUIStates.map((compAUIState) => React.createElement(CompAView, compAUIState.getUIStateValue().getViewProps()))}
         </div>);
     }
 }

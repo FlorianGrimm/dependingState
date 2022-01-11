@@ -19,7 +19,7 @@ class Project {
 
 class ProjectStore extends DSEntityStore<string, Project, DSStateValue<Project>>{
     constructor(storeName: string) {
-        super(storeName, ProjectStore.create, ProjectStore.getKey);
+        super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
     }
 
     public static create(project: Project): DSStateValue<Project> {
