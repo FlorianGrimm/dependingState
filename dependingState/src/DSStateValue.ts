@@ -63,6 +63,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
     public setStore(store: IDSValueStore<Value>): boolean {
         if (this.store === undefined) {
             this.store = store;
+            this.stateVersion = store.getNextStateVersion(this.stateVersion);
             return true;
         } else if (this.store === store) {
             // ignore
@@ -149,6 +150,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
     public setStore(store: IDSValueStore<Value>): boolean {
         if (this.store === undefined) {
             this.store = store;
+            this.stateVersion = store.getNextStateVersion(this.stateVersion);
             return true;
         } else if (this.store === store) {
             // ignore
