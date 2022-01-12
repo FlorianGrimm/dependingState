@@ -13,11 +13,13 @@ export interface IDSStoreManager {
     getNextStateVersion(stateVersion: number): number;
 
     attach(valueStore: IDSValueStore): this;
-    postAttached(): void
+    postAttached(): void;
+    updateRegisteredEvents(): void;
+    resetRegisteredEvents(): void;
 
     emitUIUpdate(uiStateValue: IDSUIStateValue): void;
     emitEvent(event: DSEvent): DSEventHandlerResult;
-    process(fn?: () => DSEventHandlerResult): DSEventHandlerResult;
+    process(msg?:string, fn?: () => DSEventHandlerResult): DSEventHandlerResult;
     processUIUpdates(): void;
 }
 
@@ -36,12 +38,12 @@ export interface IDSValueStore<
 
     postAttached(storeManager: IDSStoreManager): void;
 
-    listenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): DSUnlisten;
+    listenDirtyRelated<RelatedValueStore extends IDSValueStore>(msg:string, relatedValueStore: RelatedValueStore): DSUnlisten;
     unlistenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): void;
     emitDirty(stateValue: StateValue): void;
-    listenDirty(callback: DSDirtyHandler<StateValue>): DSUnlisten;
+    listenDirty(msg:string, callback: DSDirtyHandler<StateValue>): DSUnlisten;
     unlistenDirty(callback: DSDirtyHandler<StateValue>): void;
-    processDirty(): boolean;
+    processDirty(): void;
 
     emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
 
@@ -51,13 +53,13 @@ export interface IDSValueStore<
 
     listenEvent<
         Event extends DSEvent<any, string, StoreName>
-    >(event: Event['event'], callback: DSEventHandler<Event['payload'],Event['event'], StoreName>): DSUnlisten;
+    >(msg:string, event: Event['event'], callback: DSEventHandler<Event['payload'],Event['event'], StoreName>): DSUnlisten;
 
     listenEventAnyStore<
         Payload = any,
         EventType extends string = string,
         StoreName extends string = string
-    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten;
+    >(msg:string, event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten;
 
     unlistenEvent<
         Payload = any,

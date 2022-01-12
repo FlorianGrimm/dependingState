@@ -10,7 +10,7 @@ import type { AppStore } from "./AppState";
 import type { ProjectStore } from "./ProjectStore";
 
 export interface IAppStoreManager extends IDSStoreManager {
-    appState: AppStore;
+    appStore: AppStore;
     projectStore: ProjectStore;
     appViewStore: AppViewStore;
     compAUIStore: CompAUIStore;
@@ -19,13 +19,14 @@ export interface IAppStoreManager extends IDSStoreManager {
 
 export class AppStoreManager extends DSStoreManager implements IAppStoreManager {
     constructor(
-        public appState: AppStore,
+        public appStore: AppStore,
         public projectStore: ProjectStore,
         public appViewStore: AppViewStore,
         public compAUIStore: CompAUIStore,
         public appViewProjectsUIStore: AppViewProjectsUIStore
     ) {
         super();
+        this.attach(appStore);
         this.attach(projectStore);
         this.attach(appViewStore);
         this.attach(compAUIStore);

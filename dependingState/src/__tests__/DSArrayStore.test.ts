@@ -31,7 +31,7 @@ test('DSArrayStore process implicit', async () => {
     const valueA = valueStoreA.create({ a: actA });
     expect(valueA.store).toBe(valueStoreA);
 
-    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
         actA = dsEvent.payload.entity.value.a;
     });
@@ -65,12 +65,12 @@ test('DSArrayStore process explicit', async () => {
     expect(valueA.store).toBe(valueStoreA);
 
     //const valueB = valueStoreA.create({ a: 2 });
-    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
         actA = dsEvent.payload.entity.value.a;
     });
 
-    storeManager.process(() => {
+    storeManager.process("test", () => {
         valueA.value = { a: 2 };
         expect(storeManager.events.length).toBe(1);
 
@@ -101,12 +101,12 @@ test('DSArrayStore listen', async () => {
     const valueB = valueStoreB.create({ b: 0 });
     const valueAB = valueStoreAB.create({ a: 0, b: 0, cnt: 0 });
 
-    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity.value.a;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
-    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSB>>) => {
+    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity.value.b;
         valueAB.value.cnt++;
         valueAB.valueChanged();
@@ -134,7 +134,7 @@ test('DSArrayStore process promise', async () => {
     const valueB = valueStoreB.create({ b: 0 });
     const valueAB = valueStoreAB.create({ a: 0, b: 0, cnt: 0 });
 
-    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity.value.a;
         valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
         var result = new Promise((resolve) => {
@@ -143,7 +143,7 @@ test('DSArrayStore process promise', async () => {
         });
         return result;
     });
-    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSB>>) => {
+    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity.value.b;
         valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
         var result = new Promise((resolve) => {
@@ -153,7 +153,7 @@ test('DSArrayStore process promise', async () => {
         return result;
     });
 
-    await storeManager.process(() => {
+    await storeManager.process("test", () => {
         valueA.value = { a: 1 };
         valueB.value = { b: 2 };
     });
@@ -173,7 +173,7 @@ test('DSArrayStore array', async () => {
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
-    valueStoreA.listenEvent({ storeName: "a", event: "attach" }, (dsEvent: DSEventAttach<DSStateValue<VSA>>) => {
+    valueStoreA.listenEventAttach("test", (dsEvent) => {
         const idxB = valueStoreB.entities.findIndex((b) => b.value.b === dsEvent.payload.entity.value.a);
         if (idxB < 0) {
             valueStoreB.create({ b: dsEvent.payload.entity.value.a });
@@ -183,7 +183,7 @@ test('DSArrayStore array', async () => {
         }
     });
 
-    valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    valueStoreA.listenEventValue("test", (dsEvent) => {
         debugger;
         throw "unexpected array 184"
     })

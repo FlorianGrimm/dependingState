@@ -16,32 +16,23 @@ export class AppViewProjectsUIStateValue extends DSStateValueSelf<AppViewProject
     }
 }
 
-export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, AppViewProjectsUIStateValue> {
-    compAUIStore: CompAUIStore | undefined;
-
-    constructor(storeName: string, value: AppViewProjectsUIStateValue) {
-        super(storeName, value);
-        this.compAUIStore = undefined;
+export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, AppViewProjectsUIStateValue, "appViewProjectsUIStore"> {
+    constructor(value: AppViewProjectsUIStateValue) {
+        super("appViewProjectsUIStore", value);
     }
 
     public postAttached(): void {
-        super.postAttached();
-        this.compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        compAUIStore.listenDirtyRelated("appViewProjectsUIStore", this);
     }
 
-    public processDirty(): boolean {
-        if (super.processDirty()) {
-            if (this.compAUIStore !== undefined) {
-                const compAUIStates = (Array.from(this.compAUIStore.entities.values())
-                    .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))
-                );
-                this.stateValue.compAUIStates = compAUIStates;
-                this.stateValue.valueChanged();
-            }
-            return true;
-        } else {
-            return false;
-        }
+    public processDirty(): void {
+        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        const compAUIStates = (Array.from(compAUIStore.entities.values())
+            .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))
+        );
+        this.stateValue.compAUIStates = compAUIStates;
+        this.stateValue.valueChanged();
     }
 }
 
@@ -72,7 +63,7 @@ export default class AppViewProjects extends React.Component<AppViewProjectsProp
     handleClick() {
         const storeManager = getAppStoreManager();
         const projectStore = storeManager.projectStore;
-        storeManager.process(() => {
+        storeManager.process("handleClick", () => {
             for (let i = 0; i < 1000; i++) {
                 const n = projectStore.entities.size + 1;
                 projectStore.set({ ProjectId: n.toString(), ProjectName: `Name - ${n}` });
@@ -85,6 +76,7 @@ export default class AppViewProjects extends React.Component<AppViewProjectsProp
         const { compAUIStates } = viewProps;
 
         return (<>
+        <div>list</div>
             {compAUIStates.map((compAUIState) => React.createElement(CompAView, compAUIState.getViewProps()))}
         </>);
     }

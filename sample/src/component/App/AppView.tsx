@@ -11,6 +11,7 @@ import { IAppStoreManager } from "src/store/AppStoreManager";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
 
 import CompAView, { CompAUIState, CompAUIStore } from "../CompA/CompA";
+import AppViewProjects, { AppViewProjectsUIStateValue } from "./AppViewProjects";
 
 /*
 import type { TStateRootAppStates } from "../../types";
@@ -20,57 +21,57 @@ import { UIPropsGetStateVersion } from "dependingState";
 
 export class AppViewStateValue extends DSStateValueSelf<AppViewStateValue> {
     appState: AppState | undefined;
-    compAUIStates: CompAUIState[];
+    appViewProjectsUIStateValue:AppViewProjectsUIStateValue|undefined;
 
     constructor() {
         super();
-        this.compAUIStates=[];
     }
 }
 
-export class AppViewStore extends DSObjectStore<AppViewStateValue, AppViewStateValue> {
-    getProjects: () => CompAUIState[];
+export class AppViewStore extends DSObjectStore<AppViewStateValue, AppViewStateValue, "appViewStore"> {
     appStateStateVersion: number;
     compAUIStoreStateVersion: number;
+    appViewProjectsUIStoreStateVersion: number;
 
-    constructor(storeName: string, value: AppViewStateValue) {
-        super(storeName, value);
+    constructor(value: AppViewStateValue) {
+        super("appViewStore", value);
         this.appStateStateVersion = 0;
         this.compAUIStoreStateVersion = 0;
-        this.getProjects = (() => []);
+        this.appViewProjectsUIStoreStateVersion=0;
     }
 
     public postAttached(): void {
         super.postAttached();
 
-        const appState = (this.storeManager! as unknown as IAppStoreManager).appState;
-        appState.listenDirtyRelated(this);
+        const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
+        appState.listenDirtyRelated(this.storeName, this);
 
-        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
-        compAUIStore.listenDirtyRelated(this);
+        // const appViewProjectsUIStore = (this.storeManager! as unknown as IAppStoreManager).appViewProjectsUIStore;
+        // appViewProjectsUIStore.listenDirtyRelated(this.storeName, this);
 
         this.stateValue.appState = appState.stateValue;
         this.isDirty = true;
     }
 
-    public processDirty(): boolean {
-        const result = super.processDirty();
-        if (result) {
-            const appState = (this.storeManager! as unknown as IAppStoreManager).appState;
-            const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
-            let changed=false;
-            if (this.appStateStateVersion !== appState.stateVersion) {
-                this.appStateStateVersion = appState.stateVersion;
-                this.stateValue.appState = appState.stateValue;
-                changed=true;
-            }
-            if (this.compAUIStoreStateVersion !== compAUIStore.stateVersion) {
-                this.compAUIStoreStateVersion = compAUIStore.stateVersion;
-                this.stateValue.compAUIStates = compAUIStore.compAUIStates;
-                changed=true;
-            }
+    public processDirty(): void {
+        const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
+        const appViewProjectsUIStore = (this.storeManager! as unknown as IAppStoreManager).appViewProjectsUIStore;
+        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        let changed=false;
+        if (this.appStateStateVersion !== appState.stateVersion) {
+            this.appStateStateVersion = appState.stateVersion;
+            this.stateValue.appState = appState.stateValue;
+            changed=true;
         }
-        return result;
+     
+        if (this.appViewProjectsUIStoreStateVersion !== appViewProjectsUIStore.stateVersion) {
+            this.appViewProjectsUIStoreStateVersion = appViewProjectsUIStore.stateVersion;
+            this.stateValue.appViewProjectsUIStateValue = appViewProjectsUIStore.stateValue;
+            changed=true;
+        }
+        if (changed){
+            this.stateValue.valueChanged();
+        }
     }
 }
 
@@ -91,17 +92,17 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
             stateVersion: this.props.getStateVersion()
         };
         this.props.wireStateVersion(this);
-        this.handleClick = this.handleClick.bind(this);
+        this.handleClickAdd = this.handleClickAdd.bind(this);
     }
 
     componentWillUnmount() {
         this.props.unwireStateVersion(this);
     }
 
-    handleClick() {
+    handleClickAdd() {
         const storeManager = getAppStoreManager();
         const projectStore = storeManager.projectStore;
-        storeManager.process(() => {
+        storeManager.process("handleClickAdd",() => {
             for (let i = 0; i < 1000; i++) {
                 const n = projectStore.entities.size + 1;
                 projectStore.set({ ProjectId: n.toString(), ProjectName: `Name - ${n}` });
@@ -111,7 +112,8 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
 
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        let language = (viewProps.appState?.language) || "";
+        const language = (viewProps.appState?.language) || "";
+        const appViewProjectsUIStateValue = viewProps.appViewProjectsUIStateValue;
 
         return (<div>
             App
@@ -119,9 +121,9 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
                 language:{language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
             <div>
-                <button onClick={this.handleClick}>add</button>
+                <button onClick={this.handleClickAdd}>add</button>
             </div>
-            {viewProps.compAUIStates.map((compAUIState) => React.createElement(CompAView, compAUIState.getUIStateValue().getViewProps()))}
+            { appViewProjectsUIStateValue && React.createElement(AppViewProjects, appViewProjectsUIStateValue.getViewProps())}
         </div>);
     }
 }

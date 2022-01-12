@@ -9,8 +9,8 @@ export class AppState extends DSStateValueSelf<AppState> {
     }
 }
 
-export class AppStore extends DSObjectStore<AppState, AppState> {
-    constructor(storeName: string, value: AppState) {
-        super(storeName, value);
+export class AppStore extends DSObjectStore<AppState, AppState, "appStore"> {
+    constructor(value: AppState) {
+        super("appStore", value);
     }
 }

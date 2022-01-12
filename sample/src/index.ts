@@ -18,16 +18,17 @@ import { Project } from './types';
 import { CompAUIState, CompAUIStore } from './component/CompA/CompA';
 import { AppViewProjectsUIStateValue, AppViewProjectsUIStore } from './component/App/AppViewProjects';
 import { AppState, AppStore } from './store/AppState';
+import { dsLog } from '../../dependingState/src/DSLog';
 
 function main() {
-    console.trace("main()");
-
-    const projectStore = new ProjectStore("project");
-    const compAUIStore = new CompAUIStore("compAUI");
-    const appState=new AppStore("appState", new AppState());
-    const appViewStore = new AppViewStore("appView", new AppViewStateValue());
+    dsLog.info("main()");
+    dsLog.enabled=true;
+    const projectStore = new ProjectStore();
+    const compAUIStore = new CompAUIStore();
+    const appState=new AppStore(new AppState());
+    const appViewStore = new AppViewStore(new AppViewStateValue());
     const appViewProjectsUIStateValue=new AppViewProjectsUIStateValue();
-    const appViewProjectsUIStore = new AppViewProjectsUIStore("appViewProjectsUI",appViewProjectsUIStateValue);
+    const appViewProjectsUIStore = new AppViewProjectsUIStore(appViewProjectsUIStateValue);
     const appStoreManager = new AppStoreManager(
         appState,
         projectStore,
@@ -40,40 +41,9 @@ function main() {
 
     (window as any).appStoreManager = appStoreManager;
 
-    /*
-    appViewStore.getProjects = (() => {
-        return (Array.from(compAUIStore.entities.values()) as unknown[] as CompAUIState[]).slice(0, 100);
-    });
-
-
-    compAUIStore.listenEvent<DSPayloadEntity<any>, "attach">({ storeName: "compAUI", event: "attach" }, (e) => {
-        appStoreManager.appViewStore.stateValue.valueChanged();
-    });
-
-    projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>, "attach">({ storeName: "project", event: "attach" }, (e) => {
-        appStoreManager.compAUIStore.set(new CompAUIState(e.payload.entity.value));
-    });
-
-    projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>, "value">({ storeName: "project", event: "value" }, (e) => {
-        const prj = e.payload.entity.value;
-        const compAUIState = appStoreManager.compAUIStore.get(prj.ProjectId);
-        if (compAUIState) {
-            compAUIState.value.ProjectName = prj.ProjectName;
-            compAUIState.valueChanged();
-        }
-    });
-
-    projectStore.listenEvent<Project, "hugo">({ storeName: "compAUI", event: "hugo" }, (e: DSEvent<Project>) => {
-        const prj = appStoreManager.projectStore.get(e.payload.ProjectId);
-        if (prj) {
-            prj.value.ProjectName = (new Date()).toISOString();
-            prj.valueChanged();
-        }
-    });
-    */
-
-
     appStoreManager.projectStore.set({ ProjectId: "1", ProjectName: "one" });
+    appStoreManager.projectStore.set({ ProjectId: "2", ProjectName: "two" });
+    appStoreManager.projectStore.set({ ProjectId: "3", ProjectName: "three" });
     appStoreManager.process();
     
     const rootElement = React.createElement(

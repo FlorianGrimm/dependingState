@@ -31,7 +31,7 @@ test('DSObjectStore process implicit', async () => {
     const valueA = valueStoreA.stateValue;
     expect(valueA.store).toBe(valueStoreA);
 
-    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
         actA = dsEvent.payload.entity.value.a;
     });
@@ -66,12 +66,12 @@ test('DSObjectStore process explicit', async () => {
     expect(valueA.store).toBe(valueStoreA);
 
     //const valueB = valueStoreA.create({ a: 2 });
-    const unlisten = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
         actA = dsEvent.payload.entity.value.a;
     });
 
-    await storeManager.process(() => {
+    await storeManager.process("test", () => {
         valueA.value = { a: 2 };
         expect(storeManager.events.length).toBe(1);
 
@@ -102,12 +102,12 @@ test('DSObjectStore listen', async () => {
     const valueB = valueStoreB.stateValue;
     const valueAB = valueStoreAB.stateValue;
 
-    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity.value.a;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
-    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSB>>) => {
+    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity.value.b;
         valueAB.value.cnt++;
         valueAB.valueChanged();
@@ -135,7 +135,7 @@ test('DSObjectStore process promise', async () => {
     const valueB = valueStoreB.stateValue;
     const valueAB = valueStoreAB.stateValue;
 
-    const unlistenA = valueStoreA.listenEvent({ storeName: "a", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSA>>) => {
+    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity.value.a;
         valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
         var result = new Promise((resolve) => {
@@ -144,7 +144,7 @@ test('DSObjectStore process promise', async () => {
         });
         return result;
     });
-    const unlistenB = valueStoreA.listenEvent({ storeName: "b", event: "value" }, (dsEvent: DSEventValue<DSStateValue<VSB>>) => {
+    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity.value.b;
         valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
         var result = new Promise((resolve) => {
@@ -154,7 +154,7 @@ test('DSObjectStore process promise', async () => {
         return result;
     });
 
-    await storeManager.process(() => {
+    await storeManager.process("test", () => {
         valueA.value = { a: 1 };
         valueB.value = { b: 2 };
     });

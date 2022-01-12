@@ -82,6 +82,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
     }
 
     triggerUIUpdate(): void {
+        this.triggerScheduled = false;
         const stateVersion = this.stateValue.stateVersion;
         if (this.component === undefined) {
             //

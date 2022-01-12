@@ -22,6 +22,7 @@ import {
     DSStateValue
 } from './DSStateValue';
 import { DSEventAttach, DSEventDetach } from '.';
+import { dsLog } from './DSLog';
 
 //, StoreName extends string = string
 export class DSValueStore<
@@ -33,10 +34,11 @@ export class DSValueStore<
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
     listenToAnyStore: boolean;
-    mapEventHandlers: Map<string, DSEventHandler[]>;
-    arrDirtyHandler: DSDirtyHandler<StateValue>[];
+    mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
+    arrDirtyHandler: { msg: string, handler: DSDirtyHandler<StateValue> }[];
+    arrDirtyRelated: { msg: string, valueStore: IDSValueStore }[] | undefined;
+    setEffectiveEvents: Set<string> | undefined;
     isDirty: boolean;
-    arrDirtyRelated: IDSValueStore[] | undefined;
     configuration: ConfigurationDSValueStore<Value, StateValue>;
 
     constructor(
@@ -72,13 +74,13 @@ export class DSValueStore<
         }
     }
 
-    public listenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): DSUnlisten {
+    public listenDirtyRelated<RelatedValueStore extends IDSValueStore>(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten {
         if (this.arrDirtyRelated === undefined) {
             this.arrDirtyRelated = [];
         }
-        const index = this.arrDirtyRelated.findIndex((item) => (item === relatedValueStore));
+        const index = this.arrDirtyRelated.findIndex((item) => (item.valueStore === relatedValueStore));
         if (index < 0) {
-            this.arrDirtyRelated = this.arrDirtyRelated?.concat([relatedValueStore]);
+            this.arrDirtyRelated = (this.arrDirtyRelated || []).concat([{ msg: msg, valueStore: relatedValueStore }]);
             return this.unlistenDirtyRelated.bind(this, relatedValueStore);
         } else {
             return (() => { });
@@ -87,7 +89,7 @@ export class DSValueStore<
 
     public unlistenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): void {
         if (this.arrDirtyRelated !== undefined) {
-            this.arrDirtyRelated = this.arrDirtyRelated.filter((item) => (item !== relatedValueStore));
+            this.arrDirtyRelated = this.arrDirtyRelated.filter((item) => (item.valueStore !== relatedValueStore));
             if (this.arrDirtyRelated.length === 0) {
                 this.arrDirtyRelated = undefined;
             }
@@ -95,32 +97,36 @@ export class DSValueStore<
     }
 
     public emitDirty(stateValue: StateValue): void {
+        if (dsLog.enabled) {
+            dsLog.info(`DS store.emitDirty ${this.storeName}`);
+        }
         if (this.arrDirtyRelated !== undefined) {
-            for (const relatedValueStore of this.arrDirtyRelated) {
-                relatedValueStore.isDirty = true;
+            if (dsLog.enabled) {
+                const msgDirtyRelated = this.arrDirtyRelated.map(dr => dr.msg).join(", ");
+                dsLog.info(`DS emitDirty to ${msgDirtyRelated}`)
+            }
+            for (const dirtyRelated of this.arrDirtyRelated) {
+                dirtyRelated.valueStore.isDirty = true;
             }
         }
-        for (const cb of this.arrDirtyHandler) {
-            cb(stateValue);
+        for (const dirtyRelated of this.arrDirtyHandler) {
+            if (dsLog.enabled) {
+                dsLog.info(`DS emitDirty to ${dirtyRelated.msg}`)
+            }
+            dirtyRelated.handler(stateValue);
         }
     }
 
-    public listenDirty(callback: DSDirtyHandler<StateValue>): DSUnlisten {
-        this.arrDirtyHandler.push(callback);
+    public listenDirty(msg: string, callback: DSDirtyHandler<StateValue>): DSUnlisten {
+        this.arrDirtyHandler.push({ msg: msg, handler: callback });
         return this.unlistenDirty.bind(this, callback);
     }
 
     public unlistenDirty(callback: DSDirtyHandler<StateValue>): void {
-        this.arrDirtyHandler = this.arrDirtyHandler.filter((cb) => cb !== callback);
+        this.arrDirtyHandler = this.arrDirtyHandler.filter((cb) => cb.handler !== callback);
     }
 
-    public processDirty(): boolean {
-        if (this.isDirty) {
-            this.isDirty = false;
-            return true;
-        } else {
-            return false;
-        }
+    public processDirty(): void {
     }
 
     public emitUIUpdate(uiStateValue: IDSUIStateValue<Value>) {
@@ -130,13 +136,6 @@ export class DSValueStore<
             this.storeManager.emitUIUpdate(uiStateValue);
         }
     }
-
-    /*
-    public emitEvent<
-        Event extends DSEvent<Payload, EventType, StoreName>, 
-        Payload = any, 
-        EventType extends string = string>(eventType: EventType, payload: Payload): DSEventHandlerResult {
-    */
 
     public emitEvent<
         Event extends DSEvent<any, string, StoreName>
@@ -155,30 +154,35 @@ export class DSValueStore<
 
     public listenEvent<
         Event extends DSEvent<any, string, StoreName>
-    >(event: Event['event'], callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    >(msg: string, event: Event['event'], callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         const key = `${this.storeName}/${event}`;
         let arrEventHandlers = this.mapEventHandlers.get(key);
         if (arrEventHandlers === undefined) {
-            this.mapEventHandlers.set(key, [callback as DSEventHandler]);
+            this.mapEventHandlers.set(key, [{ msg: msg, handler: callback as DSEventHandler }]);
         } else {
-            this.mapEventHandlers.set(key, arrEventHandlers.concat([callback as DSEventHandler]));
+            this.mapEventHandlers.set(key, arrEventHandlers.concat([{ msg: msg, handler: callback as DSEventHandler }]));
         }
         return this.unlistenEvent.bind(this, { storeName: this.storeName, event: event }, callback as DSEventHandler);
     }
 
-    public listenEventAnyStore< 
+    public listenEventAnyStore<
         Payload = any,
         EventType extends string = string,
         StoreName extends string = string
-    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten {
+    >(msg: string, event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten {
         const key = `${event.storeName}/${event.event}`;
         let arrEventHandlers = this.mapEventHandlers.get(key);
         if (arrEventHandlers === undefined) {
-            this.mapEventHandlers.set(key, [callback as DSEventHandler]);
+            this.mapEventHandlers.set(key, [{ msg: msg, handler: callback as DSEventHandler }]);
         } else {
-            this.mapEventHandlers.set(key, arrEventHandlers.concat([callback as DSEventHandler]));
+            this.mapEventHandlers.set(key, arrEventHandlers.concat([{ msg: msg, handler: callback as DSEventHandler }]));
         }
-        this.listenToAnyStore = true;
+        if ((event.storeName as string) === (this.storeName as string)) {
+            // 'internal'
+        } else {
+            this.listenToAnyStore = true;
+        }
+        this.storeManager?.resetRegisteredEvents();
         return this.unlistenEvent.bind(this, { storeName: event.storeName, event: event.event }, callback as DSEventHandler);
     }
 
@@ -192,7 +196,7 @@ export class DSValueStore<
         if (arrEventHandlers === undefined) {
             // should not be
         } else {
-            this.mapEventHandlers.set(key, arrEventHandlers.filter(cb => cb !== callback));
+            this.mapEventHandlers.set(key, arrEventHandlers.filter(cb => cb.handler !== callback));
         }
     }
 
@@ -207,8 +211,14 @@ export class DSValueStore<
         let arrEventHandlers = this.mapEventHandlers.get(key);
         if (arrEventHandlers === undefined) {
             // nobody is listening
+            if (dsLog.enabled) {
+                dsLog.info(`DS store.processEvent ${event.storeName}/${event.event} nobody is listening`);
+            }
         } else {
-            for (const callback of arrEventHandlers) {
+            for (const { msg, handler: callback } of arrEventHandlers) {
+                if (dsLog.enabled) {
+                    dsLog.info(`DS store.processEvent ${event.storeName}/${event.event} with ${msg}`);
+                }
                 if (r === undefined) {
                     r = callback(event);
                 } else {
@@ -247,6 +257,10 @@ export class DSObjectStore<
         this.stateValue = stateValue;
         stateValue.setStore(this);
     }
+
+    public listenEventValue<Event extends DSEventValue<StateValue, never, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+        return this.listenEvent(msg, "value", callback as any);
+    }
 }
 
 export class DSArrayStore<
@@ -263,7 +277,7 @@ export class DSArrayStore<
         this.entities = [];
     }
 
-    create(value: Value): StateValue {
+    public create(value: Value): StateValue {
         const create = (this.configuration as ConfigurationDSArrayValueStore<Value, StateValue>).create;
         if (create !== undefined) {
             const result = create(value);
@@ -276,7 +290,7 @@ export class DSArrayStore<
         }
     }
 
-    attach(stateValue: StateValue): StateValue {
+    public attach(stateValue: StateValue): StateValue {
         if (stateValue.setStore(this)) {
             this.entities.push(stateValue);
             const index = this.entities.length - 1;
@@ -285,7 +299,7 @@ export class DSArrayStore<
         return stateValue;
     }
 
-    detach(stateValue: StateValue): void {
+    public detach(stateValue: StateValue): void {
         const index = this.entities.findIndex((item) => item === stateValue);
         if (index < 0) {
             // do nothing
@@ -294,6 +308,18 @@ export class DSArrayStore<
             oldValue.store = undefined;
             this.emitEvent<DSEventDetach<StateValue, never, number, StoreName>>("detach", { entity: oldValue, index: index });
         }
+    }
+
+    public listenEventAttach<Event extends DSEventAttach<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+        return this.listenEvent(msg, "attach", callback as any);
+    }
+
+    public listenEventValue<Event extends DSEventValue<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+        return this.listenEvent(msg, "value", callback as any);
+    }
+
+    public listenEventDetach<Event extends DSEventDetach<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+        return this.listenEvent(msg, "detach", callback as any);
     }
 }
 
@@ -357,6 +383,18 @@ export class DSMapStore<
             oldValue.store = undefined;
             this.emitEvent<DSEventDetach<StateValue, Key, never, StoreName>>("detach", { entity: oldValue, key: key });
         }
+    }
+
+    public listenEventAttach<Event extends DSEventAttach<StateValue, Key, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
+        return this.listenEvent(msg, "attach", callback as any);
+    }
+
+    public listenEventValue<Event extends DSEventValue<StateValue, Key, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
+        return this.listenEvent(msg, "value", callback as any);
+    }
+
+    public listenEventDetach<Event extends DSEventDetach<StateValue, Key, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
+        return this.listenEvent(msg, "detach", callback as any);
     }
 }
 

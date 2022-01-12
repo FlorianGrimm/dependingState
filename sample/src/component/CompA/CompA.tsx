@@ -1,6 +1,7 @@
 import { DSEntityStore, DSEvent, DSEventAttach, DSEventDetach, DSEventValue, DSStateValue, DSUIProps, DSUIViewStateBase } from "dependingState";
 import React from "react";
 import { IAppStoreManager } from "src/store/AppStoreManager";
+import { dsLog } from "../../../../dependingState/src/DSLog";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
 import { Project } from "../../types";
 
@@ -30,35 +31,38 @@ export class CompAUIState extends DSStateValue<CompAUIState> {
     }
 }
 
-export class CompAUIStore extends DSEntityStore<string, CompAUIState, CompAUIState>{
-    compAUIStates: CompAUIState[];
+export class CompAUIStore extends DSEntityStore<string, CompAUIState, CompAUIState, "compAUIStore">{
+    //compAUIStates: CompAUIState[];
 
-    constructor(storeName: string) {
-        super(storeName, { create: (item: CompAUIState) => item, getKey: (item: CompAUIState) => item.ProjectId });
-        this.compAUIStates = [];
+    constructor() {
+        super("compAUIStore", { create: (item: CompAUIState) => item, getKey: (item: CompAUIState) => item.ProjectId });
+        //this.compAUIStates = [];
     }
 
     public postAttached(): void {
         //debugger;
         var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
-        projectStore.listenEvent<DSEventAttach<Project, string, never>>("attach", (e) => {
+        projectStore.listenEventAttach(this.storeName, (e) => {
             //debugger;
-            const project = e.payload.entity;
+            const project = e.payload.entity.value;
             this.attach(project.ProjectId, new CompAUIState(project));
             this.isDirty = true;
         });
-        projectStore.listenEvent<DSEventDetach<Project, string, never>>("detach", (e) => {
+        projectStore.listenEventDetach(this.storeName, (e) => {
             this.detach(e.payload.key);
             this.isDirty = true;
         });
-        projectStore.listenEvent<DSEventValue<Project, string, never>>("value", (e) => {
-            var compAUIState = this.get(e.payload.key);
+        projectStore.listenEventValue(this.storeName, (e) => {
+            const key=e.payload.entity.value.ProjectId;
+            var compAUIState = this.get(key);
             if (compAUIState) {
-                compAUIState.value.ProjectName = e.payload.entity.ProjectName;
+                compAUIState.value.ProjectName = e.payload.entity.value.ProjectName;
                 compAUIState.valueChanged();
+            } else{
+                dsLog.warn(`compAUIState wiht ${key} not found.`)
             }
         });
-        projectStore.listenEvent<DSEvent<Project>>("hugo", (e)=>{
+        this.listenEvent<DSEvent<Project>>(this.storeName, "hugo", (e) => {
             var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
             const prj = projectStore.get(e.payload.ProjectId);
             if (prj) {
@@ -68,16 +72,16 @@ export class CompAUIStore extends DSEntityStore<string, CompAUIState, CompAUISta
         });
     }
 
-    public processDirty(): boolean {
-        const result = super.processDirty();
-        if (result) {
-            const compAUIStates = (Array.from(this.entities.values())
-                .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))
-            );
-            this.compAUIStates = compAUIStates;
-        }
-        return result;
+    public processDirty(): void {
+        this.emitDirty(null!);
     }
+    // public processDirty(): void {
+    //     const compAUIStates = (Array.from(this.entities.values())
+    //         .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))
+    //     );
+    //     this.compAUIStates = compAUIStates;
+    //     this.compAUIStates.forEach((item)=>item.valueChanged())
+    // }
 }
 
 
@@ -96,8 +100,13 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
     }
 
     handleClick() {
-        const viewProps = this.props.getRenderProps();
-        getAppStoreManager().emitEvent({ storeName: "compAUI", event: "hugo", payload: viewProps });
+        console.group("hugo");
+        try{
+            const viewProps = this.props.getRenderProps();
+            getAppStoreManager().emitEvent({ storeName: "compAUIStore", event: "hugo", payload: viewProps });
+        }finally{
+            console.groupEnd();
+        }
 
         /*
         const prj = getNotNice().projectStore.get(viewProps.ProjectId);

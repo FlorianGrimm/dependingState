@@ -60,11 +60,11 @@ test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
     const projectUIStore = new DSMapStore<string, ProjectUI, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
-    projectStore.listenEvent<DSPayloadEntity<DSStateValue<Project>>>({ storeName: "project", event: "attach" }, (projectValue) => {
+    projectStore.listenEventAttach("test", (projectValue) => {
         const project = projectValue.payload.entity.value;
         projectUIStore.attach(project.ProjectId, new ProjectUI(project))
     });
-    projectStore.listenDirty((project) => {
+    projectStore.listenDirty("test", (project) => {
         const projectUI = projectUIStore.get(project.value.ProjectId) as (ProjectUI | undefined);
         if (projectUI) {
             projectUI.isDirty = true;
@@ -82,9 +82,9 @@ test('Dirty', async () => {
     expect(projectStore.get("2")!.value.ProjectName).toBe("two");
     expect(projectStore.get("3")!.value.ProjectName).toBe("three");
     expect(projectUIStore.entities.size).toBe(3);
-    await storeManager.process();
+    await storeManager.process("init");
 
-    await storeManager.process(() => {
+    await storeManager.process("Dirty", () => {
         var project1 = projectStore.get("1");
         var projectUI1 = projectUIStore.get("1");
         if (project1 && projectUI1) {
