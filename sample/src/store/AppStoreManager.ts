@@ -3,9 +3,9 @@ import {
 } from "dependingState";
 // import React from "react";
 import type { AppViewStore } from "src/component/App/AppView";
-import type { AppViewProjectsUIStore } from "src/component/App/AppViewProjects";
-import type { CompAUIStore } from "src/component/CompA/CompA";
-import { IDSStoreManager } from "../../../dependingState/src/types";
+import type { AppViewProjectsUIStore } from "src/component/App/AppViewProjectsUIStore";
+import type { CompAStore } from "src/component/CompA/CompAStore";
+import { IDSStoreManager } from "dependingState";
 import type { AppStore } from "./AppState";
 import type { ProjectStore } from "./ProjectStore";
 
@@ -13,7 +13,7 @@ export interface IAppStoreManager extends IDSStoreManager {
     appStore: AppStore;
     projectStore: ProjectStore;
     appViewStore: AppViewStore;
-    compAUIStore: CompAUIStore;
+    compAUIStore: CompAStore;
     appViewProjectsUIStore: AppViewProjectsUIStore;
 }
 
@@ -22,7 +22,7 @@ export class AppStoreManager extends DSStoreManager implements IAppStoreManager 
         public appStore: AppStore,
         public projectStore: ProjectStore,
         public appViewStore: AppViewStore,
-        public compAUIStore: CompAUIStore,
+        public compAUIStore: CompAStore,
         public appViewProjectsUIStore: AppViewProjectsUIStore
     ) {
         super();

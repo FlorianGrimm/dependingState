@@ -1,4 +1,5 @@
 import type React from 'react';
+import { dsLog } from '.';
 import type {
     IDSUIStateValue,
     IDSStateValue,
@@ -96,13 +97,16 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
                 } else if (Array.isArray(this.component)) {
                     for (const component of this.component) {
                         component.setState({ stateVersion: stateVersion });
-
-                        console.log("triggerUIUpdate", (component as any).constructor.name, stateVersion);
+                        if (dsLog.enabled){
+                            dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", component);
+                        }
                     }
                 } else {
                     this.component.setState({ stateVersion: stateVersion });
 
-                    console.log("triggerUIUpdate", (this.component as any).constructor.name, stateVersion);
+                    if (dsLog.enabled){
+                        dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", this.component);
+                    }
                 }
             }
         }

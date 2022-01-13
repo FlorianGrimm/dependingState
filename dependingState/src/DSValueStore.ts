@@ -3,12 +3,10 @@ import type {
     DSEvent,
     DSEventHandler,
     DSEventHandlerResult,
-    DSPayloadEntity,
     DSUnlisten,
     DSEventName,
     IDSValueStore,
     IDSStateValue,
-    WrappedDSStateValue,
     IDSStoreManager,
     IDSUIStateValue,
     ConfigurationDSValueStore,
@@ -16,20 +14,26 @@ import type {
     ConfigurationDSMapValueStore,
     ConfigurationDSEntityValueStore,
     DSEventValue,
+    DSEventAttach,
+    DSEventDetach,
+    IDSStoreBuilder,
+    DSPayloadEntityPropertiesChanged
 } from './types'
 
 import {
     DSStateValue
 } from './DSStateValue';
-import { DSEventAttach, DSEventDetach } from '.';
-import { dsLog } from './DSLog';
 
-//, StoreName extends string = string
+import {
+    dsLog
+} from './DSLog';
+
 export class DSValueStore<
     Value = any,
     StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
     StoreName extends string = string
     > implements IDSValueStore<Value, StateValue, StoreName>{
+    private _isDirty: boolean;
     storeName: StoreName;
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
@@ -38,8 +42,9 @@ export class DSValueStore<
     arrDirtyHandler: { msg: string, handler: DSDirtyHandler<StateValue> }[];
     arrDirtyRelated: { msg: string, valueStore: IDSValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
-    isDirty: boolean;
+
     configuration: ConfigurationDSValueStore<Value, StateValue>;
+    storeBuilder: IDSStoreBuilder<StoreName> | undefined;
 
     constructor(
         storeName: StoreName,
@@ -50,7 +55,7 @@ export class DSValueStore<
         this.listenToAnyStore = false;
         this.mapEventHandlers = new Map();
         this.arrDirtyHandler = [];
-        this.isDirty = false;
+        this._isDirty = false;
         this.stateVersion = 1;
         if (configuration === undefined) {
             this.configuration = {};
@@ -59,18 +64,39 @@ export class DSValueStore<
         }
     }
 
-    public getNextStateVersion(stateVersion: number): number {
-        if (this.storeManager === undefined) {
-            return (this.stateVersion = (Math.max(this.stateVersion, stateVersion) + 1));
+    public get isDirty(): boolean {
+        return this._isDirty;
+    }
+
+    public set isDirty(value: boolean) {
+        if (this._isDirty == value) {
+            //
         } else {
-            return (this.stateVersion = this.storeManager.getNextStateVersion(stateVersion));
+            this._isDirty = value;
+            dsLog.infoACME("DS", "DSValueStore", "isDirty", value ? "true" : "false");
         }
+    }
+
+    public setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void {
+        if (this.storeBuilder !== undefined) {
+            throw new Error(`DS storeBuilder is already set ${this.storeName}`);
+        }
+        this.storeBuilder = storeBuilder;
+        storeBuilder.bindValueStore(this);
     }
 
     public postAttached(): void {
         this.stateVersion = this.storeManager!.getNextStateVersion(0);
         if (this.configuration.postAttached !== undefined) {
             this.configuration.postAttached();
+        }
+    }
+
+    public getNextStateVersion(stateVersion: number): number {
+        if (this.storeManager === undefined) {
+            return (this.stateVersion = (Math.max(this.stateVersion, stateVersion) + 1));
+        } else {
+            return (this.stateVersion = this.storeManager.getNextStateVersion(stateVersion));
         }
     }
 
@@ -98,22 +124,22 @@ export class DSValueStore<
 
     public emitDirty(stateValue: StateValue): void {
         if (dsLog.enabled) {
-            dsLog.info(`DS store.emitDirty ${this.storeName}`);
+            dsLog.infoACME("DS", "DSValueStore", "emitDirty", this.storeName);
         }
         if (this.arrDirtyRelated !== undefined) {
             if (dsLog.enabled) {
                 const msgDirtyRelated = this.arrDirtyRelated.map(dr => dr.msg).join(", ");
-                dsLog.info(`DS emitDirty to ${msgDirtyRelated}`)
+                dsLog.infoACME("DS", "DSValueStore", "emitDirty", msgDirtyRelated, "/DirtyRelated");
             }
             for (const dirtyRelated of this.arrDirtyRelated) {
                 dirtyRelated.valueStore.isDirty = true;
             }
         }
-        for (const dirtyRelated of this.arrDirtyHandler) {
+        for (const dirtyHandler of this.arrDirtyHandler) {
             if (dsLog.enabled) {
-                dsLog.info(`DS emitDirty to ${dirtyRelated.msg}`)
+                dsLog.infoACME("DS", "DSValueStore", "emitDirty", dirtyHandler.msg, "/dirtyHandler");
             }
-            dirtyRelated.handler(stateValue);
+            dirtyHandler.handler(stateValue);
         }
     }
 
@@ -212,12 +238,12 @@ export class DSValueStore<
         if (arrEventHandlers === undefined) {
             // nobody is listening
             if (dsLog.enabled) {
-                dsLog.info(`DS store.processEvent ${event.storeName}/${event.event} nobody is listening`);
+                dsLog.infoACME("DS", "DSValueStore", "processEvent", `${event.storeName}/${event.event}`, "/nobody is listening");
             }
         } else {
             for (const { msg, handler: callback } of arrEventHandlers) {
                 if (dsLog.enabled) {
-                    dsLog.info(`DS store.processEvent ${event.storeName}/${event.event} with ${msg}`);
+                    dsLog.infoACME("DS", "DSValueStore", "processEvent", `${event.storeName}/${event.event}`, `/with ${msg}`);
                 }
                 if (r === undefined) {
                     r = callback(event);
@@ -258,7 +284,7 @@ export class DSObjectStore<
         stateValue.setStore(this);
     }
 
-    public listenEventValue<Event extends DSEventValue<StateValue, never, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    public listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
     }
 }
@@ -314,7 +340,7 @@ export class DSArrayStore<
         return this.listenEvent(msg, "attach", callback as any);
     }
 
-    public listenEventValue<Event extends DSEventValue<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    public listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
     }
 
@@ -389,7 +415,7 @@ export class DSMapStore<
         return this.listenEvent(msg, "attach", callback as any);
     }
 
-    public listenEventValue<Event extends DSEventValue<StateValue, Key, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
+    public listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
     }
 

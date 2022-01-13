@@ -1,4 +1,5 @@
 import {
+    dsLog,
     DSObjectStore,
     DSStateValue,
     DSStateValueSelf,
@@ -6,12 +7,12 @@ import {
     DSUIViewStateBase
 } from "dependingState";
 import React from "react";
-import type { AppState } from "src/store/AppState";
-import { IAppStoreManager } from "src/store/AppStoreManager";
+import type { AppState } from "../../store/AppState";
+import { IAppStoreManager } from "../../store/AppStoreManager";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
 
-import CompAView, { CompAUIState, CompAUIStore } from "../CompA/CompA";
-import AppViewProjects, { AppViewProjectsUIStateValue } from "./AppViewProjects";
+import AppViewProjects from "./AppViewProjects";
+import { AppViewProjectsUIStateValue } from "./AppViewProjectsUIStateValue";
 
 /*
 import type { TStateRootAppStates } from "../../types";
@@ -30,13 +31,11 @@ export class AppViewStateValue extends DSStateValueSelf<AppViewStateValue> {
 
 export class AppViewStore extends DSObjectStore<AppViewStateValue, AppViewStateValue, "appViewStore"> {
     appStateStateVersion: number;
-    compAUIStoreStateVersion: number;
     appViewProjectsUIStoreStateVersion: number;
 
     constructor(value: AppViewStateValue) {
         super("appViewStore", value);
         this.appStateStateVersion = 0;
-        this.compAUIStoreStateVersion = 0;
         this.appViewProjectsUIStoreStateVersion=0;
     }
 
@@ -56,7 +55,6 @@ export class AppViewStore extends DSObjectStore<AppViewStateValue, AppViewStateV
     public processDirty(): void {
         const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
         const appViewProjectsUIStore = (this.storeManager! as unknown as IAppStoreManager).appViewProjectsUIStore;
-        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
         let changed=false;
         if (this.appStateStateVersion !== appState.stateVersion) {
             this.appStateStateVersion = appState.stateVersion;
@@ -103,10 +101,15 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         const storeManager = getAppStoreManager();
         const projectStore = storeManager.projectStore;
         storeManager.process("handleClickAdd",() => {
+            dsLog.group("handleClick - Adding");
             for (let i = 0; i < 1000; i++) {
                 const n = projectStore.entities.size + 1;
                 projectStore.set({ ProjectId: n.toString(), ProjectName: `Name - ${n}` });
             }
+            dsLog.groupEnd();
+            dsLog.group("handleClick - Added");
+            storeManager.process();
+            dsLog.groupEnd();
         });
     }
 
