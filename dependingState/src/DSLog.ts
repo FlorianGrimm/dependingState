@@ -140,20 +140,20 @@ export class DSLog {
     }
 }
 
-function defaultConvertArg(currentArg: any): string {
-    if (currentArg === undefined) {
+function defaultConvertExtraArg(currentExtraArg: any): string {
+    if (currentExtraArg === undefined) {
         return "undefined";
     }
-    if (currentArg === null) {
+    if (currentExtraArg === null) {
         return "null";
     }
-    if (typeof currentArg === "string") {
-        return currentArg;
+    if (typeof currentExtraArg === "string") {
+        return currentExtraArg;
     }
-    if (currentArg.constructor && typeof currentArg.constructor.name === "string") {
-        return currentArg.constructor.name;
+    if (currentExtraArg.constructor && typeof currentExtraArg.constructor.name === "string") {
+        return currentExtraArg.constructor.name;
     }
-    return `${currentArg}`;
+    return `${currentExtraArg}`;
 }
 type fnACME = (
     currentApp: string,
@@ -222,7 +222,7 @@ export class DSLogApp extends DSLog {
 
     constructor() {
         super();
-        this.convertArg = defaultConvertArg;
+        this.convertArg = defaultConvertExtraArg;
         this.watchoutEnabled = false;
         this.watchoutApp = undefined;
         this.watchoutClass = undefined;

@@ -1,7 +1,7 @@
 import { DSEntityStore, DSEvent, dsLog, getPropertiesChanged } from "dependingState";
 import { Project } from "../../types";
 import { IAppStoreManager } from "../../store/AppStoreManager";
-import { compAUIStoreBuilder, hugo } from "./CompAActions";
+import { compAUIStoreBuilder, ola } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
 
 export class CompAStore extends DSEntityStore<string, CompAValue, CompAValue, "CompAStore">{
@@ -19,7 +19,9 @@ export class CompAStore extends DSEntityStore<string, CompAValue, CompAValue, "C
         var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
         projectStore.listenEventAttach(this.storeName, (e) => {
             const project = e.payload.entity.value;
-            this.attach(project.ProjectId, new CompAValue(project));
+            const compAValue = new CompAValue(project)
+            this.attach(project.ProjectId, compAValue);
+            compAValue.nbrC = compAValue.nbrA + compAValue.nbrB;
             this.isDirty = true;
         });
         projectStore.listenEventDetach(this.storeName, (e) => {
@@ -27,23 +29,35 @@ export class CompAStore extends DSEntityStore<string, CompAValue, CompAValue, "C
             this.isDirty = true;
         });
         projectStore.listenEventValue(this.storeName, (e) => {
-            const key = e.payload.entity.value.ProjectId;
-            var compAUIState = this.get(key);
-            if (compAUIState) {
-                const compAUIStatePC=getPropertiesChanged(compAUIState.value);
-                compAUIStatePC.setIf("ProjectName", e.payload.entity.value.ProjectName);
-                compAUIStatePC.valueChangedIfNeeded();                
-            } else {
-                dsLog.warn(`compAUIState wiht ${key} not found.`)
+            const properties = e.payload.properties;
+            if (properties === undefined || properties.has("ProjectName")) {
+                const key = e.payload.entity.value.ProjectId;
+                var compAUIState = this.get(key);
+                if (compAUIState) {
+                    const compAUIStatePC = getPropertiesChanged(compAUIState.value);
+                    compAUIStatePC.setIf("ProjectName", e.payload.entity.value.ProjectName);
+                    compAUIStatePC.valueChangedIfNeeded();
+                } else {
+                    dsLog.warn(`compAUIState wiht ${key} not found.`)
+                }
             }
         });
-        hugo.listenEvent<DSEvent<Project>>("handle hugo", (e) => {
+        ola.listenEvent<DSEvent<Project>>("handle hugo", (e) => {
             var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
             const prj = projectStore.get(e.payload.ProjectId);
             if (prj) {
                 const prjPC = getPropertiesChanged(prj);
                 prjPC.setIf("ProjectName", (new Date()).toISOString());
                 prjPC.valueChangedIfNeeded();
+            }
+        });
+        this.listenEventValue("a+b=c", (e) => {
+            const properties = e.payload.properties;
+            if (properties === undefined || properties.has("nbrA") || properties.has("nbrB")) {
+                const compAValue = e.payload.entity;
+                const compAValuePC = getPropertiesChanged(compAValue);
+                compAValuePC.setIf("nbrC", compAValue.nbrA + compAValue.nbrB);
+                compAValuePC.valueChangedIfNeeded();
             }
         });
         /*

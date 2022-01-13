@@ -111,4 +111,13 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
             }
         }
     }
+    toString():string{
+        if (typeof (this.stateValue.value as any).toString === "function"){
+            return (this.stateValue.value as any).toString();
+        }
+        if (typeof (this.stateValue as any).toString === "function"){
+            return this.stateValue.toString();
+        }
+        return `${this.stateValue}`;
+    }
 }

@@ -13,7 +13,7 @@ import { catchLog } from "./PromiseHelper";
 
 type ValueStoreInternal = {
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
-    arrDirtyHandler: { msg: string, handler: DSDirtyHandler<any> }[];
+    arrDirtyHandler: { msg: string, handler: DSDirtyHandler<any, any> }[];
     arrDirtyRelated: { msg: string, valueStore: IDSValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
 } & IDSValueStore;
@@ -135,6 +135,7 @@ export class DSStoreManager implements IDSStoreManager {
             if (uiStateValue.triggerScheduled === false) {
                 uiStateValue.triggerScheduled = true;
                 this.arrUIStateValue.push(uiStateValue);
+                //console.warn("emitUIUpdate", this.arrUIStateValue.length, uiStateValue)
             }
         }
     }
@@ -157,14 +158,6 @@ export class DSStoreManager implements IDSStoreManager {
                     dsLog.warn(`DS emitEvent no such event ${event.storeName}/${event.event}`)
                 }
                 return;
-            } else {
-                if (this.isProcessing>0){
-                    if (this.events.length == 0) {
-                        console.warn("no events direct execution");
-                        return this.processOneEvent(event);
-                        //arrEventHandlers[0].
-                    }
-                }
             }
         }
         this.events.push(event);
@@ -301,7 +294,7 @@ export class DSStoreManager implements IDSStoreManager {
             this.shouldIncrementStateVersion = false;
             this.nextStateVersion++;
             if (dsLog.enabled) {
-                dsLog.infoACME("DS", "DSStoreManager", "processUIUpdates", `${this.nextStateVersion}`);
+                dsLog.infoACME("DS", "DSStoreManager", "incrementStateVersion", `${this.nextStateVersion}`);
             }
         }
     }

@@ -67,9 +67,10 @@ export interface IDSValueStore<
 
     listenDirtyRelated<RelatedValueStore extends IDSValueStore>(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten;
     unlistenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): void;
-    emitDirty(stateValue: StateValue): void;
-    listenDirty(msg: string, callback: DSDirtyHandler<StateValue>): DSUnlisten;
-    unlistenDirty(callback: DSDirtyHandler<StateValue>): void;
+    emitDirtyFromValueChanged(stateValue?: StateValue, properties?: Set<keyof Value>): void;
+    emitDirty(stateValue?: StateValue, properties?: Set<keyof Value>): void;
+    listenDirty(msg: string, callback: DSDirtyHandler<StateValue, Value>): DSUnlisten;
+    unlistenDirty(callback: DSDirtyHandler<StateValue, Value>): void;
     processDirty(): void;
 
     emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
@@ -243,8 +244,10 @@ export type DSEventValue<
     StoreName extends string = string
     > = DSEvent<DSPayloadEntityPropertiesChanged<StateValue>, "value", StoreName>;
 
-export type DSDirtyHandler<StateValue> = (stateValue: StateValue) => void;
+export type DSDirtyHandler<StateValue, Value> = (stateValue?: StateValue, properties?:Set<keyof Value>) => void;
+
 export type DSEventHandlerResult = (Promise<any | void> | void);
+
 export type DSEventHandler<
     Payload = any,
     EventType extends string = string,

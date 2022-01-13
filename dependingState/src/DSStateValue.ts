@@ -128,12 +128,11 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         return this as unknown as Value;
     }
 
-    // TODO Properties
     public valueChanged(properties?: Set<keyof Value> | undefined) {
         this.isDirty = false;
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
-            this.store.emitDirty(this);
+            this.store.emitDirtyFromValueChanged(this, properties);
             this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, any>>("value", { entity: this, properties:properties });
         }
         if (this.uiStateValue !== undefined) {

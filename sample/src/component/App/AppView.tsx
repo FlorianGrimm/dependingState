@@ -101,15 +101,15 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         const storeManager = getAppStoreManager();
         const projectStore = storeManager.projectStore;
         storeManager.process("handleClickAdd",() => {
-            dsLog.group("handleClick - Adding");
+            //dsLog.group("handleClick - Adding");
             for (let i = 0; i < 1000; i++) {
                 const n = projectStore.entities.size + 1;
                 projectStore.set({ ProjectId: n.toString(), ProjectName: `Name - ${n}` });
             }
-            dsLog.groupEnd();
-            dsLog.group("handleClick - Added");
+            // dsLog.groupEnd();
+            // dsLog.group("handleClick - Added");
             storeManager.process();
-            dsLog.groupEnd();
+            // dsLog.groupEnd();
         });
     }
 

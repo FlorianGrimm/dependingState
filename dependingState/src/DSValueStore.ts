@@ -39,10 +39,10 @@ export class DSValueStore<
     stateVersion: number;
     listenToAnyStore: boolean;
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
-    arrDirtyHandler: { msg: string, handler: DSDirtyHandler<StateValue> }[];
+    arrDirtyHandler: { msg: string, handler: DSDirtyHandler<StateValue, Value> }[];
     arrDirtyRelated: { msg: string, valueStore: IDSValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
-
+    enableEmitDirtyFromValueChanged: boolean;
     configuration: ConfigurationDSValueStore<Value, StateValue>;
     storeBuilder: IDSStoreBuilder<StoreName> | undefined;
 
@@ -57,6 +57,8 @@ export class DSValueStore<
         this.arrDirtyHandler = [];
         this._isDirty = false;
         this.stateVersion = 1;
+        this.enableEmitDirtyFromValueChanged = false;
+
         if (configuration === undefined) {
             this.configuration = {};
         } else {
@@ -73,7 +75,11 @@ export class DSValueStore<
             //
         } else {
             this._isDirty = value;
-            dsLog.infoACME("DS", "DSValueStore", "isDirty", value ? "true" : "false");
+            if (value){
+                dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "true");
+            } else {
+                //dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "false");
+            }
         }
     }
 
@@ -122,7 +128,13 @@ export class DSValueStore<
         }
     }
 
-    public emitDirty(stateValue: StateValue): void {
+    public emitDirtyFromValueChanged(stateValue?: StateValue, properties?: Set<keyof Value>): void {
+        if (this.enableEmitDirtyFromValueChanged) {
+            this.emitDirty(stateValue, properties);
+        }
+    }
+
+    public emitDirty(stateValue?: StateValue, properties?: Set<keyof Value>): void {
         if (dsLog.enabled) {
             dsLog.infoACME("DS", "DSValueStore", "emitDirty", this.storeName);
         }
@@ -139,16 +151,16 @@ export class DSValueStore<
             if (dsLog.enabled) {
                 dsLog.infoACME("DS", "DSValueStore", "emitDirty", dirtyHandler.msg, "/dirtyHandler");
             }
-            dirtyHandler.handler(stateValue);
+            dirtyHandler.handler(stateValue, properties);
         }
     }
 
-    public listenDirty(msg: string, callback: DSDirtyHandler<StateValue>): DSUnlisten {
+    public listenDirty(msg: string, callback: DSDirtyHandler<StateValue, Value>): DSUnlisten {
         this.arrDirtyHandler.push({ msg: msg, handler: callback });
         return this.unlistenDirty.bind(this, callback);
     }
 
-    public unlistenDirty(callback: DSDirtyHandler<StateValue>): void {
+    public unlistenDirty(callback: DSDirtyHandler<StateValue, Value>): void {
         this.arrDirtyHandler = this.arrDirtyHandler.filter((cb) => cb.handler !== callback);
     }
 
@@ -347,6 +359,14 @@ export class DSArrayStore<
     public listenEventDetach<Event extends DSEventDetach<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "detach", callback as any);
     }
+
+    /*
+    public processDirty(): void {
+        for (const entity of this.entities) {
+            entity.processDirty();
+        }
+    }
+    */
 }
 
 export class DSMapStore<
@@ -422,6 +442,14 @@ export class DSMapStore<
     public listenEventDetach<Event extends DSEventDetach<StateValue, Key, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
         return this.listenEvent(msg, "detach", callback as any);
     }
+    
+    /*
+    public processDirty(): void {
+        for (const entity of this.entities.values()) {
+            entity.processDirty();
+        }
+    }
+    */
 }
 
 export class DSEntityStore<

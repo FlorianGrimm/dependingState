@@ -1,14 +1,18 @@
 import React from "react";
-import { DSUIProps, DSUIViewStateBase } from "dependingState";
-import { getAppStoreManager } from "../../singletonAppStoreManager";
+import { DSUIProps, DSUIViewStateBase, getPropertiesChanged } from "dependingState";
 import { Project } from "../../types";
-import { hugo } from "./CompAActions";
+import { ola } from "./CompAActions";
+import NumberInput from "../NumberInput/NumberInput";
+import { CompAValue } from "./CompAValue";
+import { getAppStoreManager } from "../../singletonAppStoreManager";
 
-type CompAViewProps = DSUIProps<Project>;
+type CompAViewProps = DSUIProps<CompAValue>;
 
 type CompAViewState = {
 } & DSUIViewStateBase;
-
+const inputStyle :React.CSSProperties={
+    width: 30,
+};
 export default class CompAView extends React.Component<CompAViewProps, CompAViewState>{
     constructor(props: CompAViewProps) {
         super(props);
@@ -17,6 +21,8 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
         };
         this.props.wireStateVersion(this);
         this.handleClick = this.handleClick.bind(this);
+        this.handleSetA = this.handleSetA.bind(this);
+        this.handleSetB = this.handleSetB.bind(this);
     }
 
     componentWillUnmount() {
@@ -24,30 +30,37 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
     }
 
     handleClick() {
-        console.group("hugo");
+        console.group("ola");
         try {
-            //const viewProps = this.props.getRenderProps();
-            //getAppStoreManager().emitEvent({ storeName: "compAUIStore", event: "hugo", payload: viewProps });
-            hugo.emitEvent(this.props.getRenderProps());
-            //hugoAction(viewProps);
+            ola.emitEvent(this.props.getRenderProps());
         } finally {
             console.groupEnd();
         }
-
-        /*
-        const prj = getNotNice().projectStore.get(viewProps.ProjectId);
-        if(prj){ 
-            prj.value.ProjectName = (new Date()).toISOString();
-            prj.valueChanged();
-        }
-        */
+    }
+    handleSetA(n: number) {
+        getAppStoreManager().process("handleSetA", () => {
+            const renderProps = this.props.getRenderProps();
+            const renderPropsPC = getPropertiesChanged(renderProps);
+            renderPropsPC.setIf("nbrA", n);
+            renderPropsPC.valueChangedIfNeeded();
+        });
+    }
+    handleSetB(n: number) {
+        getAppStoreManager().process("handleSetB", () => {
+            const renderProps = this.props.getRenderProps();
+            const renderPropsPC = getPropertiesChanged(renderProps);
+            renderPropsPC.setIf("nbrB", n);
+            renderPropsPC.valueChangedIfNeeded();
+        });
     }
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-
         return (<div>
             CompA  - ProjectName:{viewProps.ProjectName} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             <button onClick={this.handleClick}>ola</button>
+            A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
+            B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =
+            c:{viewProps.nbrC}
         </div>);
 
         // return (<div>
