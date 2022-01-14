@@ -16,8 +16,7 @@ import type {
     DSEventValue,
     DSEventAttach,
     DSEventDetach,
-    IDSStoreBuilder,
-    DSPayloadEntityPropertiesChanged
+    IDSStoreBuilder
 } from './types'
 
 import {

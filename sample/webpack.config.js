@@ -48,6 +48,7 @@ const config = {
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
     alias: {
+      "~": path.resolve(__dirname, 'src/'),
       dependingState: path.resolve(process.cwd(), "../dependingState/src/"),
     },
   },
