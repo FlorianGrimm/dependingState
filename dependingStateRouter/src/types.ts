@@ -1,15 +1,24 @@
-/*
-
-import { Pages } from '~/enums';
-
 import type {
     Action as HistoryAction,
     Location as HistoryLocation,
+    State as HistoryState,
     History,
+    To as HistoryTo,
+    Update as HistoryUpdate,
+    UpdateMode,
     To,
-    Update,
-    UpdateMode
-} from '../history';
+} from './history';
+
+export interface RouterLocation<S extends HistoryState = HistoryState> extends HistoryLocation<LocationState> {
+    query: Record<string, string>
+}
+
+export interface RouterState {
+    location: RouterLocation;
+    action: HistoryAction | string;
+}
+
+// import { Pages } from '~/enums';
 
 export interface RouteDefinition<
     Path extends string = string
@@ -20,18 +29,15 @@ export interface RouteDefinition<
     strict?: boolean;
 }
 
-export type LocationState = {
-}
-
 export type LocationDescriptorObject = {
     to: To;
-    state?: LocationState | undefined;
+    state?: HistoryLocation | undefined;
 }
 
 // push & replace
 export type LocationParameter = {
     to: To;
-    state?: LocationState | undefined;
+    state?: HistoryLocation | undefined;
     updateMode?: UpdateMode;
     noListener?: boolean | undefined;
 }
@@ -40,16 +46,7 @@ export interface RouterRootState {
     router: RouterState;
 }
 
-export interface RouterLocation extends HistoryLocation<LocationState> {
-    query: Record<string, string>
-}
 
-export interface RouterState {
-    location: RouterLocation;
-    action: HistoryAction | string;
-    version: number;
-    page: Pages;
-}
 
 export interface RouteProps<
     Path extends string = string
@@ -99,5 +96,3 @@ export interface match<Params extends { [K in keyof Params]?: string } = {}> {
 // //     noInitialPop?: boolean;
 // //     noTimeTravelDebugging?: boolean;
 // }
-
-*/
