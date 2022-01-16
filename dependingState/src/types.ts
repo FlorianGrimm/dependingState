@@ -35,7 +35,7 @@ export interface IDSStoreAction<
     bindValueStore(valueStore: IDSValueStore<any, any, StoreName>): void;
 
     listenEvent<
-        Event extends DSEvent<any, string, StoreName>
+        Event extends DSEvent<Payload, EventType, StoreName>
     >(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten;
 
     /*
@@ -162,6 +162,8 @@ export interface IDSPropertiesChanged<
 
     get hasChanged(): boolean;
 
+    giveBack(): void;
+    
     valueChangedIfNeeded(): boolean;
 }
 export interface IDSUIStateValue<Value = any> {

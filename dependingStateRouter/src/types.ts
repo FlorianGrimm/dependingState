@@ -9,7 +9,7 @@ import type {
     To,
 } from './history';
 
-export interface RouterLocation<S extends HistoryState = HistoryState> extends HistoryLocation<LocationState> {
+export interface RouterLocation<S extends HistoryState = HistoryState> extends HistoryLocation<HistoryState> {
     query: Record<string, string>
 }
 

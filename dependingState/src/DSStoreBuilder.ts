@@ -76,7 +76,7 @@ export class DSStoreAction<
     }
 
     public listenEvent<
-        Event extends DSEvent<any, string, StoreName>
+        Event extends DSEvent<Payload, EventType, StoreName>
     >(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         if (this.valueStore === undefined){
             throw new Error(`DS DSStoreAction.listenEvent valueStore is not set ${this.storeName}.`);

@@ -1,13 +1,23 @@
+import {
+    // Action as HistoryAction,
+    Location as HistoryLocation,
+    State as HistoryState,
+    // History,
+    // UpdateMode,
+    // To as HistoryTo,
+    // Update as HistoryUpdate
+} from './history';
+
 import { RouterLocation } from './types';
 
 /**
  * Adds query to location.
  * Utilises the search prop of location to construct query.
  */
-export function injectQuery(location: Location): RouterLocation {
-    if (location && typeof (location as any).query !== "undefined") {
+export function injectQuery<LocationStateState extends HistoryState = HistoryState>(location: HistoryLocation<LocationStateState>): RouterLocation<HistoryState> {
+    if (location && typeof (location as RouterLocation<HistoryState>).query !== "undefined") {
         // Don't inject query if it already exists in history
-        return location as unknown as RouterLocation;
+        return location as RouterLocation<HistoryState>;
     }
 
     const searchQuery = location && location.search

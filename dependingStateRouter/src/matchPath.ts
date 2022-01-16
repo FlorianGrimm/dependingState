@@ -5,18 +5,18 @@ import type { match } from "./types";
 const cache: {
     [cacheKey: string]: {
         [path: string]: {
-            regexp: pathToRegexp.PathRegExp,
+            regexp: RegExp,
             keys: pathToRegexp.Key[]
         }
     }
 } = {};
 
-const cacheLimit = 1000;
+const cacheLimit = 100;
 
 //let cacheCount = 0;
 
-function compilePath(path: string, options: pathToRegexp.RegExpOptions & pathToRegexp.ParseOptions): {
-    regexp: pathToRegexp.PathRegExp,
+function compilePath(path: string, options: pathToRegexp.TokensToRegexpOptions & pathToRegexp.ParseOptions): {
+    regexp: RegExp,
     keys: pathToRegexp.Key[]
 } {
     const cacheKey = `${options.end}${options.strict}${options.sensitive}`;
@@ -25,7 +25,7 @@ function compilePath(path: string, options: pathToRegexp.RegExpOptions & pathToR
     if (pathCache[path]) return pathCache[path];
 
     const keys: pathToRegexp.Key[] = [];
-    const regexp = pathToRegexp(path, keys, options);
+    const regexp = pathToRegexp.pathToRegexp(path, keys, options);
     const result = { regexp, keys };
 
     if (Object.keys(pathCache).length >= cacheLimit) {
