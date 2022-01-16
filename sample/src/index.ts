@@ -18,6 +18,8 @@ import { AppState, AppStore } from './store/AppState';
 function main() {
     dsLog.setAppStoreManagerInWindow();
     dsLog.applyFromLocalStorage();
+    dsLog.setEnabled();
+    dsLog.setDisabled();
 
     /*
     dsLog.setEnabled();
@@ -51,10 +53,11 @@ function main() {
     setAppStoreManager(appStoreManager);
     appStoreManager.setAppStoreManagerInWindow();
 
-    appStoreManager.projectStore.set({ ProjectId: "1", ProjectName: "one" });
-    appStoreManager.projectStore.set({ ProjectId: "2", ProjectName: "two" });
-    appStoreManager.projectStore.set({ ProjectId: "3", ProjectName: "three" });
-    appStoreManager.process();
+    appStoreManager.process("first 3", ()=>{
+        appStoreManager.projectStore.set({ ProjectId: "1", ProjectName: "one" });
+        appStoreManager.projectStore.set({ ProjectId: "2", ProjectName: "two" });
+        appStoreManager.projectStore.set({ ProjectId: "3", ProjectName: "three" });
+    });
     
     const rootElement = React.createElement(
             AppView,

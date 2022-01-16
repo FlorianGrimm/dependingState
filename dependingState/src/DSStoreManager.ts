@@ -29,6 +29,7 @@ export class DSStoreManager implements IDSStoreManager {
     lastPromise: Promise<any | void> | undefined;
     isupdateRegisteredEventsDone: boolean;
     mapValueStoreInternal: Map<string, ValueStoreInternal>;
+    timeInProcess:number;
 
     constructor() {
         //this.stateVersion = 0;
@@ -41,6 +42,7 @@ export class DSStoreManager implements IDSStoreManager {
         this.lastPromise = undefined;
         this.isupdateRegisteredEventsDone = false;
         this.mapValueStoreInternal = new Map();
+        this.timeInProcess=0;
     }
 
     public getNextStateVersion(stateVersion: number): number {
@@ -178,7 +180,13 @@ export class DSStoreManager implements IDSStoreManager {
     }
 
     public async process(msg?: string, fn?: () => DSEventHandlerResult) {
+        let dt:number=0;
+        if (this.isProcessing===0){
+            console.time("process");
+            dt=(new Date()).getTime();
+        }
         let result: any | undefined = undefined;
+        
         this.isProcessing++;
         if (dsLog.enabled) {
             dsLog.group(`DS processEvent ${(msg || "")} isProcessing:${this.isProcessing}`);
@@ -231,13 +239,44 @@ export class DSStoreManager implements IDSStoreManager {
         if (dsLog.enabled) {
             console.groupEnd();
         }
+        if (this.isProcessing===0){            
+            const time = ((new Date()).getTime()-dt);
+            this.timeInProcess += time;
+            console.log("time", time, this.timeInProcess);
+            console.timeEnd("process");
+        }
         return result;
     }
 
     public processOneEvent(event: DSEvent<any, string, string>): DSEventHandlerResult {
+        //if (this.isupdateRegisteredEventsDone) { this.updateRegisteredEvents(); }
+
         let result: Promise<any | void> | undefined = undefined;
 
         let runProcessEventOnceQ: boolean = false;
+        const valueStoreInternal = this.mapValueStoreInternal.get(event.storeName)
+        if (valueStoreInternal === undefined) {
+            if (dsLog.enabled) {
+                dsLog.warn(`DS DSStoreManager processOneEvent no such store ${event.storeName}/${event.event}`)
+            }
+            return;
+        } else {
+            const key = `${event.storeName}/${event.event}`;
+            const arrEventHandlers = valueStoreInternal.mapEventHandlers.get(key);
+            if (arrEventHandlers){
+                for (const eventHandlers of arrEventHandlers) {
+                    let p: DSEventHandlerResult = ((result && typeof result.then === "function")
+                        ? (result as Promise<void>).then(() => eventHandlers.handler(event))
+                        : (eventHandlers.handler(event))
+                        );
+                    
+                    if (p && typeof p.then === "function") {
+                        result = catchLog("processOneEvent", p);
+                    }
+                }
+            }
+        }
+        /*
         for (const valueStore of this.valueStores) {
             let runProcessEventQ: boolean;
             if (valueStore.listenToAnyStore) {
@@ -251,11 +290,9 @@ export class DSStoreManager implements IDSStoreManager {
                 }
                 runProcessEventQ = true;
             } else {
-                /*
-                if (dsLog.enabled) {
-                    dsLog.infoACME("DS", "DSStoreManager", "processOneEvent-skip", `${event.storeName}/${event.event}`, `@ store: ${valueStore.storeName}/skip`);
-                }
-                */
+                //if (dsLog.enabled) {
+                //    dsLog.infoACME("DS", "DSStoreManager", "processOneEvent-skip", `${event.storeName}/${event.event}`, `@ store: ${valueStore.storeName}/skip`);
+                //}
                 runProcessEventQ = false;
             }
 
@@ -273,6 +310,7 @@ export class DSStoreManager implements IDSStoreManager {
         if (!runProcessEventOnceQ && dsLog.enabled) {
             dsLog.infoACME("DS", "DSStoreManager", "processOneEvent-skip", `${event.storeName}/${event.event}`, `/skipped by all stores`);
         }
+        */
         return result;
     }
 
