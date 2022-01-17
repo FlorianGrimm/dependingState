@@ -9,6 +9,8 @@ import type {
     To,
 } from './history';
 
+export interface IDSRouterValue{ }
+
 export interface RouterLocation<S extends HistoryState = HistoryState> extends HistoryLocation<HistoryState> {
     query: Record<string, string>
 }

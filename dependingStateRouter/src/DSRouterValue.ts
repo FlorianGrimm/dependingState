@@ -2,7 +2,7 @@ import{
     DSStateValueSelf
 } from 'dependingState';
 
-export class DependingRouterValue extends DSStateValueSelf<DependingRouterValue> {
+export class DSRouterValue extends DSStateValueSelf<DSRouterValue> {
     constructor(){
         super();
     }

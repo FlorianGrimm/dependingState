@@ -1,13 +1,13 @@
 export {
-    Action,
+    Action as HistoryAction,
     UpdateMode,
     Pathname,
     Search,
     Hash,
-    State,
+    State as HistoryState,
     Key,
     Path,
-    Location,
+    Location as HistoryLocation,
     PartialPath,
     PartialLocation,
     Update,
@@ -25,12 +25,26 @@ export {
     createPath,
     parsePath
 } from './history'
+export * from './types';
+export * from './DSRouterAction';
+export * from './DSRouterValue';
+export * from './DSRouterStore';
 
 
-export {
-    DependingRouterValue
-} from './DependingRouterValue';
 
-export {
-    DependingRouterStore
-} from './DependingRouterStore';
+
+// export {
+//     dsRouterBuilder,
+//     PushPayload,
+//     routerPush,
+//     ReplacePayload,
+//     routerReplace
+// } from './DSRouterAction';
+
+// export {
+//     DSRouterValue
+// } from './DSRouterValue';
+
+// export {
+//     DSRouterStore
+// } from './DSRouterStore';
