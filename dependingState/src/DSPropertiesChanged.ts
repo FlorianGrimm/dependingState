@@ -3,23 +3,25 @@ import {
     IDSStateValue
 } from "./types";
 
-const cache: IDSPropertiesChanged<any>[] = [];
+const cache: IDSPropertiesChanged<any, any>[] = [];
 
 export function getPropertiesChanged<
-    StateValue extends IDSStateValue<any>
->(that: StateValue): IDSPropertiesChanged<StateValue> {
-    const result = cache.pop() as (IDSPropertiesChanged<StateValue['value']> | undefined);
+    StateValue extends IDSStateValue<Value>,
+    Value
+>(that: StateValue): IDSPropertiesChanged<StateValue, Value> {
+    const result = cache.pop() as (IDSPropertiesChanged<StateValue, StateValue['value']> | undefined);
     if (result === undefined) {
-        return new DSPropertiesChanged<StateValue>(that);
+        return new DSPropertiesChanged<StateValue,Value>(that);
     } else {
-        (result as DSPropertiesChanged<StateValue>).instance = that;
+        (result as DSPropertiesChanged<StateValue, Value>).instance = that;
         return result;
     }
 }
 
 export class DSPropertiesChanged<
-    StateValue extends IDSStateValue<any>
-    > implements IDSPropertiesChanged<StateValue> {
+    StateValue extends IDSStateValue<Value>,
+    Value
+    > implements IDSPropertiesChanged<StateValue, Value> {
     properties: Set<keyof StateValue['value']>;
 
     constructor(
@@ -53,13 +55,13 @@ export class DSPropertiesChanged<
     public giveBack(): void {
         this.instance = null! as any;
         this.properties.clear();
-        cache.push(this);
+        cache.push(this as any);
     }
 
     public valueChangedIfNeeded(): boolean {
         if (this.properties.size === 0) {
             this.instance = null! as any;
-            cache.push(this);
+            cache.push(this as any);
             return false;
         } else {
             const instance = this.instance;

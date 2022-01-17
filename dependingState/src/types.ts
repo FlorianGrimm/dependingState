@@ -171,7 +171,8 @@ export interface IDSStateValue<Value = any> {
 }
 
 export interface IDSPropertiesChanged<
-    StateValue extends IDSStateValue<any>
+    StateValue extends IDSStateValue<Value>,
+    Value
     // = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
     > {
     add(key: keyof StateValue['value']): void;
