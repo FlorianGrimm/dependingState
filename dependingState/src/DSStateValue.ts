@@ -81,6 +81,16 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
     public getViewProps(): DSUIProps<Value> {
         return this.getUIStateValue().getViewProps();
     }
+    
+    public emitUIUpdate():void{
+        if (this.uiStateValue !== undefined) {
+            if (this.store === undefined) {
+                this.uiStateValue.triggerUIUpdate();
+            } else {
+                this.store.emitUIUpdate(this.uiStateValue);
+            }
+        }
+    }
 
     public triggerUIUpdate(): void {
         if (this.uiStateValue === undefined) {
@@ -169,6 +179,15 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         return this.getUIStateValue().getViewProps();
     }
 
+    public emitUIUpdate():void{
+        if (this.uiStateValue !== undefined) {
+            if (this.store === undefined) {
+                this.uiStateValue.triggerUIUpdate();
+            } else {
+                this.store.emitUIUpdate(this.uiStateValue);
+            }
+        }
+    }
     public triggerUIUpdate(): void {
         if (this.uiStateValue === undefined) {
             // ignore

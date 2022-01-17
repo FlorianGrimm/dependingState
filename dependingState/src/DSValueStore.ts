@@ -16,7 +16,8 @@ import type {
     DSEventValue,
     DSEventAttach,
     DSEventDetach,
-    IDSStoreBuilder
+    IDSStoreBuilder,
+    IDSObjectStore
 } from './types'
 
 import {
@@ -74,7 +75,7 @@ export class DSValueStore<
             //
         } else {
             this._isDirty = value;
-            if (value){
+            if (value) {
                 dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "true");
             } else {
                 //dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "false");
@@ -164,6 +165,7 @@ export class DSValueStore<
     }
 
     public processDirty(): void {
+        this.isDirty = false;
     }
 
     public emitUIUpdate(uiStateValue: IDSUIStateValue<Value>) {
@@ -283,7 +285,8 @@ export class DSObjectStore<
     Value = any,
     StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
     StoreName extends string = string
-    > extends DSValueStore<Value, StateValue> {
+    > extends DSValueStore<Value, StateValue>
+    implements IDSObjectStore<Value, StateValue, StoreName>    {
     readonly stateValue: StateValue
     constructor(
         storeName: StoreName,
@@ -297,6 +300,30 @@ export class DSObjectStore<
 
     public listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
+    }
+    
+    public combineValueStateFromObjectStore<
+        OtherStore extends IDSObjectStore<OtherValue, OtherStateValue, OtherStoreName>,
+        PropertyName extends keyof StateValue,
+        OtherValue = any,
+        OtherStateValue extends IDSStateValue<OtherValue> = IDSStateValue<OtherValue>,
+        OtherStoreName extends string = string,
+        >(
+            name: PropertyName,
+            getStore: (() => OtherStore)
+        ) {
+        const store = getStore();
+        (this.stateValue as any)[name] = store.stateValue;
+        (this.stateValue as any)[`${name}StateVerion`] = store.stateVersion;
+        store.listenDirtyRelated(this.storeName, this);
+        store.listenEventValue("", (e) => {
+            this.processDirty();
+        })
+
+
+        // this.stateVersion.
+        //store.stateValue
+        //store.stateVersion
     }
 }
 
@@ -441,7 +468,7 @@ export class DSMapStore<
     public listenEventDetach<Event extends DSEventDetach<StateValue, Key, never, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], string>): DSUnlisten {
         return this.listenEvent(msg, "detach", callback as any);
     }
-    
+
     /*
     public processDirty(): void {
         for (const entity of this.entities.values()) {

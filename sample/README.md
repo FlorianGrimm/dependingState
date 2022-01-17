@@ -1,15 +1,8 @@
-# 🚀 Welcome to your new awesome project!
+# sample 
 
-This project has been created using **webpack-cli**, you can now run
-
-```
-npm run build
-```
-
-or
+used for hacking
 
 ```
-yarn build
+npm install
+npm run serve
 ```
-
-to bundle your application

@@ -102,6 +102,27 @@ export interface IDSValueStore<
     >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult;
 }
 
+export interface IDSObjectStore<
+    Value = any,
+    StateValue extends IDSStateValue<Value> = IDSStateValue<Value>,
+    StoreName extends string = string
+    > extends IDSValueStore {
+    stateValue:StateValue;
+
+    listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten;
+
+    // combineValueStateFromObjectStore<
+    //     OtherStore extends IDSObjectStore<OtherValue, OtherStateValue, OtherStoreName>,
+    //     PropertyName extends keyof Value,
+    //     OtherValue = any,
+    //     OtherStateValue extends IDSStateValue<OtherValue> = IDSStateValue<OtherValue>,
+    //     OtherStoreName extends string = string,
+    //     >(
+    //         name: PropertyName,
+    //         getStore: (() => OtherStore)
+    //     ):void;
+
+}
 
 export type ConfigurationDSValueStore<
     Value = any,
@@ -144,6 +165,7 @@ export interface IDSStateValue<Value = any> {
     setStore(store: IDSValueStore<Value>): boolean;
 
     getViewProps(): DSUIProps<Value>;
+    emitUIUpdate(): void;
     triggerUIUpdate(): void;
     triggerScheduled: boolean;
 }
@@ -155,15 +177,15 @@ export interface IDSPropertiesChanged<
     add(key: keyof StateValue['value']): void;
 
     setIf<K extends keyof StateValue['value']>(
-        key: K, 
-        value: StateValue['value'][K], 
-        fnIsEqual?: (o: StateValue['value'][K], n: StateValue['value'][K]) => boolean        
-        ): boolean;
+        key: K,
+        value: StateValue['value'][K],
+        fnIsEqual?: (o: StateValue['value'][K], n: StateValue['value'][K]) => boolean
+    ): boolean;
 
     get hasChanged(): boolean;
 
     giveBack(): void;
-    
+
     valueChangedIfNeeded(): boolean;
 }
 export interface IDSUIStateValue<Value = any> {
@@ -242,11 +264,12 @@ export type DSPayloadEntityPropertiesChanged<
     });
 
 export type DSEventValue<
-    StateValue extends IDSStateValue<any> | undefined = IDSStateValue<any>,
-    StoreName extends string = string
+    StateValue extends IDSStateValue<Value> | undefined = IDSStateValue<any> | undefined,
+    StoreName extends string = string,
+    Value = any
     > = DSEvent<DSPayloadEntityPropertiesChanged<StateValue>, "value", StoreName>;
 
-export type DSDirtyHandler<StateValue, Value> = (stateValue?: StateValue, properties?:Set<keyof Value>) => void;
+export type DSDirtyHandler<StateValue, Value> = (stateValue?: StateValue, properties?: Set<keyof Value>) => void;
 
 export type DSEventHandlerResult = (Promise<any | void> | void);
 
