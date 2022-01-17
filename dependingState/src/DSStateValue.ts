@@ -45,7 +45,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         this.isDirty = false;
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
-            this.store.emitDirty(this);
+            this.store.emitDirtyFromValueChanged(this, properties);
             this.store.emitEvent<DSEventValue<DSStateValue<Value>>>("value", { entity: this, properties: properties });
         }
         if (this.uiStateValue !== undefined) {

@@ -65,7 +65,7 @@ test('Dirty', async () => {
         projectUIStore.attach(project.ProjectId, new ProjectUI(project))
     });
     projectStore.listenDirty("test", (project) => {
-        const projectUI = projectUIStore.get(project.value.ProjectId) as (ProjectUI | undefined);
+        const projectUI = projectUIStore.get(project!.value.ProjectId) as (ProjectUI | undefined);
         if (projectUI) {
             projectUI.isDirty = true;
             projectUIStore.isDirty = true;
