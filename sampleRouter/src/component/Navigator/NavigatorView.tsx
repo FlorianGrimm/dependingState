@@ -3,18 +3,18 @@ import {
     DSUIViewStateBase
 } from "dependingState";
 import React from "react";
-import { RouterValue } from "./RouterValue";
+import { NavigatorValue } from "./NavigatorValue";
 
-type RouterViewProps = {
-} & DSUIProps<RouterValue>;
+type NavigatorViewProps = {
+} & DSUIProps<NavigatorValue>;
 
-type RouterViewState = {
+type NavigatorViewState = {
 } & DSUIViewStateBase;
 
 //UIViewState<{}>;
 
-export default class RouterView extends React.Component<RouterViewProps, RouterViewState>{
-    constructor(props: RouterViewProps) {
+export default class NavigatorView extends React.Component<NavigatorViewProps, NavigatorViewState>{
+    constructor(props: NavigatorViewProps) {
         super(props);
         this.state = {
             stateVersion: this.props.getStateVersion()
@@ -33,12 +33,13 @@ export default class RouterView extends React.Component<RouterViewProps, RouterV
 
         return (<div>
             <div>
-                Router - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+                Navigator - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
             <div>
                 show page here
             </div>
             <div>
+                { renderProps.page }
             </div>
 
         </div>);

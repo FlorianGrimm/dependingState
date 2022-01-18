@@ -32,22 +32,5 @@ export * from './types';
 export * from './DSRouterAction';
 export * from './DSRouterValue';
 export * from './DSRouterStore';
-
-
-
-
-// export {
-//     dsRouterBuilder,
-//     PushPayload,
-//     routerPush,
-//     ReplacePayload,
-//     routerReplace
-// } from './DSRouterAction';
-
-// export {
-//     DSRouterValue
-// } from './DSRouterValue';
-
-// export {
-//     DSRouterStore
-// } from './DSRouterStore';
+export * from './DSNavigatorActions';
+export * from './DSNavigatorStore';

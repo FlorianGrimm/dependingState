@@ -6,10 +6,12 @@ import type {
     UpdateMode,
 } from './history';
 
-export type IDSNavigatorValue<Page = string, PathName = string, PathArguments={}> = {
-    page: Page;
-    pathName: PathName;
-    pathArguments: PathArguments;
+export type IDSNavigatorValue<NavigatorPageName = string, NavigatorPathArguments = {}> = {
+    page: NavigatorPageName;
+    pathArguments: NavigatorPathArguments;
+    /** the logical name */
+    pathName: string,
+    isExact: boolean;
 }
 
 export interface IDSRouterValue<S extends HistoryState = HistoryState> {

@@ -1,13 +1,16 @@
 import { DSStateValueSelf } from "dependingState";
-import { IDSRouterValue, To } from "dependingStateRouter";
+import { getRouterValueInitial, HistoryAction, HistoryState, IDSRouterValue, RouterLocation, UpdateMode } from "dependingStateRouter";
 
 export class RouterValue extends DSStateValueSelf<RouterValue> implements IDSRouterValue {
-    to: To;
-    page : string;
+    action: HistoryAction | string;
+    location: RouterLocation<HistoryState>;
+    updateMode: UpdateMode;
 
     constructor() {
         super();
-        this.to="";
-        this.page="";
+        const { action, location, updateMode } = getRouterValueInitial()
+        this.action = action;
+        this.location = location;
+        this.updateMode = updateMode;
     }
 }

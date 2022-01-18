@@ -125,8 +125,8 @@ export class DSRouterStore<
         const currentLocation = this.stateValue.value.location
         if (
             ((currentLocation.pathname || "") === (locationTo.pathname || ""))
-            && ((currentLocation.pathname || "") === (locationTo.pathname || ""))
-            && ((currentLocation.pathname || "") === (locationTo.pathname || ""))
+            && ((currentLocation.search || "") === (locationTo.search || ""))
+            && ((currentLocation.hash || "") === (locationTo.hash || ""))
         ) {
             // skip href modification
         } else {

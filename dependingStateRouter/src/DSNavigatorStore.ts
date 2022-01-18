@@ -16,10 +16,9 @@ import { navigatorSetLocation, NavigatorSetLocationPayload } from "./DSNavigator
 
 export class DSNavigatorStore<
     StateValue extends IDSStateValue<Value>,
-    Value extends IDSNavigatorValue<Page, PathName, PathArguments> = StateValue['value'],
-    Page = string,
-    PathName = string,
-    PathArguments = {},
+    Value extends IDSNavigatorValue<NavigatorPageName, NavigatorPathArguments> = StateValue['value'],
+    NavigatorPageName extends string = Value['page'],
+    NavigatorPathArguments extends {} = Value['pathArguments'],
     StoreName extends string = string
     > extends DSObjectStore<StateValue, Value, StoreName>{
     routerStore: IDSRouterStore | undefined;
@@ -68,7 +67,7 @@ export class DSNavigatorStore<
             });
             navigatorSetLocation.listenEvent("setLocation", (e) => {
                 try {
-                    dsLog.infoACME("DS", "DSNavigatorStore", "handleSetLocation", e.payload.pathName, e.payload.page);
+                    dsLog.infoACME("DS", "DSNavigatorStore", "handleSetLocation", e.payload.page);
                     const p = this.handleSetLocation(e.payload as any);
                     if (p && typeof p.then === "function") {
                         return catchLog("handleSetLocation", p);
@@ -110,7 +109,7 @@ export class DSNavigatorStore<
      * @param payload 
      */
     handleSetLocation<
-        Payload extends NavigatorSetLocationPayload<Page, PathName, PathArguments>
+        Payload extends NavigatorSetLocationPayload<NavigatorPageName, NavigatorPathArguments>
     >(payload: Payload): DSEventHandlerResult {
         if (payload.to === undefined) {
             payload = this.convertTo(payload);
@@ -118,8 +117,9 @@ export class DSNavigatorStore<
 
         const stateValuePC = getPropertiesChanged(this.stateValue);
         stateValuePC.setIf("page", payload.page);
-        stateValuePC.setIf("pathName", payload.pathName);
         stateValuePC.setIf("pathArguments", payload.pathArguments);
+        stateValuePC.setIf("pathName", payload.pathName || "");
+        stateValuePC.setIf("isExact", payload.isExact || false);
         stateValuePC.valueChangedIfNeeded();
 
         if (payload.to !== undefined) {
@@ -136,7 +136,7 @@ export class DSNavigatorStore<
      * @returns modified payload or a new copy
      */
     convertTo<
-        Payload extends NavigatorSetLocationPayload<Page, PathName, PathArguments>
+        Payload extends NavigatorSetLocationPayload<NavigatorPageName, NavigatorPathArguments>
     >(payload: Payload): Payload {
         return payload;
     }
