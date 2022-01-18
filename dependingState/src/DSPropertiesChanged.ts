@@ -6,23 +6,23 @@ import {
 const cache: IDSPropertiesChanged<any, any>[] = [];
 
 export function getPropertiesChanged<
-    StateValue extends IDSStateValue<Value>,
-    Value
->(that: StateValue): IDSPropertiesChanged<StateValue, Value> {
-    const result = cache.pop() as (IDSPropertiesChanged<StateValue, StateValue['value']> | undefined);
+        StateValue extends IDSStateValue<Value>,
+        Value = StateValue['value']
+    >(that: StateValue): IDSPropertiesChanged<StateValue, Value> {
+    const result = cache.pop() as (DSPropertiesChanged<StateValue, Value> | undefined);
     if (result === undefined) {
-        return new DSPropertiesChanged<StateValue,Value>(that);
+        return new DSPropertiesChanged<StateValue, Value>(that);
     } else {
-        (result as DSPropertiesChanged<StateValue, Value>).instance = that;
+        result.instance = that;
         return result;
     }
 }
 
 export class DSPropertiesChanged<
-    StateValue extends IDSStateValue<Value>,
-    Value
+        StateValue extends IDSStateValue<Value>,
+        Value = StateValue['value']
     > implements IDSPropertiesChanged<StateValue, Value> {
-    properties: Set<keyof StateValue['value']>;
+    properties: Set<keyof Value>;
 
     constructor(
         public instance: StateValue
@@ -30,11 +30,11 @@ export class DSPropertiesChanged<
         this.properties = new Set();
     }
 
-    public add(key: keyof StateValue['value']) {
+    public add(key: keyof Value) {
         this.properties.add(key);
     }
 
-    public setIf<K extends keyof StateValue['value']>(key: K, value: StateValue['value'][K], fnIsEqual?: (o: StateValue['value'][K], n: StateValue['value'][K]) => boolean): boolean {
+    public setIf<K extends keyof Value>(key: K, value: Value[K], fnIsEqual?: (o: Value[K], n: Value[K]) => boolean): boolean {
         const isEqual = ((fnIsEqual === undefined)
             ? (this.instance.value[key] === value)
             : (fnIsEqual(this.instance.value[key], value)));

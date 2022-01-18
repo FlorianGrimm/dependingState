@@ -53,6 +53,7 @@ export interface IDSValueStore<
     Value = any,
     StateValue extends IDSStateValue<Value> = IDSStateValue<Value>,
     StoreName extends string = string
+    //Value = StateValue['value']
     > {
     storeName: string;
     storeManager: IDSStoreManager | undefined;
@@ -102,6 +103,14 @@ export interface IDSValueStore<
     >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult;
 }
 
+/*
+export interface x<
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value']
+>{
+
+}
+*/
 export interface IDSObjectStore<
     Value = any,
     StateValue extends IDSStateValue<Value> = IDSStateValue<Value>,
@@ -109,7 +118,8 @@ export interface IDSObjectStore<
     > extends IDSValueStore {
     stateValue:StateValue;
 
-    listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten;
+    //listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten;
+    listenEventValue(msg: string, callback: DSEventValueHandler<StateValue, StoreName, Value>): DSUnlisten;
 
     // combineValueStateFromObjectStore<
     //     OtherStore extends IDSObjectStore<OtherValue, OtherStateValue, OtherStoreName>,
@@ -172,15 +182,15 @@ export interface IDSStateValue<Value = any> {
 
 export interface IDSPropertiesChanged<
     StateValue extends IDSStateValue<Value>,
-    Value
+    Value = StateValue['value']
     // = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
     > {
-    add(key: keyof StateValue['value']): void;
+    add(key: keyof Value): void;
 
-    setIf<K extends keyof StateValue['value']>(
+    setIf<K extends keyof Value>(
         key: K,
-        value: StateValue['value'][K],
-        fnIsEqual?: (o: StateValue['value'][K], n: StateValue['value'][K]) => boolean
+        value: Value[K],
+        fnIsEqual?: (o: Value[K], n: Value[K]) => boolean
     ): boolean;
 
     get hasChanged(): boolean;
@@ -189,6 +199,7 @@ export interface IDSPropertiesChanged<
 
     valueChangedIfNeeded(): boolean;
 }
+
 export interface IDSUIStateValue<Value = any> {
     getViewProps(): DSUIProps<Value>;
     triggerUIUpdate(): void;
@@ -279,6 +290,14 @@ export type DSEventHandler<
     EventType extends string = string,
     StoreName extends string = string
     > = (event: DSEvent<Payload, EventType, StoreName>) => DSEventHandlerResult;
+
+export type DSEventValueHandler<
+    StateValue extends IDSStateValue<Value> | undefined ,
+    StoreName extends string,
+    Value
+    > = (event: DSEvent<DSPayloadEntityPropertiesChanged<StateValue>, "value", StoreName>) => DSEventHandlerResult;
+
+
 export type DSUnlisten = (() => void);
 
 export type DSUIViewState<T = any> = T & DSUIViewStateBase;

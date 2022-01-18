@@ -17,7 +17,8 @@ import type {
     DSEventAttach,
     DSEventDetach,
     IDSStoreBuilder,
-    IDSObjectStore
+    IDSObjectStore,
+    DSEventValueHandler
 } from './types'
 
 import {
@@ -298,10 +299,10 @@ export class DSObjectStore<
         stateValue.setStore(this);
     }
 
-    public listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    public listenEventValue(msg: string, callback: DSEventValueHandler<StateValue, StoreName, Value>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
     }
-    
+
     public combineValueStateFromObjectStore<
         OtherStore extends IDSObjectStore<OtherValue, OtherStateValue, OtherStoreName>,
         PropertyName extends keyof StateValue,
@@ -319,11 +320,6 @@ export class DSObjectStore<
         store.listenEventValue("", (e) => {
             this.processDirty();
         })
-
-
-        // this.stateVersion.
-        //store.stateValue
-        //store.stateVersion
     }
 }
 
