@@ -54,20 +54,37 @@ export default class MyComponentView extends React.Component<MyComponentViewProp
     handleMyAction() {
         console.group("myaction");
         try {
-            myaction.emitEvent(this.props.getRenderProps());
+            myaction.emitEvent(this.props.getRenderProps().myprop);
         } finally {
             console.groupEnd();
         }
     }
     render(): React.ReactNode {
-        const viewProps = this.props.getRenderProps();
+        const renderProps = this.props.getRenderProps();
         return (<div>
-            {viewProps.myprop}
+            {renderProps.myprop}
             <button onClick={this.handleMyAction}>myaction</button>
         </div>);
     }
 }
 ```
+
+embedding a child element.
+
+```typescript
+    render(): React.ReactNode {
+        const renderProps = this.props.getRenderProps();
+        const { myChildValue } = renderProps;
+        return (<div>
+            rendering MyChildView now:
+            { React.createElement(MyChildView, myChildValue.getViewProps())}
+        </div>);
+        // looks wild, but works nicely
+    }
+
+```
+
+currently no hooks - an I'm not sure if I like hooks, but anyway I'm investingating for them.
 
 ## sample
 

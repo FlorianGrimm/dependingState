@@ -10,27 +10,37 @@ import {
     IDSValueStore
 } from "dependingState";
 import type { IAppStoreManager } from "~/store/AppStoreManager";
-import { AppViewValue } from "./AppViewValue";
+import { AppUIValue } from "./AppUIValue";
 
 
-export class AppViewStore extends DSObjectStore<AppViewValue, AppViewValue, "appViewStore"> {
-    constructor(value: AppViewValue) {
-        super("appViewStore", value);
+export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStore"> {
+    constructor(value: AppUIValue) {
+        super("AppUIStore", value);
     }
 
     public postAttached(): void {
         super.postAttached();
 
+        // TODO
+        /*
         this.combineValueStateFromObjectStore(
             "calculator",
             ()=>(this.storeManager! as IAppStoreManager).calculatorStore
         );
+        */
         const calculatorStore = (this.storeManager! as IAppStoreManager).calculatorStore;
         this.stateValue.calculator = calculatorStore.stateValue;
         this.stateValue.calculatorStateVersion = calculatorStore.stateVersion;
         calculatorStore.listenDirtyRelated(this.storeName, this);
-        calculatorStore.listenEventValue("", (e) => {
-            this.processDirty();
+        calculatorStore.listenEventValue(`${this.storeName} sets dirty`, (e) => {
+            const properties = e.payload.properties;
+            if ((properties === undefined)
+                || (properties.has("nbrA"))
+                || (properties.has("nbrB"))
+                || (properties.has("nbrC"))
+            ) {
+                this.processDirty();
+            }
         })
     }
 

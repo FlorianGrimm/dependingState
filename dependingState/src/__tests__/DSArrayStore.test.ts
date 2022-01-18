@@ -1,11 +1,12 @@
-import { DSValueStore } from "../DSValueStore";
 import {
     DSArrayStore,
     DSStoreManager,
     DSEventValue,
     DSEventAttach,
     DSStateValue,
-    IDSStateValue
+    DSValueStore,
+    IDSStateValue,
+    DSUnlisten
 } from "../index";
 
 type VSA = {

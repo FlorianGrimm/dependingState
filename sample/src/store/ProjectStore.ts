@@ -8,7 +8,7 @@ function getKey(project:Project){
     return project.ProjectId;
 }
 
-export class ProjectStore extends DSEntityStore<string, Project, DSStateValue<Project>, "projectStore">{
+export class ProjectStore extends DSEntityStore<DSStateValue<Project>, string, Project, "projectStore">{
     constructor() {
         super("projectStore", {create, getKey});
     }

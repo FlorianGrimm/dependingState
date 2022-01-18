@@ -19,9 +19,12 @@ export {
     HashHistory,
     MemoryHistory,
     BrowserHistoryOptions,
+    createBrowserHistory,
     HashHistoryOptions,
+    createHashHistory,
     InitialEntry,
     MemoryHistoryOptions,
+    createMemoryHistory,
     createPath,
     parsePath
 } from './history'

@@ -2,25 +2,25 @@ import type {
     Action as HistoryAction,
     Location as HistoryLocation,
     State as HistoryState,
-    History,
     To as HistoryTo,
-    Update as HistoryUpdate,
     UpdateMode,
-    To,
 } from './history';
 
-export interface IDSRouterValue{ }
+export type IDSNavigatorValue<Page = string, PathName = string, PathArguments={}> = {
+    page: Page;
+    pathName: PathName;
+    pathArguments: PathArguments;
+}
+
+export interface IDSRouterValue<S extends HistoryState = HistoryState> {
+    action: HistoryAction | string;
+    location: RouterLocation<S>;
+    updateMode: UpdateMode;
+}
 
 export interface RouterLocation<S extends HistoryState = HistoryState> extends HistoryLocation<HistoryState> {
     query: Record<string, string>
 }
-
-export interface RouterState {
-    location: RouterLocation;
-    action: HistoryAction | string;
-}
-
-// import { Pages } from '~/enums';
 
 export interface RouteDefinition<
     Path extends string = string
@@ -32,21 +32,21 @@ export interface RouteDefinition<
 }
 
 export type LocationDescriptorObject = {
-    to: To;
+    to: HistoryTo;
     state?: HistoryLocation | undefined;
 }
 
 // push & replace
 export type LocationParameter = {
-    to: To;
+    to: HistoryTo;
     state?: HistoryLocation | undefined;
     updateMode?: UpdateMode;
     noListener?: boolean | undefined;
 }
 
-export interface RouterRootState {
-    router: RouterState;
-}
+// export interface RouterRootState {
+//     router: RouterState;
+// }
 
 
 

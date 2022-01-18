@@ -3,7 +3,7 @@ import {
 } from "dependingState";
 import type { CalculatorValue } from "~/component/Calculator/CalculatorValue";
 
-export class AppViewValue extends DSStateValueSelf<AppViewValue> {
+export class AppUIValue extends DSStateValueSelf<AppUIValue> {
     calculator: CalculatorValue | undefined;
     calculatorStateVersion: number;
     constructor() {

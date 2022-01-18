@@ -17,7 +17,7 @@ export type {
     DSEventDetach,
     DSPayloadEntityPropertiesChanged,
     DSEventValue,
-    DSDirtyHandler,
+    DSEmitDirtyHandler as DSDirtyHandler,
     DSEventHandlerResult,
     DSEventHandler,
     DSUnlisten,
@@ -32,12 +32,25 @@ export {
 } from "./DSStoreManager";
 
 export {
-    DSValueStore,
-    DSObjectStore,
-    DSArrayStore,
-    DSMapStore,
-    DSEntityStore
+    DSValueStore
 } from './DSValueStore';
+
+export {
+    DSMapStore
+} from './DSMapStore';
+
+export {
+    DSEntityStore
+} from './DSEntityStore';
+
+export {
+    DSObjectStore
+} from './DSObjectStore';
+
+export {
+    DSArrayStore
+} from './DSArrayStore';
+
 
 export {
     DSStateValue,
@@ -57,7 +70,7 @@ export {
 
 export {
     dsLog,
-    DSLog,
+    DSLog as DSLog,
     DSLogApp
 } from './DSLog';
 
@@ -65,4 +78,11 @@ export {
     getPropertiesChanged,
     DSPropertiesChanged
 } from './DSPropertiesChanged';
-export { dsIsArrayEqual } from './DSArrayHelper';
+
+export {
+    catchLog
+} from './PromiseHelper';
+
+export {
+     dsIsArrayEqual
+ } from './DSArrayHelper';

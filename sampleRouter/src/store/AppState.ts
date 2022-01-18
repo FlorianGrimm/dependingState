@@ -1,17 +1,16 @@
 import { DSObjectStore, DSStateValueSelf } from "dependingState";
 
 export class AppState extends DSStateValueSelf<AppState> {
-    language: string;
-
+    startTime: string;
     constructor() {
         super();
-        this.language = "en";
+        this.startTime = "";
     }
 }
 
 export class AppStore extends DSObjectStore<AppState, AppState, "appStore"> {
     constructor(value: AppState) {
         super("appStore", value);
-        this.enableEmitDirtyFromValueChanged=true;
+        value.startTime = (new Date()).toISOString();
     }
 }

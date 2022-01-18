@@ -1,31 +1,21 @@
 import {
-    dsLog,
-    DSObjectStore,
-    DSStateValue,
-    DSStateValueSelf,
     DSUIProps,
     DSUIViewStateBase
 } from "dependingState";
 import React from "react";
-import type { AppState } from "../../store/AppState";
-import { IAppStoreManager } from "../../store/AppStoreManager";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
-import { AppViewValue } from "./AppViewValue";
+import { RouterValue } from "./RouterValue";
 
+type RouterViewProps = {
+} & DSUIProps<RouterValue>;
 
-
-type AppViewProps = {
-    //stateRoot: TStateRootAppStates;
-} & DSUIProps<AppViewValue>;
-
-type AppViewState = {
-
+type RouterViewState = {
 } & DSUIViewStateBase;
 
 //UIViewState<{}>;
 
-export default class AppView extends React.Component<AppViewProps, AppViewState>{
-    constructor(props: AppViewProps) {
+export default class RouterView extends React.Component<RouterViewProps, RouterViewState>{
+    constructor(props: RouterViewProps) {
         super(props);
         this.state = {
             stateVersion: this.props.getStateVersion()
@@ -39,15 +29,18 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
     }
 
     render(): React.ReactNode {
-        const viewProps = this.props.getRenderProps();
-        const language = "Todo"
+        const renderProps = this.props.getRenderProps();
+        // 
+
         return (<div>
-            App
             <div>
-                language:{language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+                Router - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
             <div>
                 show page here
+            </div>
+            <div>
+                { renderProps.page }
             </div>
 
         </div>);

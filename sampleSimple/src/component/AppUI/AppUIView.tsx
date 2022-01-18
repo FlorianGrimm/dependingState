@@ -10,13 +10,13 @@ import React from "react";
 import type { AppState } from "../../store/AppState";
 import { IAppStoreManager } from "../../store/AppStoreManager";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
-import { AppViewValue } from "./AppViewValue";
+import { AppUIValue } from "./AppUIValue";
 
 
 
 type AppViewProps = {
     //stateRoot: TStateRootAppStates;
-} & DSUIProps<AppViewValue>;
+} & DSUIProps<AppUIValue>;
 
 type AppViewState = {
 

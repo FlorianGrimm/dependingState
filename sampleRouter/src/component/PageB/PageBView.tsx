@@ -1,27 +1,25 @@
 import React from "react";
-import NumberInput from "../NumberInput/NumberInput";
-
 import { DSUIProps, DSUIViewStateBase, getPropertiesChanged } from "dependingState";
-
-import { changeProjectName } from "./CompAActions";
-import { CompAValue } from "./CompAValue";
+import { doSomething } from "./PageBActions";
+import NumberInput from "../NumberInput/NumberInput";
+import { PageBValue } from "./PageBValue";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
 
-type CompAViewProps = DSUIProps<CompAValue>;
+type PageBViewProps = DSUIProps<PageBValue>;
 
-type CompAViewState = {
+type PageBViewState = {
 } & DSUIViewStateBase;
 const inputStyle :React.CSSProperties={
     width: 30,
 };
-export default class CompAView extends React.Component<CompAViewProps, CompAViewState>{
-    constructor(props: CompAViewProps) {
+export default class PageBView extends React.Component<PageBViewProps, PageBViewState>{
+    constructor(props: PageBViewProps) {
         super(props);
         this.state = {
             stateVersion: this.props.getStateVersion()
         };
         this.props.wireStateVersion(this);
-        this.handleClickChangeProjectName = this.handleClickChangeProjectName.bind(this);
+        this.handleClick = this.handleClick.bind(this);
         this.handleSetA = this.handleSetA.bind(this);
         this.handleSetB = this.handleSetB.bind(this);
     }
@@ -30,10 +28,10 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
         this.props.unwireStateVersion(this);
     }
 
-    handleClickChangeProjectName() {
-        console.group("changeProjectName");
+    handleClick() {
+        console.group("doSomething");
         try {
-            changeProjectName.emitEvent(this.props.getRenderProps());
+            //doSomething.emitEvent(this.props.getRenderProps());
         } finally {
             console.groupEnd();
         }
@@ -57,11 +55,10 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
         return (<div>
-            CompA - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}<br />
-            ProjectName:{viewProps.ProjectName} <button onClick={this.handleClickChangeProjectName}>Change ProjectName</button> <br />            
             A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
             B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =
             c:{viewProps.nbrC}
+            <button onClick={this.handleClick}>doSomething</button>
         </div>);
     }
 }

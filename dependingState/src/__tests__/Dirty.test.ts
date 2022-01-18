@@ -1,4 +1,3 @@
-import { DSEntityStore } from "../DSValueStore";
 import {
     DSMapStore,
     DSStoreManager,
@@ -7,7 +6,8 @@ import {
     DSStateValue,
     stateValue,
     DSEventHandler, 
-    DSPayloadEntity
+    DSPayloadEntity,
+    DSEntityStore
 } from "../index";
 
 class Project {
@@ -65,7 +65,7 @@ test('Dirty', async () => {
         const project = projectValue.payload.entity.value;
         projectUIStore.attach(project.ProjectId, new ProjectUI(project))
     });
-    projectStore.listenDirty("test", (project) => {
+    projectStore.listenEmitDirty("test", (project) => {
         const projectUI = projectUIStore.get(project!.value.ProjectId) as (ProjectUI | undefined);
         if (projectUI) {
             projectUI.isDirty = true;

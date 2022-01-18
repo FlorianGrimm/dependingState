@@ -5,21 +5,23 @@ import {
     dsLog
 } from 'dependingState';
 
-import AppView, { AppViewStateValue, AppViewStore } from './component/App/AppView';
+import AppUIView from './component/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { ProjectStore } from './store/ProjectStore';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { CompAStore } from './component/CompA/CompAStore';
-import { AppViewProjectsUIStateValue } from './component/App/AppViewProjectsUIStateValue';
-import { AppViewProjectsUIStore } from './component/App/AppViewProjectsUIStore';
+import { AppViewProjectsUIStateValue } from './component/AppUIProjects/AppUIProjectsValue';
+import { AppViewProjectsUIStore } from './component/AppUIProjects/AppUIProjectsStore';
 import { AppState, AppStore } from './store/AppState';
-//import { Project } from './types';
+import { appLog } from './feature/appLog/appLog';
+import { AppUIStore } from './component/AppUI/AppUIStore';
+import { AppUIValue } from './component/AppUI/AppUIValue';
 
 function main() {
-    dsLog.setAppStoreManagerInWindow();
-    dsLog.applyFromLocalStorage();
-    dsLog.setEnabled();
-    dsLog.setDisabled();
+    dsLog.setSelfInGlobal();
+    appLog.setSelfInGlobal();
+    dsLog.setMode("enabled");
+    appLog.setMode("enabled");
 
     /*
     dsLog.setEnabled();
@@ -42,26 +44,26 @@ function main() {
     const projectStore = new ProjectStore();
     const compAStore = new CompAStore();
     const appStore=new AppStore(new AppState());
-    const appViewStore = new AppViewStore(new AppViewStateValue());
+    const appUIStore = new AppUIStore(new AppUIValue());
     const appViewProjectsUIStore = new AppViewProjectsUIStore(new AppViewProjectsUIStateValue());
     const appStoreManager = new AppStoreManager(
         appStore,
         projectStore,
-        appViewStore,
+        appUIStore,
         compAStore,
         appViewProjectsUIStore);
     setAppStoreManager(appStoreManager);
-    appStoreManager.setAppStoreManagerInWindow();
+    appStoreManager.setSelfInGlobal();
 
-    appStoreManager.process("first 3", ()=>{
+    appStoreManager.process("add first 3 projects", ()=>{
         appStoreManager.projectStore.set({ ProjectId: "1", ProjectName: "one" });
         appStoreManager.projectStore.set({ ProjectId: "2", ProjectName: "two" });
         appStoreManager.projectStore.set({ ProjectId: "3", ProjectName: "three" });
     });
     
     const rootElement = React.createElement(
-            AppView,
-            appStoreManager.appViewStore.stateValue.getViewProps()
+            AppUIView,
+            appStoreManager.appUIStore.stateValue.getViewProps()
         );
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {
@@ -71,11 +73,13 @@ function main() {
     }
 
     setTimeout(() => {
+        appLog.logACME("app", "main", "timeoutHallo", "HALLO");
         appStore.stateValue.language= "HALLO";
         appStore.stateValue.valueChanged();
     }, 1000);
 
     setTimeout(() => {
+        appLog.logACME("app", "main", "timeoutProjectOne", "one");
         const prj = projectStore.get("1");
         if (prj) {
             prj.value.ProjectName = "one - part 2";

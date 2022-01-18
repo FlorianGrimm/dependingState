@@ -1,5 +1,5 @@
 import { dsIsArrayEqual, DSObjectStore, getPropertiesChanged } from "dependingState";
-import { AppViewProjectsUIStateValue } from "./AppViewProjectsUIStateValue";
+import { AppViewProjectsUIStateValue } from "./AppUIProjectsValue";
 import type { IAppStoreManager } from "../../store/AppStoreManager";
 
 export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, AppViewProjectsUIStateValue, "appViewProjectsUIStore"> {
@@ -8,7 +8,7 @@ export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIState
     }
 
     public postAttached(): void {
-        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAStore;
         //compAUIStore.listenDirtyRelated(this.storeName, this);
         compAUIStore.listenEventAttach(this.storeName, (e) => {
             this.isDirty = true;
@@ -30,7 +30,7 @@ export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIState
 
     public processDirty(): void {
         const oldCompAUIStates = this.stateValue.compAUIStates;
-        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAUIStore;
+        const compAUIStore = (this.storeManager! as unknown as IAppStoreManager).compAStore;
         const compAUIStates = (Array.from(compAUIStore.entities.values())
             .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))
         );
@@ -39,10 +39,5 @@ export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIState
             return dsIsArrayEqual(l, r, (o, n) => o.ProjectId === n.ProjectId);
         });
         compAUIStatesPC.valueChangedIfNeeded();
-
-        // if (!dsIsArrayEqual(oldCompAUIStates, compAUIStates, (o, n) => o.ProjectId === n.ProjectId)) {
-        //     this.stateValue.compAUIStates = compAUIStates;
-        //     this.stateValue.valueChanged();
-        // }
     }
 }

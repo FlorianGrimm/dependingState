@@ -4,25 +4,33 @@ import {
 } from "dependingState";
 
 import type { AppStore } from "./AppState";
-import type { AppViewStore } from "src/component/App/AppViewStore";
+import type { AppUIStore } from "~/component/AppUI/AppUIStore";
 import type { PageAStore } from "src/component/PageA/PageAStore";
+import type { RouterStore } from "~/component/Router/RouterStore";
+import type { PageBStore } from "~/component/PageB/PageBStore";
 
 export interface IAppStoreManager extends IDSStoreManager {
+    routerStore: RouterStore;
     appStore: AppStore;
-    appViewStore: AppViewStore;
-    pageAUIStore: PageAStore;
+    appUIStore: AppUIStore;
+    pageAStore: PageAStore;
+    pageBStore: PageBStore;
 }
 
 export class AppStoreManager extends DSStoreManager implements IAppStoreManager {
     constructor(
+        public routerStore: RouterStore,
         public appStore: AppStore,
-        public appViewStore: AppViewStore,
-        public pageAUIStore: PageAStore,
+        public appUIStore: AppUIStore,
+        public pageAStore: PageAStore,
+        public pageBStore: PageBStore
     ) {
         super();
+        this.attach(routerStore);
         this.attach(appStore);
-        this.attach(appViewStore);
-        this.attach(pageAUIStore);
+        this.attach(appUIStore);
+        this.attach(pageAStore);
+        this.attach(pageBStore);
 
         this.postAttached();
     }

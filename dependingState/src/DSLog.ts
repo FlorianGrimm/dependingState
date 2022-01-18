@@ -37,7 +37,9 @@ export class DSLog {
     enabled: boolean;
     mode: "disabled" | "enabled" | "WarnIfCalled";
 
-    constructor() {
+    constructor(
+        public name: string
+    ) {
         this.enabled = false;
         this.mode = "disabled";
 
@@ -54,6 +56,9 @@ export class DSLog {
     }
 
     public setDisabled(): this {
+        // nop be quiet
+        // console.debug(`${this.name} setDisabled`);
+
         this.enabled = false;
         this.mode = "disabled";
 
@@ -71,7 +76,7 @@ export class DSLog {
         return this;
     }
     public setEnabled(): this {
-        console.info("DS DSLog setEnabled");
+        console.debug(`${this.name} setEnabled`);
         this.enabled = true;
         this.mode = "enabled";
 
@@ -90,7 +95,7 @@ export class DSLog {
     }
 
     public setWarnIfCalled(): this {
-        console.info("DS DSLog setWarnIfCalled");
+        console.debug(`${this.name} setWarnIfCalled`);
         this.enabled = false;
         this.mode = "WarnIfCalled";
 
@@ -108,29 +113,40 @@ export class DSLog {
         return this;
     }
 
+    public setMode(mode: "disabled" | "enabled" | "WarnIfCalled" | "applyFromLocalStorage") {
+        if (mode === "enabled") {
+            this.setEnabled();
+        } else if (mode === "WarnIfCalled") {
+            this.setWarnIfCalled();
+        } else if (mode === "disabled") {
+            this.setDisabled();
+        } else {
+            console.debug(`${this.name} setMode applyFromLocalStorage`);
+            this.applyFromLocalStorage();
+        }
+    }
+
     public saveToLocalStorage(key?: string): this {
         const data = {
             mode: this.mode
         };
-        window.localStorage.setItem(key || "DSLog", JSON.stringify(data));
+        window.localStorage.setItem(key || this.name, JSON.stringify(data));
 
         return this;
     }
 
     public applyFromLocalStorage(key?: string): this {
-        const json = window.localStorage.getItem(key || "DSLog");
+        const json = window.localStorage.getItem(key || this.name);
         if (json) {
             const data = JSON.parse(json);
             if (data) {
                 if (typeof data.mode === "string") {
-                    if (data.mode === "disabled") {
-                        this.setDisabled();
-                    }
                     if (data.mode === "enabled") {
                         this.setEnabled();
-                    }
-                    if (data.mode === "WarnIfCalled") {
+                    } else if (data.mode === "WarnIfCalled") {
                         this.setWarnIfCalled();
+                    } else {
+                        this.setDisabled();
                     }
                 }
             }
@@ -138,6 +154,7 @@ export class DSLog {
 
         return this;
     }
+
 }
 
 function defaultConvertExtraArg(currentExtraArg: any): string {
@@ -164,7 +181,7 @@ type fnACME = (
 ) => void;
 
 function templateAMCE(
-    this: DSLogApp,
+    this: DSLogACME,
     log: (...data: any[]) => void,
     currentApp: string,
     currentClass: string,
@@ -204,7 +221,7 @@ function templateAMCE(
     }
 }
 
-export class DSLogApp extends DSLog {
+export class DSLogACME extends DSLog {
     convertArg: (currentArg: any) => string;
     watchoutEnabled: boolean;
     watchoutApp: string | undefined;
@@ -220,8 +237,8 @@ export class DSLogApp extends DSLog {
     warnACME: fnACME;
     errorACME: fnACME;
 
-    constructor() {
-        super();
+    constructor(name: string) {
+        super(name);
         this.convertArg = defaultConvertExtraArg;
         this.watchoutEnabled = false;
         this.watchoutApp = undefined;
@@ -301,7 +318,8 @@ export class DSLogApp extends DSLog {
     }
 
     public clearFromLocalStorage(key?: string): this {
-        if (!key) { key = "DSLog"; }
+        if (!key) { key = this.name; }
+
         window.localStorage.removeItem(key);
 
         return this;
@@ -317,24 +335,22 @@ export class DSLogApp extends DSLog {
             watchoutExtraArg: this.watchoutExtraArg,
             watchoutStopAt: this.watchoutStopAt
         };
-        window.localStorage.setItem(key || "DSLog", JSON.stringify(data));
+        window.localStorage.setItem(key || this.name, JSON.stringify(data));
         return this;
     }
 
     public applyFromLocalStorage(key?: string): this {
-        const json = window.localStorage.getItem(key || "DSLog");
+        const json = window.localStorage.getItem(key || this.name);
         if (json) {
             const data = JSON.parse(json);
             if (data) {
                 if (typeof data.mode === "string") {
-                    if (data.mode === "disabled") {
-                        this.setDisabled();
-                    }
                     if (data.mode === "enabled") {
                         this.setEnabled();
-                    }
-                    if (data.mode === "WarnIfCalled") {
+                    } else if (data.mode === "WarnIfCalled") {
                         this.setWarnIfCalled();
+                    } else {
+                        this.setDisabled();
                     }
                 }
                 if (data.watchoutEnabled === true) {
@@ -353,9 +369,16 @@ export class DSLogApp extends DSLog {
         }
         return this;
     }
+}
 
-    setAppStoreManagerInWindow() {
+
+export class DSLogApp extends DSLogACME {
+    constructor(name?: string) {
+        super(name || "dsLogApp");
+    }
+    setSelfInGlobal() {
         (window as any).dsLog = this;
     }
 }
-export const dsLog = new DSLogApp();
+
+export const dsLog = new DSLogApp("dsLogLib");

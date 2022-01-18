@@ -10,7 +10,7 @@ import { getAppStoreManager } from "../../singletonAppStoreManager";
 
 import CompAView from "../CompA/CompAView";
 
-import { AppViewProjectsUIStateValue } from "./AppViewProjectsUIStateValue";
+import { AppViewProjectsUIStateValue } from "./AppUIProjectsValue";
 
 type AppViewProjectsProps = {
     //stateRoot: TStateRootAppStates;

@@ -1,9 +1,9 @@
-import { DSStateValue } from "../DSStateValue";
 import {
     DSObjectStore,
     DSStoreManager,
     DSEventValue,
     stateValue,
+    DSStateValue,
 } from "../index";
 
 type VSA = {

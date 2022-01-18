@@ -1,18 +1,16 @@
 import { DSEntityStore, DSEvent, dsLog, getPropertiesChanged } from "dependingState";
 import { Project } from "../../types";
 import { IAppStoreManager } from "../../store/AppStoreManager";
-import { compAUIStoreBuilder, ola } from "./CompAActions";
+import { compAUIStoreBuilder, changeProjectName } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
 
-export class CompAStore extends DSEntityStore<string, CompAValue, CompAValue, "CompAStore">{
-    //compAUIStates: CompAUIState[];
+export class CompAStore extends DSEntityStore<CompAValue, string,  CompAValue, "CompAStore">{
     constructor() {
         super("CompAStore", {
             create: (item: CompAValue) => item,
             getKey: (item: CompAValue) => item.ProjectId
         });
         this.setStoreBuilder(compAUIStoreBuilder);
-        //this.compAUIStates = [];
     }
 
     public postAttached(): void {
@@ -42,7 +40,8 @@ export class CompAStore extends DSEntityStore<string, CompAValue, CompAValue, "C
                 }
             }
         });
-        ola.listenEvent<DSEvent<Project>>("handle hugo", (e) => {
+        //<DSEvent<Project>>
+        changeProjectName.listenEvent("handle ola", (e) => {
             var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
             const prj = projectStore.get(e.payload.ProjectId);
             if (prj) {

@@ -4,145 +4,157 @@ import {
     State as HistoryState,
     History,
     UpdateMode,
-    // To as HistoryTo,
+    To as HistoryTo,
     Update as HistoryUpdate
 } from './history';
 
 import type {
-    RouterState
-} from './types';
-
-import type {
     IDSRouterValue
-} from './IDSRouterValue';
+} from './types';
 
 import {
     IDSStateValue,
     DSObjectStore,
     ConfigurationDSValueStore,
     IDSPropertiesChanged,
-    getPropertiesChanged
+    getPropertiesChanged,
+    DSEventHandler,
+    DSUnlisten,
+    DSEventHandlerResult
 } from 'dependingState';
 
 import {
     injectQuery
 } from './injectQuery';
 
-import { DSRouterValue } from './DSRouterValue';
 
-import { PushEvent, ReplaceEvent, routerPush, routerReplace } from './DSRouterAction';
+import { routerPush, routerReplace, dsRouterBuilder, LocationChangedEvent, LocationChangedPayload } from './DSRouterAction';
+import { Path, routerLocationChanged } from '.';
+import { catchLog } from 'dependingState';
 
 function noop() { }
 
 // Define the initial state using that type
-function getInitialState() {
-    const result: RouterState = {
-        location: injectQuery({
+export function getRouterValueInitial(): IDSRouterValue {
+    const result: IDSRouterValue = {
+        location: {
             pathname: window.location.pathname,
             search: window.location.search,
             state: null,
             hash: window.location.hash,
-            query: {}
-        } as any),
-        action: "PUSH"
+            query: {},
+            key: ""
+        },
+        action: "PUSH",
+        updateMode: UpdateMode.Initialization
     }
     return result;
 }
 
+export interface IDSRouterStore {
+    /**
+     * push history if needed - suspress navigator - since this is the caller.
+     * @param to new loaction
+     */
+    setLocationFromNavigator(to: HistoryTo): void;
+
+    /**
+     * add callback for locationChanged (externaly)
+     * @param msg dsLog message
+     * @param callback the callback
+     */
+    listenEventLocationChanged(msg: string, callback: DSEventHandler<LocationChangedPayload, "locationChanged", "router">): DSUnlisten;
+}
+
 export class DSRouterStore<
-    Value extends IDSRouterValue = IDSRouterValue,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
+    StateValue extends IDSStateValue<Value>,
+    Value extends IDSRouterValue = StateValue['value'],
     LocationState extends HistoryState = HistoryState
-    > extends DSObjectStore<Value, StateValue, "router">{
+    > extends DSObjectStore<StateValue, Value, "router"> implements IDSRouterStore {
     history: History<LocationState>;
     historyUnlisten: () => void;
-    suspressListener: boolean;
+    suspressNavigator: boolean;
 
     constructor(
         history: History<LocationState>,
         stateValue: StateValue,
-        configuration?: ConfigurationDSValueStore<Value, StateValue>
+        configuration?: ConfigurationDSValueStore<StateValue, Value>
     ) {
         super("router", stateValue, configuration);
         this.history = history;
         this.historyUnlisten = noop;
-        this.suspressListener = false;
+        this.suspressNavigator = false;
+        dsRouterBuilder.bindValueStore(this);
     }
 
     public postAttached(): void {
         routerPush.listenEvent("push", (e) => {
             const location = e.payload;
-            // const locationPC = getPropertiesChanged(this.stateValue);
-            // this.setNormalizedLocation(location, locationPC);
-            // locationPC.giveBack();
-            this.suspressListener = true;
-            // (location.noListener == undefined) ? true : location.noListener
+            if (e.payload.noListener === true) {
+                this.suspressNavigator = true;
+            }
             this.history.push(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
 
         routerReplace.listenEvent("replace", (e) => {
             const location = e.payload;
-            // const locationPC = getPropertiesChanged(this.stateValue);
-            // this.setNormalizedLocation(location, locationPC);
-            // locationPC.giveBack();
-            this.suspressListener = true;
-            // (location.noListener == undefined) ? true : location.noListener
+            if (e.payload.noListener === true) {
+                this.suspressNavigator = true;
+            }
             this.history.replace(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
-
+        routerLocationChanged.listenEvent
         this.subscribe();
     }
 
-    // setNormalizedLocation(
-    //     location: HistoryLocation<LocationState>,
-    //     locationPC: IDSPropertiesChanged<StateValue>
-    // ): boolean {
-    //     const locationNormalized = injectQuery(location);
-
-    //     /*
-    //     const { location, action: payloadAction, page } = action.payload;
-    //     const locationNormalized = injectQuery(location as any);
-    //     const actionNormalized = payloadAction || "PUSH";
-
-    //     let changed = false;
-    //     if (state.action !== actionNormalized) {
-    //         state.action = actionNormalized;
-    //         changed = true;
-    //     }
-    //     if ((locationNormalized.pathname !== state.location.pathname)
-    //         || (locationNormalized.hash !== state.location.hash)
-    //         || !equal(locationNormalized.query, state.location.query)
-    //         || !equal(locationNormalized.state, state.location.state)
-    //     ) {
-    //         state.location = locationNormalized;
-    //         changed = true;
-    //     }
-    //     if ((page !== undefined) && (state.page !== page)) {
-    //         state.page = page;
-    //         changed = true;
-    //     }
-    //     if (changed) {
-    //         state.version = state.version + 1;
-    //     }
-    //     */
-
-    //     return false;
-    // }
-
-    // extractValues(locationPC: IDSPropertiesChanged<StateValue>) {
-    //     // navigation?
-    //     // AppPath, handleLocationChanged this.stateValue, locationPC
-    // }
-
-    historyListener(update: HistoryUpdate<LocationState>): void {
-        if (this.suspressListener) {
-            this.suspressListener = false;
+    public setLocationFromNavigator(to: HistoryTo): void {
+        let locationTo: Path;
+        if (typeof to === "string") {
+            locationTo = new URL(to, window.location.href);
+        } else if (typeof to === "object") {
+            locationTo = {
+                pathname: "",
+                search: "",
+                hash: "",
+                ...to
+            };
         } else {
-            // convert update to something usefull
-            // const locationPC = getPropertiesChanged(this.stateValue);
-            // this.setNormalizedLocation(update.location, locationPC);
-            // this.extractValues(locationPC);
-            // locationPC.valueChangedIfNeeded();
+            // don't know what to do
+            return;
+        }
+        const currentLocation = this.stateValue.value.location
+        if (
+            ((currentLocation.pathname || "") === (locationTo.pathname || ""))
+            && ((currentLocation.pathname || "") === (locationTo.pathname || ""))
+            && ((currentLocation.pathname || "") === (locationTo.pathname || ""))
+        ) {
+            // skip href modification
+        } else {
+            this.suspressNavigator = true;
+            this.history.push(to, undefined, UpdateMode.FromCode, false);
+        }
+    }
+
+    public listenEventLocationChanged(msg: string, callback: DSEventHandler<LocationChangedPayload, "locationChanged", "router">): DSUnlisten {
+        return this.listenEvent<LocationChangedEvent>(msg, "locationChanged", callback);
+    }
+
+    historyListener(update: HistoryUpdate<LocationState>): DSEventHandlerResult {
+        console.warn("historyListener", this.suspressNavigator, update);
+        const suspressNavigator = this.suspressNavigator;
+        this.suspressNavigator = false;
+        const locationPC = getPropertiesChanged(this.stateValue);
+        locationPC.setIf("action", update.action || "PUSH");
+        locationPC.setIf("location", injectQuery(update.location));
+        locationPC.setIf("updateMode", update.updateMode);
+        locationPC.valueChangedIfNeeded();
+        if (suspressNavigator) {
+            // may be changed but ignore it
+            const p = routerLocationChanged.emitEvent(this.stateValue.value);
+            if (p && typeof p.then === "function") {
+                return catchLog("handleSetLocation", p);
+            }
+        } else {
         }
     }
 

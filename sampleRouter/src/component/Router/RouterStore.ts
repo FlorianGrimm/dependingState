@@ -1,5 +1,4 @@
 import {
-    DSStateValueSelf,
     ConfigurationDSValueStore
 } from "dependingState";
 
@@ -7,27 +6,23 @@ import {
     //dsRouterBuilder,
     History,
     HistoryState,
-    IDSRouterValue,
-    DSRouterStore
+    DSRouterStore,
+    createBrowserHistory
 } from "dependingStateRouter";
 
+import { RouterValue } from "./RouterValue";
 
-// dsRouterBuilder.createAction
+export type LocationState = HistoryState;
 
-export class RouterValue extends DSStateValueSelf<RouterValue> implements IDSRouterValue {
-    constructor() {
-        super();
-    }
-}
-
-export type LocationState = undefined;
-
-export class RouterStore<LocationState> extends DSRouterStore<RouterValue, RouterValue> {
+export class RouterStore extends DSRouterStore<RouterValue, RouterValue> {
     constructor(
-        history: History<LocationState>,
-        stateValue: RouterValue,
+        history?: History<LocationState>,
+        stateValue?: RouterValue,
         configuration?: ConfigurationDSValueStore<RouterValue, RouterValue>
     ) {
-        super(history, stateValue, configuration);
+        super(
+            (history == undefined) ? createBrowserHistory() : history,
+            (stateValue === undefined) ? new RouterValue() : stateValue,
+            configuration);
     }
 }
