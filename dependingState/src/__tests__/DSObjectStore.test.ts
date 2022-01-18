@@ -24,7 +24,7 @@ test('DSObjectStore process implicit', async () => {
     let actA = 1;
 
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue({ a: actA }));
+    const valueStoreA = new DSObjectStore<DSStateValue<VSA>>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -58,7 +58,7 @@ test('DSObjectStore process explicit', async () => {
     let actA = 1;
 
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue({ a: actA }));
+    const valueStoreA = new DSObjectStore<DSStateValue<VSA>>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -93,9 +93,9 @@ test('DSObjectStore process explicit', async () => {
 test('DSObjectStore listen', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue( { a: 0 }));
-    const valueStoreB = new DSObjectStore<VSB, DSStateValue<VSB>>("b", stateValue({ b: 0 }));
-    const valueStoreAB = new DSObjectStore<VSAB, DSStateValue<VSAB>>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
+    const valueStoreA = new DSObjectStore<DSStateValue<VSA>>("a", stateValue( { a: 0 }));
+    const valueStoreB = new DSObjectStore<DSStateValue<VSB>>("b", stateValue({ b: 0 }));
+    const valueStoreAB = new DSObjectStore<DSStateValue<VSAB>>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.stateValue;
@@ -126,9 +126,9 @@ test('DSObjectStore listen', async () => {
 test('DSObjectStore process promise', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSObjectStore<VSA,DSStateValue<VSA>>("a", stateValue({ a: 0 }));
-    const valueStoreB = new DSObjectStore<VSB, DSStateValue<VSB>>("b", stateValue({ b: 0 }));
-    const valueStoreAB = new DSObjectStore<VSAB, DSStateValue<VSAB>>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
+    const valueStoreA = new DSObjectStore<DSStateValue<VSA>>("a", stateValue({ a: 0 }));
+    const valueStoreB = new DSObjectStore<DSStateValue<VSB>>("b", stateValue({ b: 0 }));
+    const valueStoreAB = new DSObjectStore<DSStateValue<VSAB>>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.stateValue;

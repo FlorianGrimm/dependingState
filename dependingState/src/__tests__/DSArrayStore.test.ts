@@ -1,3 +1,4 @@
+import { DSValueStore } from "../DSValueStore";
 import {
     DSArrayStore,
     DSStoreManager,
@@ -22,7 +23,7 @@ type VSAB = {
 
 test('DSArrayStore process implicit', async () => {
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSArrayStore<VSA>("a");
+    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -55,7 +56,7 @@ test('DSArrayStore process implicit', async () => {
 
 test('DSArrayStore process explicit', async () => {
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSArrayStore<VSA>("a");
+    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -92,9 +93,9 @@ test('DSArrayStore process explicit', async () => {
 test('DSArrayStore listen', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSArrayStore<VSA>("a");
-    const valueStoreB = new DSArrayStore<VSB>("b");
-    const valueStoreAB = new DSArrayStore<VSAB>("ab");
+    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
+    const valueStoreB = new DSArrayStore<DSStateValue<VSB>>("b");
+    const valueStoreAB = new DSArrayStore<DSStateValue<VSAB>>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.create({ a: 0 });
@@ -125,9 +126,9 @@ test('DSArrayStore listen', async () => {
 test('DSArrayStore process promise', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSArrayStore<VSA>("a");
-    const valueStoreB = new DSArrayStore<VSB>("b");
-    const valueStoreAB = new DSArrayStore<VSAB>("ab");
+    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
+    const valueStoreB = new DSArrayStore<DSStateValue<VSB>>("b");
+    const valueStoreAB = new DSArrayStore<DSStateValue<VSAB>>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.create({ a: 0 });
@@ -168,9 +169,9 @@ test('DSArrayStore process promise', async () => {
 test('DSArrayStore array', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSArrayStore<VSA>("a");
-    const valueStoreB = new DSArrayStore<VSB>("b");
-    const valueStoreAB = new DSArrayStore<VSAB>("ab");
+    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
+    const valueStoreB = new DSArrayStore<DSStateValue<VSB>>("b");
+    const valueStoreAB = new DSArrayStore<DSStateValue<VSAB>>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     valueStoreA.listenEventAttach("test", (dsEvent) => {

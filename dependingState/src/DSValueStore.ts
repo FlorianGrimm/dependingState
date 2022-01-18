@@ -18,7 +18,11 @@ import type {
     DSEventDetach,
     IDSStoreBuilder,
     IDSObjectStore,
-    DSEventValueHandler
+    DSEventValueHandler,
+    IDSAnyValueStore,
+    IDSArrayStore,
+    IDSMapStore,
+    ArrayElement
 } from './types'
 
 import {
@@ -30,26 +34,27 @@ import {
 } from './DSLog';
 
 export class DSValueStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
-    StoreName extends string = string
-    > implements IDSValueStore<Value, StateValue, StoreName>{
+    StateValue extends IDSStateValue<Value>,
+    Key,
+    Value, // = StateValue['value'],
+    StoreName extends string // = string
+    > implements IDSValueStore<StateValue, Key, Value, StoreName>{
     private _isDirty: boolean;
     storeName: StoreName;
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
     listenToAnyStore: boolean;
-    mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
+    mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler<any, string, string> }[]>;
     arrDirtyHandler: { msg: string, handler: DSDirtyHandler<StateValue, Value> }[];
-    arrDirtyRelated: { msg: string, valueStore: IDSValueStore }[] | undefined;
+    arrDirtyRelated: { msg: string, valueStore: IDSAnyValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
     enableEmitDirtyFromValueChanged: boolean;
-    configuration: ConfigurationDSValueStore<Value, StateValue>;
+    configuration: ConfigurationDSValueStore<StateValue, Value>;
     storeBuilder: IDSStoreBuilder<StoreName> | undefined;
 
     constructor(
         storeName: StoreName,
-        configuration?: ConfigurationDSValueStore<Value, StateValue>
+        configuration?: ConfigurationDSValueStore<StateValue, Value>
     ) {
         this.storeName = storeName;
         this.storeManager = undefined;
@@ -107,20 +112,37 @@ export class DSValueStore<
         }
     }
 
-    public listenDirtyRelated<RelatedValueStore extends IDSValueStore>(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten {
+    public getEntities():{key:Key, stateValue:StateValue}[]{
+        return [];
+    }
+
+    public listenDirtyRelated<
+        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
+        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
+        RelatedValue =  ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
+        RelatedStoreName extends string = RelatedValueStore['storeName']
+    >(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten {
         if (this.arrDirtyRelated === undefined) {
             this.arrDirtyRelated = [];
         }
         const index = this.arrDirtyRelated.findIndex((item) => (item.valueStore === relatedValueStore));
         if (index < 0) {
             this.arrDirtyRelated = (this.arrDirtyRelated || []).concat([{ msg: msg, valueStore: relatedValueStore }]);
-            return this.unlistenDirtyRelated.bind(this, relatedValueStore);
+            return (()=>{this.unlistenDirtyRelated<RelatedValueStore, RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>(relatedValueStore);});
+            //.bind(this, relatedValueStore);
         } else {
             return (() => { });
         }
     }
 
-    public unlistenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): void {
+    public unlistenDirtyRelated<
+        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
+        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
+        RelatedValue =  ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
+        RelatedStoreName extends string = RelatedValueStore['storeName']
+    >(relatedValueStore: RelatedValueStore): void {
         if (this.arrDirtyRelated !== undefined) {
             this.arrDirtyRelated = this.arrDirtyRelated.filter((item) => (item.valueStore !== relatedValueStore));
             if (this.arrDirtyRelated.length === 0) {
@@ -283,16 +305,16 @@ export class DSValueStore<
 }
 
 export class DSObjectStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value'],
     StoreName extends string = string
-    > extends DSValueStore<Value, StateValue>
-    implements IDSObjectStore<Value, StateValue, StoreName>    {
+    > extends DSValueStore<StateValue, undefined, Value, StoreName>
+    implements IDSObjectStore<StateValue, Value, StoreName>    {
     readonly stateValue: StateValue
     constructor(
         storeName: StoreName,
         stateValue: StateValue,
-        configuration?: ConfigurationDSValueStore<Value, StateValue>
+        configuration?: ConfigurationDSValueStore<StateValue, Value>
     ) {
         super(storeName, configuration);
         this.stateValue = stateValue;
@@ -304,7 +326,7 @@ export class DSObjectStore<
     }
 
     public combineValueStateFromObjectStore<
-        OtherStore extends IDSObjectStore<OtherValue, OtherStateValue, OtherStoreName>,
+        OtherStore extends IDSObjectStore<OtherStateValue, OtherValue, OtherStoreName>,
         PropertyName extends keyof StateValue,
         OtherValue = any,
         OtherStateValue extends IDSStateValue<OtherValue> = IDSStateValue<OtherValue>,
@@ -324,21 +346,28 @@ export class DSObjectStore<
 }
 
 export class DSArrayStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value'],
     StoreName extends string = string
-    > extends DSValueStore<Value, StateValue> {
+    > extends DSValueStore<StateValue, number, Value, StoreName> implements IDSArrayStore<StateValue, number, Value, StoreName>    {
     entities: StateValue[];
     constructor(
         storeName: StoreName,
-        configuration?: ConfigurationDSArrayValueStore<Value, StateValue>
+        configuration?: ConfigurationDSArrayValueStore<StateValue, Value>
     ) {
         super(storeName, configuration);
         this.entities = [];
     }
 
+    public getStateValue(key: number): (StateValue | undefined) {
+        return undefined;
+    }
+    public getKeyOf(stateValue: StateValue): (number | undefined){
+        return undefined;
+    }
+
     public create(value: Value): StateValue {
-        const create = (this.configuration as ConfigurationDSArrayValueStore<Value, StateValue>).create;
+        const create = (this.configuration as ConfigurationDSArrayValueStore<StateValue, Value>).create;
         if (create !== undefined) {
             const result = create(value);
             this.attach(result);
@@ -392,22 +421,22 @@ export class DSArrayStore<
 }
 
 export class DSMapStore<
-    Key = Exclude<any, never>,
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
+    StateValue extends IDSStateValue<Value>,
+    Key = string,
+    Value = StateValue['value'],
     StoreName extends string = string
-    > extends DSValueStore<Value, StateValue> {
+    > extends DSValueStore<StateValue, Key, Value, StoreName> implements IDSMapStore<StateValue, Key, Value, StoreName> {
     entities: Map<Key, StateValue>;
     constructor(
         storeName: StoreName,
-        configuration?: ConfigurationDSMapValueStore<Value, StateValue>
+        configuration?: ConfigurationDSMapValueStore<StateValue, Value>
     ) {
         super(storeName, configuration);
         this.entities = new Map();
     }
 
     create(key: Key, value: Value): StateValue {
-        const create = (this.configuration as ConfigurationDSMapValueStore<Value, StateValue>).create;
+        const create = (this.configuration as ConfigurationDSMapValueStore<StateValue, Value>).create;
         if (create !== undefined) {
             const result = create(value);
             this.attach(key, result);
@@ -475,21 +504,21 @@ export class DSMapStore<
 }
 
 export class DSEntityStore<
-    Key = any,
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
+    StateValue extends IDSStateValue<Value>,
+    Key = string,
+    Value = StateValue['value'],
     StoreName extends string = string
-    > extends DSMapStore<Key, Value, StateValue>{
+    > extends DSMapStore<StateValue, Key, Value, StoreName>{
     constructor(
         storeName: StoreName,
-        configuration?: ConfigurationDSEntityValueStore<Key, Value, StateValue>
+        configuration?: ConfigurationDSEntityValueStore<StateValue, Key, Value>
     ) {
         super(storeName, configuration);
     }
 
     public set(value: Value): StateValue {
-        const getKey = (this.configuration as ConfigurationDSEntityValueStore<Key, Value, StateValue>).getKey;
-        const create = (this.configuration as ConfigurationDSEntityValueStore<Key, Value, StateValue>).create;
+        const getKey = (this.configuration as ConfigurationDSEntityValueStore<StateValue, Key, Value>).getKey;
+        const create = (this.configuration as ConfigurationDSEntityValueStore<StateValue, Key, Value>).create;
         if (create !== undefined) {
             const result = create(value);
             const key = getKey(value);

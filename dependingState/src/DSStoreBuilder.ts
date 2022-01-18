@@ -20,7 +20,7 @@ export class DSStoreBuilder<
     StoreName extends string = string
     > implements IDSStoreBuilder<StoreName> {
     actions: Map<string, DSStoreAction<any, string, StoreName>>;
-    valueStore: IDSValueStore<any, any, StoreName> | undefined;
+    valueStore: IDSValueStore<any, any, any, StoreName> | undefined;
 
     constructor(
         public storeName: StoreName
@@ -50,7 +50,7 @@ export class DSStoreBuilder<
         return result;
     }
 
-    public bindValueStore(valueStore: IDSValueStore<any, any, StoreName>): void {
+    public bindValueStore(valueStore: IDSValueStore<any, any, any, StoreName>): void {
         this.valueStore = valueStore;
         for (const action of this.actions.values()) {
             action.bindValueStore(valueStore);
@@ -63,7 +63,7 @@ export class DSStoreAction<
     StoreName extends string = string
     > implements IDSStoreAction<Payload, EventType, StoreName> {
 
-    valueStore: IDSValueStore<any, any, StoreName> | undefined;
+    valueStore: IDSValueStore<any, any, any, StoreName> | undefined;
 
     constructor(
         public event: EventType,
@@ -71,7 +71,10 @@ export class DSStoreAction<
     ) {
     }
 
-    bindValueStore(valueStore: IDSValueStore<any, any, StoreName>): void {
+    bindValueStore(valueStore: IDSValueStore<any, any, any, StoreName>): void {
+        if (this.storeName !== valueStore.storeName){ 
+            throw new Error("wrong IDSValueStore");
+        }
         this.valueStore = valueStore;
     }
 

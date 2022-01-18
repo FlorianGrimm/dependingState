@@ -2,7 +2,8 @@ import {
     IDSStateValue,
     IDSValueStore,
     DSUIProps,
-    IDSPropertiesChanged as IDSPropertiesChanged
+    IDSPropertiesChanged as IDSPropertiesChanged,
+    IDSValueStoreWithValue
 } from "./types";
 import { DSUIStateValue } from "./DSUIStateValue";
 import { DSEventValue, dsLog } from ".";
@@ -10,9 +11,9 @@ import { DSEventValue, dsLog } from ".";
 export class DSStateValue<Value> implements IDSStateValue<Value>{
     private _value: Value;
     private _stateVersion: number;
-    
+
     isDirty: boolean;
-    store: IDSValueStore<Value> | undefined;
+    store: IDSValueStoreWithValue<Value> | undefined;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
     constructor(value: Value) {
@@ -65,7 +66,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         }
     }
 
-    public setStore(store: IDSValueStore<Value>): boolean {
+    public setStore(store: IDSValueStoreWithValue<Value>): boolean {
         if (this.store === undefined) {
             this.store = store;
             this.stateVersion = store.getNextStateVersion(this.stateVersion);
@@ -81,8 +82,8 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
     public getViewProps(): DSUIProps<Value> {
         return this.getUIStateValue().getViewProps();
     }
-    
-    public emitUIUpdate():void{
+
+    public emitUIUpdate(): void {
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
                 this.uiStateValue.triggerUIUpdate();
@@ -123,7 +124,7 @@ export function stateValue<Value>(value: Value) {
 
 export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements IDSStateValue<Value>{
     isDirty: boolean;
-    store: IDSValueStore<Value> | undefined;
+    store: IDSValueStoreWithValue<Value> | undefined;
     stateVersion: number;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
@@ -143,7 +144,8 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitDirtyFromValueChanged(this, properties);
-            this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, any>>("value", { entity: this, properties:properties });
+            //this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, string, Value>>("value", { entity: this, properties: properties });
+            this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, string, Value>>("value", { entity: this, properties: properties });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
@@ -162,7 +164,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         }
     }
 
-    public setStore(store: IDSValueStore<Value>): boolean {
+    public setStore(store: IDSValueStoreWithValue<Value>): boolean {
         if (this.store === undefined) {
             this.store = store;
             this.stateVersion = store.getNextStateVersion(this.stateVersion);
@@ -179,7 +181,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         return this.getUIStateValue().getViewProps();
     }
 
-    public emitUIUpdate():void{
+    public emitUIUpdate(): void {
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
                 this.uiStateValue.triggerUIUpdate();

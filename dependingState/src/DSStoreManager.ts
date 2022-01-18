@@ -5,7 +5,9 @@ import type {
     DSEventHandlerResult,
     IDSUIStateValue,
     DSEventHandler,
-    DSDirtyHandler
+    DSDirtyHandler,
+    IDSStateValue,
+    ArrayElement
 } from "./types";
 
 import { dsLog } from "./DSLog";
@@ -14,15 +16,15 @@ import { catchLog } from "./PromiseHelper";
 type ValueStoreInternal = {
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
     arrDirtyHandler: { msg: string, handler: DSDirtyHandler<any, any> }[];
-    arrDirtyRelated: { msg: string, valueStore: IDSValueStore }[] | undefined;
+    arrDirtyRelated: { msg: string, valueStore: IDSValueStore<any, any, any, string> }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
-} & IDSValueStore;
+} & IDSValueStore<any, any, any, string>;
 
 export class DSStoreManager implements IDSStoreManager {
     //stateVersion: number;
     nextStateVersion: number;
     shouldIncrementStateVersion: boolean;
-    valueStores: IDSValueStore[];
+    valueStores: IDSValueStore<any, any, any, string>[];
     events: DSEvent[];
     isProcessing: number;
     arrUIStateValue: IDSUIStateValue[];
@@ -50,7 +52,13 @@ export class DSStoreManager implements IDSStoreManager {
         return this.nextStateVersion;
     }
 
-    public attach(valueStore: IDSValueStore): this {
+    public attach<
+        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
+        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
+        RelatedValue =  ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
+        RelatedStoreName extends string = RelatedValueStore['storeName']
+    >(valueStore: RelatedValueStore): this {
         this.valueStores = this.valueStores.concat([valueStore]);
         valueStore.storeManager = this;
         return this;

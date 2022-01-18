@@ -24,6 +24,7 @@ export type {
     DSUIViewState,
     DSUIViewStateBase,
     DSUIProps,
+    IDSAnyValueStore
 } from './types';
 
 export {

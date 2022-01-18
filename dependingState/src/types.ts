@@ -1,10 +1,18 @@
 import type React from 'react';
 import type { DSUIStateValue } from './DSUIStateValue';
 
+export type ArrayElement<T> = T extends (infer U)[]?U:never;
+
 export interface IDSStoreManager {
     getNextStateVersion(stateVersion: number): number;
 
-    attach(valueStore: IDSValueStore): this;
+    attach<
+    RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
+    RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+    RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
+    RelatedValue =  ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
+    RelatedStoreName extends string = RelatedValueStore['storeName']
+    >(valueStore: RelatedValueStore): this;
     postAttached(): void;
     updateRegisteredEvents(): void;
     resetRegisteredEvents(): void;
@@ -24,7 +32,7 @@ export interface IDSStoreBuilder<StoreName extends string = string> {
         event: EventType
     ): IDSStoreAction<Payload, EventType, StoreName>;
 
-    bindValueStore(valueStore: IDSValueStore<any, any, StoreName>): void;
+    bindValueStore(valueStore: IDSValueStore<any, any, any, StoreName>): void;
 }
 
 export interface IDSStoreAction<
@@ -32,7 +40,7 @@ export interface IDSStoreAction<
     EventType extends string = string,
     StoreName extends string = string
     > {
-    bindValueStore(valueStore: IDSValueStore<any, any, StoreName>): void;
+    bindValueStore(valueStore: IDSValueStore<any, any, any, StoreName>): void;
 
     listenEvent<
         Event extends DSEvent<Payload, EventType, StoreName>
@@ -50,24 +58,46 @@ export interface IDSStoreAction<
 }
 
 export interface IDSValueStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = IDSStateValue<Value>,
+    StateValue extends IDSStateValue<Value>,
+    Key,
+    Value = StateValue['value'],
     StoreName extends string = string
-    //Value = StateValue['value']
     > {
-    storeName: string;
+    storeName: StoreName;
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
     listenToAnyStore: boolean;
     isDirty: boolean;
 
+    getEntities():{key:Key, stateValue:StateValue}[];
+    // get entities():{key:Key, stateValue:StateValue}[];
+    // get keys():Key[];
+    // get stateValues():StateValue[];
+
+
     setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void;
     postAttached(storeManager: IDSStoreManager): void;
 
     getNextStateVersion(stateVersion: number): number;
+    // getStateValue(key: Key): (StateValue | undefined);
+    // getKeyOf(stateValue: StateValue): (Key | undefined);
 
-    listenDirtyRelated<RelatedValueStore extends IDSValueStore>(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten;
-    unlistenDirtyRelated<RelatedValueStore extends IDSValueStore>(relatedValueStore: RelatedValueStore): void;
+    listenDirtyRelated<
+        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
+        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
+        RelatedValue =  ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
+        RelatedStoreName extends string = RelatedValueStore['storeName']
+        >(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten;
+
+    unlistenDirtyRelated<
+        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
+        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
+        RelatedValue =  ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
+        RelatedStoreName extends string = RelatedValueStore['storeName']
+    >(relatedValueStore: RelatedValueStore): void;
+
     emitDirtyFromValueChanged(stateValue?: StateValue, properties?: Set<keyof Value>): void;
     emitDirty(stateValue?: StateValue, properties?: Set<keyof Value>): void;
     listenDirty(msg: string, callback: DSDirtyHandler<StateValue, Value>): DSUnlisten;
@@ -77,18 +107,20 @@ export interface IDSValueStore<
     emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
 
     emitEvent<
-        Event extends DSEvent<any, string, StoreName>
-    >(eventType: Event['event'], payload: Event['payload']): DSEventHandlerResult;
+        Event extends DSEvent<Payload, EventType, StoreName>,
+        Payload = Event['payload'],
+        EventType extends string = Event['event'],
+        >(eventType: Event['event'], payload: Event['payload']): DSEventHandlerResult;
 
     listenEvent<
         Event extends DSEvent<any, string, StoreName>
     >(msg: string, event: Event['event'], callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten;
 
-    listenEventAnyStore<
-        Payload = any,
-        EventType extends string = string,
-        StoreName extends string = string
-    >(msg: string, event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten;
+    // listenEventAnyStore<
+    //     Payload = any,
+    //     EventType extends string = string,
+    //     StoreName extends string = string
+    // >(msg: string, event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten;
 
     unlistenEvent<
         Payload = any,
@@ -103,82 +135,84 @@ export interface IDSValueStore<
     >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult;
 }
 
-/*
-export interface x<
-    StateValue extends IDSStateValue<Value>,
-    Value = StateValue['value']
->{
+export type IDSAnyValueStore = IDSValueStore<any, any, any, string>;
+//export type IDSValueStore1<Value> = IDSValueStore<IDSStateValue<Value>, any, Value, string>;
 
-}
-*/
 export interface IDSObjectStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = IDSStateValue<Value>,
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value'],
     StoreName extends string = string
-    > extends IDSValueStore {
-    stateValue:StateValue;
+    > extends IDSValueStore<StateValue, undefined, Value, StoreName> {
+    stateValue: StateValue;
 
-    //listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten;
     listenEventValue(msg: string, callback: DSEventValueHandler<StateValue, StoreName, Value>): DSUnlisten;
-
-    // combineValueStateFromObjectStore<
-    //     OtherStore extends IDSObjectStore<OtherValue, OtherStateValue, OtherStoreName>,
-    //     PropertyName extends keyof Value,
-    //     OtherValue = any,
-    //     OtherStateValue extends IDSStateValue<OtherValue> = IDSStateValue<OtherValue>,
-    //     OtherStoreName extends string = string,
-    //     >(
-    //         name: PropertyName,
-    //         getStore: (() => OtherStore)
-    //     ):void;
-
 }
 
 export type ConfigurationDSValueStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value']
     > = {
         postAttached?: () => void;
     }
 
+export interface IDSArrayStore<
+    StateValue extends IDSStateValue<Value>,
+    Key = number,
+    Value = StateValue['value'],
+    StoreName extends string = string
+    > extends IDSValueStore<StateValue, Key, Value, StoreName> {
+    // stateValue: StateValue;
+
+    //listenEventValue(msg: string, callback: DSEventValueHandler<StateValue, StoreName, Value>): DSUnlisten;
+}
 export type ConfigurationDSArrayValueStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
-    > = ConfigurationDSValueStore<Value, StateValue> & {
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value']
+    > = ConfigurationDSValueStore<StateValue, Value> & {
         create?: ((value: Value) => StateValue);
     }
 
+export interface IDSMapStore<
+    StateValue extends IDSStateValue<Value>,
+    Key = string,
+    Value = StateValue['value'],
+    StoreName extends string = string
+    > {
+
+}
+
 export type ConfigurationDSMapValueStore<
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
-    > = ConfigurationDSValueStore<Value, StateValue> & {
+    StateValue extends IDSStateValue<Value>,
+    Value = StateValue['value']
+    > = ConfigurationDSValueStore<StateValue, Value> & {
         create?: ((value: Value) => StateValue);
     }
 
 export type ConfigurationDSEntityValueStore<
-    Key = any,
-    Value = any,
-    StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>)
-    > = ConfigurationDSValueStore<Value, StateValue> & {
+    StateValue extends IDSStateValue<Value>,
+    Key = string,
+    Value = StateValue['value'],
+    > = ConfigurationDSValueStore<StateValue, Value> & {
         create?: (value: Value) => StateValue;
         getKey: (value: Value) => Key;
     }
 
-export interface IDSStateValue<Value = any> {
+export interface IDSStateValue<Value> {
     isDirty: boolean;
-    store: IDSValueStore<Value> | undefined;
+    store: IDSValueStoreWithValue<Value> | undefined;
     stateVersion: number;
-    //uiStateValue: DSUIStateValue<Value> | undefined;
     value: Value;
     valueChanged(properties?: Set<keyof Value> | undefined): void;
     getUIStateValue(): DSUIStateValue<Value>;
-    setStore(store: IDSValueStore<Value>): boolean;
+    setStore(store: IDSValueStoreWithValue<Value>): boolean;
 
     getViewProps(): DSUIProps<Value>;
     emitUIUpdate(): void;
     triggerUIUpdate(): void;
     triggerScheduled: boolean;
 }
+
+export type IDSValueStoreWithValue<Value> = IDSValueStore<IDSStateValue<Value>, any, Value, string>
 
 export interface IDSPropertiesChanged<
     StateValue extends IDSStateValue<Value>,
@@ -269,7 +303,8 @@ export type DSEventDetach<
     > = DSEvent<DSPayloadEntity<Entity, Key, Index>, "detach", StoreName>;
 
 export type DSPayloadEntityPropertiesChanged<
-    StateValue extends (IDSStateValue<any> | undefined)
+    StateValue extends IDSStateValue<Value> | undefined,
+    Value = Exclude<StateValue, undefined>['value']
     > = ({
         entity: StateValue;
         properties?: Set<keyof Exclude<StateValue, undefined>['value']> | undefined
@@ -292,7 +327,7 @@ export type DSEventHandler<
     > = (event: DSEvent<Payload, EventType, StoreName>) => DSEventHandlerResult;
 
 export type DSEventValueHandler<
-    StateValue extends IDSStateValue<Value> | undefined ,
+    StateValue extends IDSStateValue<Value> | undefined,
     StoreName extends string,
     Value
     > = (event: DSEvent<DSPayloadEntityPropertiesChanged<StateValue>, "value", StoreName>) => DSEventHandlerResult;

@@ -5,9 +5,10 @@ import {
     DSEventValue,
     DSEventAttach,
     DSStateValue,
-    stateValue
+    stateValue,
+    DSEventHandler, 
+    DSPayloadEntity
 } from "../index";
-import { DSEventHandler, DSPayloadEntity } from "../types";
 
 class Project {
     constructor(
@@ -17,7 +18,7 @@ class Project {
     }
 }
 
-class ProjectStore extends DSEntityStore<string, Project, DSStateValue<Project>>{
+class ProjectStore extends DSEntityStore<DSStateValue<Project>>{
     constructor(storeName: string) {
         super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
     }
@@ -48,7 +49,7 @@ class ProjectUI extends DSStateValue<ProjectUI>{
 class DSStoreManagerDirty extends DSStoreManager {
     constructor(
         public project: ProjectStore,
-        public projectUIStore: DSMapStore<string, ProjectUI, ProjectUI>
+        public projectUIStore: DSMapStore<ProjectUI>
     ) {
         super();
         this.attach(project);
@@ -58,7 +59,7 @@ class DSStoreManagerDirty extends DSStoreManager {
 
 test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
-    const projectUIStore = new DSMapStore<string, ProjectUI, ProjectUI>("projectUI");
+    const projectUIStore = new DSMapStore<ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
     projectStore.listenEventAttach("test", (projectValue) => {
         const project = projectValue.payload.entity.value;
