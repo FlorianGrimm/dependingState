@@ -37,7 +37,7 @@ export default class AppViewProjects extends React.Component<AppViewProjectsProp
 
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        const { compAUIStates } = viewProps;
+        const { compAVSs: compAUIStates } = viewProps;
 
         return (<>
         <div>list</div>

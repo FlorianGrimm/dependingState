@@ -12,23 +12,23 @@ import { IDSNavigatorValue, match, RouteProps } from "./types";
 import { IDSRouterStore } from "./DSRouterStore";
 import { LocationChangedPayload } from './DSRouterAction';
 import matchPath from './matchPath';
-import { navigatorSetLocation, NavigatorSetLocationPayload } from "./DSNavigatorActions";
+import { navigatorBuilder, navigatorSetLocation, NavigatorSetLocationPayload } from "./DSNavigatorActions";
 
 export class DSNavigatorStore<
-    StateValue extends IDSStateValue<Value>,
-    Value extends IDSNavigatorValue<NavigatorPageName, NavigatorPathArguments> = StateValue['value'],
+    Value extends IDSNavigatorValue<NavigatorPageName, NavigatorPathArguments>,
     NavigatorPageName extends string = Value['page'],
     NavigatorPathArguments extends {} = Value['pathArguments'],
     StoreName extends string = string
-    > extends DSObjectStore<StateValue, Value, StoreName>{
+    > extends DSObjectStore<Value, StoreName>{
     routerStore: IDSRouterStore | undefined;
 
     constructor(
         storeName: StoreName,
-        stateValue: StateValue,
-        configuration?: ConfigurationDSValueStore<StateValue, Value>
+        stateValue: IDSStateValue<Value>,
+        configuration?: ConfigurationDSValueStore<Value>
     ) {
         super(storeName, stateValue, configuration);
+        navigatorBuilder.bindValueStore(this);
     }
 
     public setRouter(routerStore: IDSRouterStore): void {

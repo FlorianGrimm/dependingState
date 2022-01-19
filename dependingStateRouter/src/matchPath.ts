@@ -1,4 +1,9 @@
-import pathToRegexp from "path-to-regexp";
+import {
+    TokensToRegexpOptions,
+    ParseOptions,
+    Key,
+    pathToRegexp
+} from "path-to-regexp";
 import type { RouteProps } from "./types";
 import type { match } from "./types";
 
@@ -6,7 +11,7 @@ const cache: {
     [cacheKey: string]: {
         [path: string]: {
             regexp: RegExp,
-            keys: pathToRegexp.Key[]
+            keys: Key[]
         }
     }
 } = {};
@@ -15,17 +20,17 @@ const cacheLimit = 100;
 
 //let cacheCount = 0;
 
-function compilePath(path: string, options: pathToRegexp.TokensToRegexpOptions & pathToRegexp.ParseOptions): {
+function compilePath(path: string, options: TokensToRegexpOptions & ParseOptions): {
     regexp: RegExp,
-    keys: pathToRegexp.Key[]
+    keys: Key[]
 } {
     const cacheKey = `${options.end}${options.strict}${options.sensitive}`;
     let pathCache = cache[cacheKey] || (cache[cacheKey] = {});
 
     if (pathCache[path]) return pathCache[path];
 
-    const keys: pathToRegexp.Key[] = [];
-    const regexp = pathToRegexp.pathToRegexp(path, keys, options);
+    const keys: Key[] = [];
+    const regexp = pathToRegexp(path, keys, options);
     const result = { regexp, keys };
 
     if (Object.keys(pathCache).length >= cacheLimit) {

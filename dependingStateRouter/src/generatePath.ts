@@ -1,15 +1,19 @@
-import pathToRegexp from "path-to-regexp";
+import { 
+    PathFunction,
+    compile
+} from "path-to-regexp";
 
-let cache: { [path: string]: pathToRegexp.PathFunction } = {};
+
+let cache: { [path: string]: PathFunction } = {};
 const cacheLimit = 100;
 let cacheCount = 0;
 
-function compilePath(path: string): pathToRegexp.PathFunction {
+function compilePath(path: string):PathFunction {
     if (cache[path]) {
         return cache[path];
     }
 
-    const generator = pathToRegexp.compile(path);
+    const generator = compile(path);
 
     // if (cacheCount < cacheLimit) {
     //     cache[path] = generator;
@@ -18,7 +22,7 @@ function compilePath(path: string): pathToRegexp.PathFunction {
 
     if (cacheCount > cacheLimit) {
         cacheCount = 0;
-        cache={}
+        cache = {}
     }
     cache[path] = generator;
 

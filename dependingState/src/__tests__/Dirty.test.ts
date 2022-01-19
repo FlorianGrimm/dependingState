@@ -1,12 +1,8 @@
+import { DSStateValueSelf } from "../DSStateValue";
 import {
     DSMapStore,
     DSStoreManager,
-    DSEventValue,
-    DSEventAttach,
     DSStateValue,
-    stateValue,
-    DSEventHandler, 
-    DSPayloadEntity,
     DSEntityStore
 } from "../index";
 
@@ -18,7 +14,7 @@ class Project {
     }
 }
 
-class ProjectStore extends DSEntityStore<DSStateValue<Project>>{
+class ProjectStore extends DSEntityStore<string, Project>{
     constructor(storeName: string) {
         super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
     }
@@ -31,13 +27,12 @@ class ProjectStore extends DSEntityStore<DSStateValue<Project>>{
     }
 }
 
-class ProjectUI extends DSStateValue<ProjectUI>{
+class ProjectUI extends DSStateValueSelf<ProjectUI>{
     t: number;
     constructor(
         public projectValue: Project
     ) {
-        super(null!);
-        this.value = this;
+        super();
         this.t = 0;
     }
 
@@ -49,7 +44,7 @@ class ProjectUI extends DSStateValue<ProjectUI>{
 class DSStoreManagerDirty extends DSStoreManager {
     constructor(
         public project: ProjectStore,
-        public projectUIStore: DSMapStore<ProjectUI>
+        public projectUIStore: DSMapStore<string, ProjectUI>
     ) {
         super();
         this.attach(project);
@@ -59,7 +54,7 @@ class DSStoreManagerDirty extends DSStoreManager {
 
 test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
-    const projectUIStore = new DSMapStore<ProjectUI>("projectUI");
+    const projectUIStore = new DSMapStore<string, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
     projectStore.listenEventAttach("test", (projectValue) => {
         const project = projectValue.payload.entity.value;

@@ -1,12 +1,12 @@
 import {
     IDSStateValue,
-    IDSValueStore,
     DSUIProps,
     IDSPropertiesChanged as IDSPropertiesChanged,
     IDSValueStoreWithValue
 } from "./types";
 import { DSUIStateValue } from "./DSUIStateValue";
-import { DSEventValue, dsLog } from ".";
+import { dsLog } from "./DSLog";
+import { DSEventEntityVSValue } from ".";
 
 export class DSStateValue<Value> implements IDSStateValue<Value>{
     private _value: Value;
@@ -47,7 +47,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitDirtyFromValueChanged(this, properties);
-            this.store.emitEvent<DSEventValue<DSStateValue<Value>>>("value", { entity: this, properties: properties });
+            this.store.emitEvent<DSEventEntityVSValue<Value>>("value", { entity: this, properties: properties });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
@@ -145,7 +145,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitDirtyFromValueChanged(this, properties);
             //this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, string, Value>>("value", { entity: this, properties: properties });
-            this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, string, Value>>("value", { entity: this, properties: properties });
+            this.store.emitEvent<DSEventEntityVSValue<Value>>("value", { entity: this, properties: properties });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {

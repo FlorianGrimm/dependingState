@@ -24,7 +24,7 @@ import {
 } from "./NavigatorValue";
 
 
-export class NavigatorStore extends DSNavigatorStore<DSStateValue<NavigatorValue>, NavigatorValue, NavigatorPageName, NavigatorPathArguments, "navigator"> {
+export class NavigatorStore extends DSNavigatorStore<NavigatorValue, NavigatorPageName, NavigatorPathArguments, "navigator"> {
     pathNames: NavigatorPathName[];
     path: NavigatorPaths;
     route: NavigatorRoutes;
@@ -33,7 +33,7 @@ export class NavigatorStore extends DSNavigatorStore<DSStateValue<NavigatorValue
 
     constructor(
         stateValue: NavigatorStore['stateValue'],
-        configuration?: ConfigurationDSValueStore<NavigatorStore['stateValue'], NavigatorStore['stateValue']['value']>
+        configuration?: ConfigurationDSValueStore<NavigatorStore['stateValue']['value']>
     ) {
         super(
             "navigator",

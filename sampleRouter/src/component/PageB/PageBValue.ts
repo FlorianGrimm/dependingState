@@ -7,8 +7,8 @@ export class PageBValue extends DSStateValue<PageBValue> {
     constructor() {
         super(null!);
         this.value = this;
-        this.nbrA = 1;
-        this.nbrB = 1;
+        this.nbrA = 2;
+        this.nbrB = 2;
         this.nbrC = 0;
     }
 }

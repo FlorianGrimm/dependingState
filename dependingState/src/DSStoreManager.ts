@@ -1,13 +1,12 @@
 import type {
+    IDSStoreManagerInternal,
     IDSStoreManager,
-    IDSValueStore,
     DSEvent,
     DSEventHandlerResult,
     IDSUIStateValue,
-    IDSStateValue,
-    ArrayElement,
     ValueStoreInternal,
-    IDSValueStoreBase
+    IDSValueStoreBase,
+    IDSAnyValueStore
 } from "./types";
 
 import { dsLog } from "./DSLog";
@@ -20,21 +19,22 @@ import { catchLog } from "./PromiseHelper";
 //     setEffectiveEvents: Set<string> | undefined;
 // } & IDSValueStore<any, any, any, string>;
 
-export class DSStoreManager implements IDSStoreManager {
-    //stateVersion: number;
+
+export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal {
     nextStateVersion: number;
     shouldIncrementStateVersion: boolean;
-    arrValueStores: IDSValueStore<any, any, any, string>[];
+    arrValueStores: IDSAnyValueStore[];
     mapValueStoreInternal: Map<string, ValueStoreInternal>;
     events: DSEvent[];
+    storeManagerState: number;
     isProcessing: number;
     arrUIStateValue: IDSUIStateValue[];
     lastPromise: Promise<any | void> | undefined;
     isupdateRegisteredEventsDone: boolean;
     timeInProcess: number;
+    enableTiming: boolean;
 
     constructor() {
-        //this.stateVersion = 0;
         this.nextStateVersion = 1;
         this.shouldIncrementStateVersion = false;
         this.arrValueStores = [];
@@ -45,6 +45,8 @@ export class DSStoreManager implements IDSStoreManager {
         this.isupdateRegisteredEventsDone = false;
         this.mapValueStoreInternal = new Map();
         this.timeInProcess = 0;
+        this.storeManagerState = 0;
+        this.enableTiming = false;
     }
 
     public getNextStateVersion(stateVersion: number): number {
@@ -53,6 +55,13 @@ export class DSStoreManager implements IDSStoreManager {
     }
 
     public attach(valueStore: IDSValueStoreBase): this {
+        if (this.storeManagerState === 0) {
+            this.storeManagerState = 1;
+        } else if (this.storeManagerState === 1) {
+            // OK
+        } else {
+            throw new Error(`storeManagerState=${this.storeManagerState} has an unexpected value;`);
+        }
         const valueStoreInternal = valueStore as ValueStoreInternal;
         this.arrValueStores = this.arrValueStores.concat([valueStoreInternal]);
         this.mapValueStoreInternal.set(valueStoreInternal.storeName, valueStoreInternal);
@@ -65,13 +74,24 @@ export class DSStoreManager implements IDSStoreManager {
     }
 
     public postAttached(): this {
+        if (this.storeManagerState === 1) {
+            this.storeManagerState = 2;
+        } else {
+            throw new Error(`storeManagerState=${this.storeManagerState} has an unexpected value;`);
+        }
         if (dsLog.enabled) {
             dsLog.infoACME("DS", "DSStoreManager", "postAttached", "");
         }
         for (const valueStore of this.arrValueStores) {
             valueStore.postAttached(this);
         }
+        if (this.storeManagerState === 2) {
+            this.storeManagerState = 3;
+        } else {
+            throw new Error(`storeManagerState=${this.storeManagerState} has an unexpected value;`);
+        }
         this.updateRegisteredEvents();
+        this.process();
         return this;
     }
 
@@ -80,6 +100,13 @@ export class DSStoreManager implements IDSStoreManager {
     }
 
     public updateRegisteredEvents(): void {
+        if (this.storeManagerState === 3) {
+            this.storeManagerState = 4;
+        } else if (this.storeManagerState === 4) {
+            //
+        } else {
+            throw new Error(`storeManagerState=${this.storeManagerState} has an unexpected value;`);
+        }
         if (this.isupdateRegisteredEventsDone) {
             return;
         } else {
@@ -151,48 +178,53 @@ export class DSStoreManager implements IDSStoreManager {
     }
 
     public emitEvent(event: DSEvent): DSEventHandlerResult {
-        if (this.isupdateRegisteredEventsDone) {
-            const valueStoreInternal = this.mapValueStoreInternal.get(event.storeName)
-            if (valueStoreInternal === undefined) {
-                if (dsLog.enabled) {
-                    dsLog.warn(`DS emitEvent no such store ${event.storeName}/${event.event}`)
-                }
-                return;
-            }
-            const key = `${event.storeName}/${event.event}`;
-            const arrEventHandlers = valueStoreInternal.mapEventHandlers.get(key);
-            if (arrEventHandlers === undefined || arrEventHandlers.length === 0) {
-                if ((event.event === "attach") || (event.event === "detach") || (event.event === "value")) {
-                    // no message
-                } else {
-                    dsLog.warn(`DS emitEvent no such event ${event.storeName}/${event.event}`)
-                }
-                return;
-            }
-        }
-        this.events.push(event);
-        if (this.isProcessing === 0) {
-            if (dsLog.enabled) {
-                dsLog.infoACME("DS", "DSStoreManager", "emitEvent", `${event.storeName}/${event.event}`, "immediately");
-            }
-            const p = this.process("immediately from emitEvent");
-            if (p && typeof p.then === "function") {
-                return p;
-            }
+        if (this.storeManagerState === 2 || this.storeManagerState === 3) {
+            this.events.push(event);
         } else {
-            if (dsLog.enabled) {
-                dsLog.infoACME("DS", "DSStoreManager", "emitEvent", `${event.storeName}/${event.event}`, "queued");
+            if (this.isupdateRegisteredEventsDone) {
+                const valueStoreInternal = this.mapValueStoreInternal.get(event.storeName)
+                if (valueStoreInternal === undefined) {
+                    if (dsLog.enabled) {
+                        dsLog.warn(`DS emitEvent no such store ${event.storeName}/${event.event}`)
+                    }
+                    return;
+                }
+                const key = `${event.storeName}/${event.event}`;
+                const arrEventHandlers = valueStoreInternal.mapEventHandlers.get(key);
+                if (arrEventHandlers === undefined || arrEventHandlers.length === 0) {
+                    if ((event.event === "attach") || (event.event === "detach") || (event.event === "value")) {
+                        // no message
+                    } else {
+                        debugger;
+                        dsLog.warn(`DS emitEvent no eventHandler for event ${event.storeName}/${event.event} defined.`)
+                    }
+                    return;
+                }
+            }
+            this.events.push(event);
+            if (this.isProcessing === 0) {
+                if (dsLog.enabled) {
+                    dsLog.infoACME("DS", "DSStoreManager", "emitEvent", `${event.storeName}/${event.event}`, "immediately");
+                }
+                const p = this.process("immediately from emitEvent");
+                if (p && typeof p.then === "function") {
+                    return p;
+                }
+            } else {
+                if (dsLog.enabled) {
+                    dsLog.infoACME("DS", "DSStoreManager", "emitEvent", `${event.storeName}/${event.event}`, "queued");
+                }
             }
         }
-        return;
     }
 
     public async process(msg?: string, fn?: () => DSEventHandlerResult) {
         // todo conditional
         let dt: number = 0;
-        if (this.isProcessing === 0) {
-            console.time("process");
-            dt = (new Date()).getTime();
+        const enableTiming = this.enableTiming && dsLog.enabled && (this.isProcessing === 0);
+        if (enableTiming) {
+            // console.time("DS DSStoreManager process");
+            dt = (window.performance) ? performance.now() : Date.now();
         }
         let result: any | undefined = undefined;
 
@@ -216,15 +248,7 @@ export class DSStoreManager implements IDSStoreManager {
                 }
             }
             if (this.events.length === 0) {
-                for (const valueStore of this.arrValueStores) {
-                    if (valueStore.isDirty) {
-                        if (dsLog.enabled) {
-                            dsLog.infoACME("DS", "DSStoreManager", "processEvent-Dirty", valueStore.storeName);
-                        }
-                        valueStore.isDirty = false;
-                        valueStore.processDirty();
-                    }
-                }
+                this.processDirty();
                 this.processUIUpdates();
             }
             for (let watchdog = 0; (this.events.length > 0) && (watchdog < 100); watchdog++) {
@@ -235,20 +259,13 @@ export class DSStoreManager implements IDSStoreManager {
 
                 for (const event of events) {
                     const p = this.processOneEvent(event);
+                    // thinkof await
                     if (p && typeof p.then === "function") {
                         await p;
                     }
                 }
                 {
-                    for (const valueStore of this.arrValueStores) {
-                        if (valueStore.isDirty) {
-                            if (dsLog.enabled) {
-                                dsLog.infoACME("DS", "DSStoreManager", "processEvent-Dirty", valueStore.storeName);
-                            }
-                            valueStore.isDirty = false;
-                            valueStore.processDirty();
-                        }
-                    }
+                    this.processDirty();
                     this.processUIUpdates();
                 }
             }
@@ -257,15 +274,14 @@ export class DSStoreManager implements IDSStoreManager {
             this.isProcessing--;
         }
 
-        // todo
         if (dsLog.enabled) {
-            console.groupEnd();
+            dsLog.groupEnd();
         }
-        if (this.isProcessing === 0) {
-            const time = ((new Date()).getTime() - dt);
-            this.timeInProcess += time;
-            console.log("time", time, this.timeInProcess);
-            console.timeEnd("process");
+        if (enableTiming) {
+            const time = (window.performance) ? (performance.now()-dt) : (Date.now()-dt);
+            // console.timeLog("DS DSStoreManager process");
+            this.timeInProcess += time; 
+            dsLog.infoACME("DS", "DSStoreManager", "process", { current: Math.round(time*1000)/10, sum: Math.round(this.timeInProcess*1000)/10 }, (window.performance) ? "µs timing":"ms timing");
         }
         return result;
     }
@@ -278,7 +294,7 @@ export class DSStoreManager implements IDSStoreManager {
         let runProcessEventOnceQ: boolean = false;
         const valueStoreInternal = this.mapValueStoreInternal.get(event.storeName)
         if (valueStoreInternal === undefined) {
-            if (dsLog.enabled) {
+            if (dsLog.logEnabled) {
                 dsLog.warn(`DS DSStoreManager processOneEvent no such store ${event.storeName}/${event.event}`)
             }
             return;
@@ -317,7 +333,7 @@ export class DSStoreManager implements IDSStoreManager {
                 //}
                 runProcessEventQ = false;
             }
-
+        
             if (runProcessEventQ) {
                 runProcessEventOnceQ = true;
                 let p: DSEventHandlerResult = ((result && typeof result.then === "function")
@@ -335,7 +351,17 @@ export class DSStoreManager implements IDSStoreManager {
         */
         return result;
     }
-
+    public processDirty(): void {
+        for (const valueStore of this.arrValueStores) {
+            if (valueStore.isDirty) {
+                if (dsLog.enabled) {
+                    dsLog.infoACME("DS", "DSStoreManager", "processDirty", valueStore.storeName);
+                }
+                valueStore.isDirty = false;
+                valueStore.processDirty();
+            }
+        }
+    }
     public processUIUpdates(): void {
         if (this.arrUIStateValue.length > 0) {
             if (dsLog.enabled) {

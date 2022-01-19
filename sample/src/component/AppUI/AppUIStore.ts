@@ -5,7 +5,7 @@ import type { IAppStoreManager } from "../../store/AppStoreManager";
 import { AppUIValue } from "./AppUIValue";
 
 
-export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStore"> {
+export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     appStateStateVersion: number;
     appViewProjectsUIStoreStateVersion: number;
 
@@ -21,7 +21,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStor
         const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
         appState.listenDirtyRelated(this.storeName, this);
 
-        this.stateValue.appState = appState.stateValue;
+        this.stateValue.value.appState = appState.stateValue.value;
         this.isDirty = true;
     }
 
@@ -31,13 +31,13 @@ export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStor
         let changed=false;
         if (this.appStateStateVersion !== appState.stateVersion) {
             this.appStateStateVersion = appState.stateVersion;
-            this.stateValue.appState = appState.stateValue;
+            this.stateValue.value.appState   = appState.stateValue.value;
             changed=true;
         }
      
         if (this.appViewProjectsUIStoreStateVersion !== appViewProjectsUIStore.stateVersion) {
             this.appViewProjectsUIStoreStateVersion = appViewProjectsUIStore.stateVersion;
-            this.stateValue.appViewProjectsUIStateValue = appViewProjectsUIStore.stateValue;
+            this.stateValue.value.appViewProjectsUIStateValue = appViewProjectsUIStore.stateValue.value;
             changed=true;
         }
         if (changed){

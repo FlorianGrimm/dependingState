@@ -1,9 +1,9 @@
 import {
     ConfigurationDSArrayValueStore,
-    DSEventAttach,
-    DSEventDetach,
+    DSEventEntityVSAttach,
+    DSEventEntitySVDetach,
     DSEventHandler,
-    DSEventValue,
+    DSEventEntityVSValue,
     IDSArrayStore,
     IDSStateValue,
     DSUnlisten
@@ -13,65 +13,63 @@ import { DSValueStore } from "./DSValueStore";
 import { DSStateValue } from "./DSStateValue";
 
 export class DSArrayStore<
-    StateValue extends IDSStateValue<Value>,
-    Value = StateValue['value'],
+    Value = any,
     StoreName extends string = string
-    > extends DSValueStore<StateValue, number, Value, StoreName> implements IDSArrayStore<StateValue, number, Value, StoreName>    {
-    entities: StateValue[];
+    > extends DSValueStore<number, Value, StoreName> implements IDSArrayStore<number, Value, StoreName>    {
+    entities: IDSStateValue<Value>[];
     constructor(
         storeName: StoreName,
-        configuration?: ConfigurationDSArrayValueStore<StateValue, Value>
+        configuration?: ConfigurationDSArrayValueStore<Value>
     ) {
         super(storeName, configuration);
         this.entities = [];
     }
 
-    public getEntities(): { key: number; stateValue: StateValue; }[] {
+    public getEntities(): { key: number; stateValue: IDSStateValue<Value>; }[] {
         return this.entities.map((e, index) => ({ key: index, stateValue: e }));
     }
 
-    public create(value: Value): StateValue {
-        const create = (this.configuration as ConfigurationDSArrayValueStore<StateValue, Value>).create;
+    public create(value: Value): IDSStateValue<Value> {
+        const create = (this.configuration as ConfigurationDSArrayValueStore<Value>).create;
         if (create !== undefined) {
             const result = create(value);
             this.attach(result);
             return result;
         } else {
-            const result = new DSStateValue<Value>(value) as unknown as StateValue;
+            const result = new DSStateValue<Value>(value);
             this.attach(result);
             return result;
         }
     }
 
-    public attach(stateValue: StateValue): StateValue {
+    public attach(stateValue: IDSStateValue<Value>): void {
         if (stateValue.setStore(this)) {
             this.entities.push(stateValue);
             const index = this.entities.length - 1;
-            this.emitEvent<DSEventAttach<StateValue, never, number, StoreName>>("attach", { entity: stateValue, index: index });
+            this.emitEvent<DSEventEntityVSAttach<Value, never, number, StoreName>>("attach", { entity: stateValue, index: index });
         }
-        return stateValue;
     }
 
-    public detach(stateValue: StateValue): void {
+    public detach(stateValue: IDSStateValue<Value>): void {
         const index = this.entities.findIndex((item) => item === stateValue);
         if (index < 0) {
             // do nothing
         } else {
             const oldValue = this.entities.splice(index, 1)[0];
             oldValue.store = undefined;
-            this.emitEvent<DSEventDetach<StateValue, never, number, StoreName>>("detach", { entity: oldValue, index: index });
+            this.emitEvent<DSEventEntitySVDetach<Value, never, number, StoreName>>("detach", { entity: oldValue, index: index });
         }
     }
 
-    public listenEventAttach<Event extends DSEventAttach<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    public listenEventAttach<Event extends DSEventEntityVSAttach<Value, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "attach", callback as any);
     }
 
-    public listenEventValue<Event extends DSEventValue<StateValue, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    public listenEventValue<Event extends DSEventEntityVSValue<Value, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
     }
 
-    public listenEventDetach<Event extends DSEventDetach<StateValue, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    public listenEventDetach<Event extends DSEventEntitySVDetach<Value, never, number, StoreName>>(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
         return this.listenEvent(msg, "detach", callback as any);
     }
 

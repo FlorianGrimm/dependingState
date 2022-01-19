@@ -1,20 +1,11 @@
 import {
-    dsLog,
-    DSObjectStore,
-    DSStateValue,
-    DSStateValueSelf,
     DSUIProps,
     DSUIViewStateBase
 } from "dependingState";
 import React from "react";
-import type { AppState } from "../../store/AppState";
-import { IAppStoreManager } from "../../store/AppStoreManager";
-import { getAppStoreManager } from "../../singletonAppStoreManager";
 import { AppUIValue } from "./AppUIValue";
-import RouterView from "../Router/RouterView";
-import { routerPush } from "../../../../dependingStateRouter/src/DSRouterAction";
-
-
+import { routerPush } from "dependingStateRouter";
+import NavigatorView from "../Navigator/NavigatorView";
 
 type AppUIViewProps = {
     //stateRoot: TStateRootAppStates;
@@ -50,7 +41,7 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
 
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        const startTime = viewProps.appState!.startTime;
+        const startTime = viewProps.appState!.value.startTime;
 
         return (<div>
             App
@@ -67,10 +58,10 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
                 <a href="/PageB">PageB</a>
             </div>
             <div>
-            {viewProps.routerValue ? "show router now" :"show router here but it's empty"}
+            {viewProps.navigatorValue ? "show router now" :"show router here but it's empty"}
                 
             </div>
-            {viewProps.routerValue && React.createElement(RouterView, viewProps.routerValue.getViewProps())}
+            {viewProps.navigatorValue && React.createElement(NavigatorView, viewProps.navigatorValue.getViewProps())}
         </div>);
     }
 }

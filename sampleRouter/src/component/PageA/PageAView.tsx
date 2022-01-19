@@ -1,6 +1,5 @@
 import React from "react";
 import { DSUIProps, DSUIViewStateBase, getPropertiesChanged } from "dependingState";
-import { doSomething } from "./PageAActions";
 import NumberInput from "../NumberInput/NumberInput";
 import { PageAValue } from "./PageAValue";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
@@ -12,6 +11,9 @@ type PageAViewState = {
 const inputStyle :React.CSSProperties={
     width: 30,
 };
+export function pageAView(props:PageAViewProps){
+    return React.createElement(PageAView, props);
+}
 export default class PageAView extends React.Component<PageAViewProps, PageAViewState>{
     constructor(props: PageAViewProps) {
         super(props);
@@ -55,6 +57,7 @@ export default class PageAView extends React.Component<PageAViewProps, PageAView
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
         return (<div>
+            <h2>PageA</h2>
             A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
             B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =
             c:{viewProps.nbrC}

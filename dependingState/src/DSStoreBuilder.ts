@@ -1,14 +1,17 @@
-import { dsLog } from ".";
-import { 
-    DSEvent,
+import type { 
+    IDSAnyValueStore,
     DSEventHandler,
     DSEventHandlerResult,
-    DSEventName,
     DSUnlisten,
     IDSStoreAction,
     IDSStoreBuilder,
-    IDSValueStore
+    IDSValueStore,
+    DSEvent
 } from "./types";
+
+import {
+     dsLog, 
+} from "./DSLog";
 
 export function storeBuilder<
     StoreName extends string = string
@@ -20,7 +23,7 @@ export class DSStoreBuilder<
     StoreName extends string = string
     > implements IDSStoreBuilder<StoreName> {
     actions: Map<string, DSStoreAction<any, string, StoreName>>;
-    valueStore: IDSValueStore<any, any, any, StoreName> | undefined;
+    valueStore: IDSAnyValueStore | undefined;
 
     constructor(
         public storeName: StoreName
@@ -50,20 +53,21 @@ export class DSStoreBuilder<
         return result;
     }
 
-    public bindValueStore(valueStore: IDSValueStore<any, any, any, StoreName>): void {
+    public bindValueStore(valueStore: IDSAnyValueStore): void {
         this.valueStore = valueStore;
         for (const action of this.actions.values()) {
+            dsLog.debugACME("DS", "DSStoreBuilder", "bindValueStore", `${action.storeName}/${action.event}`);
             action.bindValueStore(valueStore);
         }
     }
 }
 export class DSStoreAction<
     Payload,
-    EventType extends string = string,
-    StoreName extends string = string
+    EventType extends string,
+    StoreName extends string
     > implements IDSStoreAction<Payload, EventType, StoreName> {
 
-    valueStore: IDSValueStore<any, any, any, StoreName> | undefined;
+    valueStore: IDSAnyValueStore | undefined;
 
     constructor(
         public event: EventType,
@@ -71,7 +75,8 @@ export class DSStoreAction<
     ) {
     }
 
-    bindValueStore(valueStore: IDSValueStore<any, any, any, StoreName>): void {
+    // TODO would it be better to create a DSBoundStoreAction
+    bindValueStore(valueStore: IDSAnyValueStore): void {
         if (this.storeName !== valueStore.storeName){ 
             throw new Error("wrong IDSValueStore");
         }
@@ -80,7 +85,7 @@ export class DSStoreAction<
 
     public listenEvent<
         Event extends DSEvent<Payload, EventType, StoreName>
-    >(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): DSUnlisten {
+    >(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], Event['storeName']>): DSUnlisten {
         if (this.valueStore === undefined){
             throw new Error(`DS DSStoreAction.listenEvent valueStore is not set ${this.storeName}.`);
         } else {

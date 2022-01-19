@@ -25,6 +25,11 @@ const config = {
     // Add your plugins here
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
   ],
+  performance: {
+    maxAssetSize: 1000000,
+    maxEntrypointSize: 1000000,
+    hints: "warning"
+},
   module: {
     rules: [
       {

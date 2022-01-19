@@ -1,12 +1,6 @@
 import {
     DSArrayStore,
     DSStoreManager,
-    DSEventValue,
-    DSEventAttach,
-    DSStateValue,
-    DSValueStore,
-    IDSStateValue,
-    DSUnlisten
 } from "../index";
 
 type VSA = {
@@ -24,7 +18,7 @@ type VSAB = {
 
 test('DSArrayStore process implicit', async () => {
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
+    const valueStoreA = new DSArrayStore<VSA>("a");
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -35,7 +29,7 @@ test('DSArrayStore process implicit', async () => {
 
     const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
-        actA = dsEvent.payload.entity.value.a;
+        actA = dsEvent.payload.entity!.value.a;
     });
 
     valueA.value = { a: 11 };
@@ -57,7 +51,7 @@ test('DSArrayStore process implicit', async () => {
 
 test('DSArrayStore process explicit', async () => {
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
+    const valueStoreA = new DSArrayStore<VSA>("a");
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -69,7 +63,7 @@ test('DSArrayStore process explicit', async () => {
     //const valueB = valueStoreA.create({ a: 2 });
     const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
-        actA = dsEvent.payload.entity.value.a;
+        actA = dsEvent.payload.entity!.value.a;
     });
 
     storeManager.process("test", () => {
@@ -94,9 +88,9 @@ test('DSArrayStore process explicit', async () => {
 test('DSArrayStore listen', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
-    const valueStoreB = new DSArrayStore<DSStateValue<VSB>>("b");
-    const valueStoreAB = new DSArrayStore<DSStateValue<VSAB>>("ab");
+    const valueStoreA = new DSArrayStore<VSA>("a");
+    const valueStoreB = new DSArrayStore<VSB>("b");
+    const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.create({ a: 0 });
@@ -104,12 +98,12 @@ test('DSArrayStore listen', async () => {
     const valueAB = valueStoreAB.create({ a: 0, b: 0, cnt: 0 });
 
     const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
-        valueAB.value.a = dsEvent.payload.entity.value.a;
+        valueAB.value.a = dsEvent.payload.entity!.value.a;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
     const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
-        valueAB.value.b = dsEvent.payload.entity.value.b;
+        valueAB.value.b = dsEvent.payload.entity!.value.b;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
@@ -127,9 +121,9 @@ test('DSArrayStore listen', async () => {
 test('DSArrayStore process promise', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
-    const valueStoreB = new DSArrayStore<DSStateValue<VSB>>("b");
-    const valueStoreAB = new DSArrayStore<DSStateValue<VSAB>>("ab");
+    const valueStoreA = new DSArrayStore<VSA>("a");
+    const valueStoreB = new DSArrayStore<VSB>("b");
+    const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.create({ a: 0 });
@@ -137,7 +131,7 @@ test('DSArrayStore process promise', async () => {
     const valueAB = valueStoreAB.create({ a: 0, b: 0, cnt: 0 });
 
     const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
-        valueAB.value.a = dsEvent.payload.entity.value.a;
+        valueAB.value.a = dsEvent.payload.entity!.value.a;
         valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
         var result = new Promise((resolve) => {
             setTimeout(() => { valueAB.valueChanged(); }, 200);
@@ -146,7 +140,7 @@ test('DSArrayStore process promise', async () => {
         return result;
     });
     const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
-        valueAB.value.b = dsEvent.payload.entity.value.b;
+        valueAB.value.b = dsEvent.payload.entity!.value.b;
         valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
         var result = new Promise((resolve) => {
             setTimeout(() => { valueAB.valueChanged(); }, 50);
@@ -170,9 +164,9 @@ test('DSArrayStore process promise', async () => {
 test('DSArrayStore array', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSArrayStore<DSStateValue<VSA>>("a");
-    const valueStoreB = new DSArrayStore<DSStateValue<VSB>>("b");
-    const valueStoreAB = new DSArrayStore<DSStateValue<VSAB>>("ab");
+    const valueStoreA = new DSArrayStore<VSA>("a");
+    const valueStoreB = new DSArrayStore<VSB>("b");
+    const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     valueStoreA.listenEventAttach("test", (dsEvent) => {

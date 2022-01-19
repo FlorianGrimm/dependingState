@@ -1,11 +1,11 @@
-import { DSStateValueSelf } from "dependingState";
+import { DSStateValueSelf, IDSStateValue } from "dependingState";
 import { CompAValue } from "../CompA/CompAValue";
 
 export class AppViewProjectsUIStateValue extends DSStateValueSelf<AppViewProjectsUIStateValue>{
-    compAUIStates: CompAValue[];
+    compAVSs: IDSStateValue<CompAValue>[];
 
     constructor() {
         super();
-        this.compAUIStates = [];
+        this.compAVSs = [];
     }
 }

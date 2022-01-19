@@ -3,15 +3,14 @@ import {
     IDSStateValue
 } from "./types";
 
-const cache: IDSPropertiesChanged<any, any>[] = [];
+const cache: IDSPropertiesChanged<any>[] = [];
 
 export function getPropertiesChanged<
-        StateValue extends IDSStateValue<Value>,
-        Value = StateValue['value']
-    >(that: StateValue): IDSPropertiesChanged<StateValue, Value> {
-    const result = cache.pop() as (DSPropertiesChanged<StateValue, Value> | undefined);
+        Value
+    >(that: IDSStateValue<Value>): IDSPropertiesChanged<Value> {
+    const result = cache.pop() as (DSPropertiesChanged<Value> | undefined);
     if (result === undefined) {
-        return new DSPropertiesChanged<StateValue, Value>(that);
+        return new DSPropertiesChanged<Value>(that);
     } else {
         result.instance = that;
         return result;
@@ -19,13 +18,12 @@ export function getPropertiesChanged<
 }
 
 export class DSPropertiesChanged<
-        StateValue extends IDSStateValue<Value>,
-        Value = StateValue['value']
-    > implements IDSPropertiesChanged<StateValue, Value> {
+        Value
+    > implements IDSPropertiesChanged<Value> {
     properties: Set<keyof Value>;
 
     constructor(
-        public instance: StateValue
+        public instance: IDSStateValue<Value>
     ) {
         this.properties = new Set();
     }

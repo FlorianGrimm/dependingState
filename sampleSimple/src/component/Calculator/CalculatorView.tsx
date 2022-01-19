@@ -10,10 +10,16 @@ type CalculatorViewProps = DSUIProps<CalculatorValue>;
 type CalculatorViewState = {
 } & DSUIViewStateBase;
 
+const rootStyle :React.CSSProperties={
+    backgroundColor:"yellow",
+};
 const inputStyle :React.CSSProperties={
     width: 30,
 };
 
+export function calculatorView(props:CalculatorViewProps){
+    return React.createElement(CalculatorView, props);
+}
 export default class CalculatorView extends React.Component<CalculatorViewProps, CalculatorViewState>{
     constructor(props: CalculatorViewProps) {
         super(props);
@@ -31,12 +37,7 @@ export default class CalculatorView extends React.Component<CalculatorViewProps,
     }
 
     handleClick() {
-        console.group("clearInput");
-        try {
-            clearInput.emitEvent(this.props.getRenderProps());
-        } finally {
-            console.groupEnd();
-        }
+        clearInput.emitEvent(this.props.getRenderProps());
     }
     handleSetA(n: number) {
         getAppStoreManager().process("handleSetA", () => {
@@ -56,10 +57,18 @@ export default class CalculatorView extends React.Component<CalculatorViewProps,
     }
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        return (<div>
-            A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
-            B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =
-            c:{viewProps.nbrC}
+        return (<div style={rootStyle}>
+            <div>
+            CalculatorView -  StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+            </div>
+            <div>
+                A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
+                B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =
+                c:{viewProps.nbrC}
+            </div>
+            <div>
+                {viewProps.nbrA} + {viewProps.nbrB} = {viewProps.nbrC}
+            </div>
             <button onClick={this.handleClick}>doSomething</button>
         </div>);
     }

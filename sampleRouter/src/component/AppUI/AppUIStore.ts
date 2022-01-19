@@ -6,8 +6,7 @@ import { appLog } from "~/feature/appLog/appLog";
 import type { IAppStoreManager } from "~/store/AppStoreManager";
 import { AppUIValue } from "./AppUIValue";
 
-
-export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStore"> {
+export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     constructor(value: AppUIValue) {
         super("AppUIStore", value);
     }
@@ -15,26 +14,27 @@ export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStor
     public postAttached(): void {
         super.postAttached();
         this.isDirty = true;
-        this.enableEmitDirtyFromValueChanged=true;
+        this.enableEmitDirtyFromValueChanged = true;
 
         const appStore = (this.storeManager! as IAppStoreManager).appStore;
-        const routerStore = (this.storeManager! as IAppStoreManager).routerStore;
+        const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
         appStore.listenDirtyRelated(this.storeName, this);
 
-        routerStore.listenEmitDirty("AppUIStore listen to router", (stateValue, properties) => {
+        navigatorStore.listenEmitDirty("AppUIStore listen to router", (stateValue, properties) => {
             if (this.isDirty) { return; }
-            if ((properties == undefined) || properties.has("page") || properties.has("to")) {
+            if ((properties == undefined) || properties.has("page")) {
                 this.isDirty = true;
             }
         });
 
-        this.stateValue.appState = appStore.stateValue;
+        this.stateValue.value.appState = appStore.stateValue;
+        this.stateValue.value.navigatorValue = navigatorStore.stateValue
     }
 
     public processDirty(): void {
         appLog.debugACME("app", "AppUIStore", "processDirty", "%");
         const appStore = (this.storeManager! as IAppStoreManager).appStore;
-        const routerStore = (this.storeManager! as IAppStoreManager).routerStore;
+        const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 
         const stateValuePC = getPropertiesChanged(this.stateValue);
 
@@ -42,8 +42,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, AppUIValue, "AppUIStor
             stateValuePC.setIf("appState", appStore.stateValue.value);
         }
 
-        if (stateValuePC.setIf("routerValueStateVersion", appStore.stateValue.stateVersion)) {
-            stateValuePC.setIf("routerValue", routerStore.stateValue.value);
+        if (stateValuePC.setIf("navigatorValueStateVersion", appStore.stateValue.stateVersion)) {
+            stateValuePC.setIf("navigatorValue", navigatorStore.stateValue);
         }
 
         stateValuePC.valueChangedIfNeeded();

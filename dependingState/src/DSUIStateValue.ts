@@ -98,14 +98,14 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
                     for (const component of this.component) {
                         component.setState({ stateVersion: stateVersion });
                         if (dsLog.enabled){
-                            dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", component);
+                            dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg( component));
                         }
                     }
                 } else {
                     this.component.setState({ stateVersion: stateVersion });
 
                     if (dsLog.enabled){
-                        dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", this.component);
+                        dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg( this.component));
                     }
                 }
             }

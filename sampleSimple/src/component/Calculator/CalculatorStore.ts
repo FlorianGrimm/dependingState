@@ -1,9 +1,8 @@
-import { DSEvent, dsLog, DSObjectStore, getPropertiesChanged } from "dependingState";
-import { IAppStoreManager } from "../../store/AppStoreManager";
+import { DSObjectStore, getPropertiesChanged } from "dependingState";
 import { calculatorStoreBuilder, clearInput } from "./CalculatorActions";
 import { CalculatorValue } from "./CalculatorValue";
 
-export class CalculatorStore extends DSObjectStore<CalculatorValue, CalculatorValue, "CalculatorStore">{
+export class CalculatorStore extends DSObjectStore< CalculatorValue, "CalculatorStore">{
     constructor() {
         super("CalculatorStore", new CalculatorValue());
         this.setStoreBuilder(calculatorStoreBuilder);
@@ -14,17 +13,18 @@ export class CalculatorStore extends DSObjectStore<CalculatorValue, CalculatorVa
             // valueChanged is used 
             // or if you expect many related effects you can use valueChangedIfNeeded
 
-            /* case valueChanged */
+            /* region case valueChanged */
             // set all props to 0
-            this.stateValue.nbrA = 0;
-            this.stateValue.nbrB = 0;
-            this.stateValue.nbrC = 0;
+            const v=this.stateValue.value
+            v.nbrA = 0;
+            v.nbrB = 0;
+            v.nbrC = 0;
 
             // unconditionally call valueChanged
             this.stateValue.valueChanged();
-            /* / case valueChanged */
+            /* endregion case valueChanged */
 
-            /* case valueChangedIfNeeded */
+            /* region case valueChangedIfNeeded */
             /*
             const stateValuePC = getPropertiesChanged(this.stateValue);
             stateValuePC.setIf("nbrA", 0);
@@ -34,7 +34,7 @@ export class CalculatorStore extends DSObjectStore<CalculatorValue, CalculatorVa
             // conditionally call valueChanged
             stateValuePC.valueChangedIfNeeded();
             */
-            /* case valueChangedIfNeeded */
+            /* endregion case valueChangedIfNeeded */
         });
         this.listenEventValue("a+b=c", (e) => {
             const { properties, entity:calculatorValue } = e.payload;
@@ -43,7 +43,7 @@ export class CalculatorStore extends DSObjectStore<CalculatorValue, CalculatorVa
 
             if (properties === undefined || properties.has("nbrA") || properties.has("nbrB")) {
                 const calculatorValuePC = getPropertiesChanged(calculatorValue);
-                const nbrC = calculatorValue.nbrA + calculatorValue.nbrB;
+                const nbrC = calculatorValue.value.nbrA + calculatorValue.value.nbrB;
                 calculatorValuePC.setIf("nbrC", nbrC);
                 calculatorValuePC.valueChangedIfNeeded();
                 // valueChangedIfNeeded calls valueChanged if needed

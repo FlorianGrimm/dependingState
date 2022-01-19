@@ -35,12 +35,14 @@ export class DSLog {
     trace: (...data: any[]) => void;
 
     enabled: boolean;
+    logEnabled: boolean;
     mode: "disabled" | "enabled" | "WarnIfCalled";
 
     constructor(
         public name: string
     ) {
         this.enabled = false;
+        this.logEnabled = false;
         this.mode = "disabled";
 
         this.group = noop;
@@ -60,6 +62,7 @@ export class DSLog {
         // console.debug(`${this.name} setDisabled`);
 
         this.enabled = false;
+        this.logEnabled = false;
         this.mode = "disabled";
 
         this.group = noop;
@@ -78,6 +81,7 @@ export class DSLog {
     public setEnabled(): this {
         console.debug(`${this.name} setEnabled`);
         this.enabled = true;
+        this.logEnabled = true;
         this.mode = "enabled";
 
         this.group = console.group;
@@ -96,7 +100,8 @@ export class DSLog {
 
     public setWarnIfCalled(): this {
         console.debug(`${this.name} setWarnIfCalled`);
-        this.enabled = false;
+        this.enabled = true;
+        this.logEnabled = false;
         this.mode = "WarnIfCalled";
 
         this.group = warnIfCalled;
@@ -157,7 +162,7 @@ export class DSLog {
 
 }
 
-function defaultConvertExtraArg(currentExtraArg: any): string {
+export function defaultConvertExtraArg(currentExtraArg: any): string {
     if (currentExtraArg === undefined) {
         return "undefined";
     }
@@ -192,7 +197,7 @@ function templateAMCE(
     let effectiveArg: string = "";
     let calcedEffectiveArg = false;
     if (message === undefined) { message = ""; }
-    if (this.watchoutEnabled) {
+    if (this.amceEnabled) {
         effectiveArg = this.convertArg(currentExtraArg);
         calcedEffectiveArg = true;
         if ((this.watchoutApp === undefined || this.watchoutApp === currentApp)
@@ -200,7 +205,7 @@ function templateAMCE(
             && (this.watchoutMethod === undefined || this.watchoutMethod === currentMethod)
             && (this.watchoutExtraArg === undefined || this.watchoutExtraArg === effectiveArg)) {
             this.watchoutHit++;
-            if (dsLog.enabled) {
+            if (dsLog.logEnabled) {
                 console.warn(currentApp, currentClass, currentMethod, effectiveArg, this.watchoutHit, message);
             }
             if (this.watchoutStopAt === this.watchoutHit) {
@@ -212,7 +217,7 @@ function templateAMCE(
             return;
         }
     }
-    if (dsLog.enabled) {
+    if (dsLog.logEnabled) {
         if (!calcedEffectiveArg) {
             effectiveArg = this.convertArg(currentExtraArg);
             calcedEffectiveArg = true;
@@ -223,7 +228,7 @@ function templateAMCE(
 
 export class DSLogACME extends DSLog {
     convertArg: (currentArg: any) => string;
-    watchoutEnabled: boolean;
+    amceEnabled: boolean;
     watchoutApp: string | undefined;
     watchoutClass: string | undefined;
     watchoutMethod: string | undefined;
@@ -240,7 +245,7 @@ export class DSLogACME extends DSLog {
     constructor(name: string) {
         super(name);
         this.convertArg = defaultConvertExtraArg;
-        this.watchoutEnabled = false;
+        this.amceEnabled = false;
         this.watchoutApp = undefined;
         this.watchoutClass = undefined;
         this.watchoutMethod = undefined;
@@ -257,7 +262,17 @@ export class DSLogACME extends DSLog {
 
     public setDisabled(): this {
         super.setDisabled();
-        this.bindACME();
+        
+        if (this.amceEnabled) {
+            this.bindACME();
+        } else {
+            this.enabled = false;
+            this.debugACME = noop;
+            this.infoACME = noop;
+            this.logACME = noop;
+            this.warnACME = noop;
+            this.errorACME = noop;
+        }
         return this;
     }
 
@@ -285,26 +300,25 @@ export class DSLogACME extends DSLog {
         this.watchoutMethod = watchoutMethod;
         this.watchoutExtraArg = watchoutExtraArg;
         this.watchoutStopAt = watchoutStopAt;
-        const oldwatchoutEnabled = this.watchoutEnabled;
-        this.watchoutEnabled = (
+        const oldwatchoutEnabled = this.amceEnabled;
+        this.amceEnabled = (
             (watchoutApp !== undefined)
             || (watchoutClass !== undefined)
             || (watchoutMethod !== undefined)
             || (watchoutExtraArg !== undefined)
         );
-        if (oldwatchoutEnabled != this.watchoutEnabled) {
+        if (oldwatchoutEnabled != this.amceEnabled) {
             this.bindACME();
         }
         dsLog.info("DS setWatchout", watchoutApp, watchoutClass, watchoutMethod, watchoutExtraArg);
-
+        this.enabled=this.amceEnabled || this.logEnabled;
         return this;
     }
     public bindACME(): void {
-        if (this.watchoutEnabled) {
+        if (this.amceEnabled) {
             this.enabled = true;
-            this.infoACME = templateAMCE.bind(this, console.log);
-            this.debugACME = templateAMCE.bind(this, console.debug);
             this.infoACME = templateAMCE.bind(this, console.info);
+            this.debugACME = templateAMCE.bind(this, console.debug);
             this.logACME = templateAMCE.bind(this, console.log);
             this.warnACME = templateAMCE.bind(this, console.warn);
             this.errorACME = templateAMCE.bind(this, console.error);
@@ -314,6 +328,7 @@ export class DSLogACME extends DSLog {
             this.logACME = this.log;
             this.warnACME = this.warn;
             this.errorACME = this.error;
+            this.enabled = this.logEnabled;
         }
     }
 
@@ -328,7 +343,7 @@ export class DSLogACME extends DSLog {
     public saveToLocalStorage(key?: string): this {
         const data = {
             mode: this.mode,
-            watchoutEnabled: this.watchoutEnabled,
+            watchoutEnabled: this.amceEnabled,
             watchoutApp: this.watchoutApp,
             watchoutClass: this.watchoutClass,
             watchoutMethod: this.watchoutMethod,
@@ -363,7 +378,8 @@ export class DSLogACME extends DSLog {
                         (typeof data.watchoutStopAt === "number") ? data.watchoutStopAt : undefined
                     );
                 } else {
-                    this.watchoutEnabled = false;
+                    this.amceEnabled = false;
+                    this.enabled=this.logEnabled;
                 }
             }
         }

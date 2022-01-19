@@ -17,15 +17,16 @@ import {
 } from './types';
 
 export class DSRouterValue extends DSStateValueSelf<DSRouterValue> implements IDSRouterValue {
-    action: HistoryAction | string;
-    location: RouterLocation<HistoryState>;
-    updateMode: UpdateMode;
-
-    constructor() {
+    constructor(
+        public action: HistoryAction | string,
+        public location: RouterLocation<HistoryState>,
+        public updateMode: UpdateMode
+    ) {
         super();
-        const { action, location, updateMode } = getRouterValueInitial()
-        this.action = action;
-        this.location = location;
-        this.updateMode = updateMode;
     }
+}
+export function getDSRouterValueInitial(){
+    const { action, location, updateMode } = getRouterValueInitial()
+    const result = new DSRouterValue(action, location, updateMode );
+    return result;
 }

@@ -12,7 +12,8 @@ import type {
     ConfigurationDSValueStore,
     IDSStoreBuilder,
     IDSAnyValueStore,
-    ArrayElement
+    ArrayElement,
+    IDSStoreManagerInternal
 } from './types'
 
 import {
@@ -20,30 +21,29 @@ import {
 } from './DSLog';
 
 
-// StateValue extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
+// State Value extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
 
 export class DSValueStore<
-    StateValue extends IDSStateValue<Value>,
     Key,
-    Value, // = StateValue['value'],
-    StoreName extends string // = string
-    > implements IDSValueStore<StateValue, Key, Value, StoreName>{
+    Value,
+    StoreName extends string
+    > implements IDSValueStore<Key, Value, StoreName>{
     private _isDirty: boolean;
     storeName: StoreName;
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
     listenToAnyStore: boolean;
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler<any, string, string> }[]>;
-    arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<StateValue, Value> }[];
+    arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<Value> }[];
     arrEmitDirtyRelated: { msg: string, valueStore: IDSAnyValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
     enableEmitDirtyFromValueChanged: boolean;
-    configuration: ConfigurationDSValueStore<StateValue, Value>;
+    configuration: ConfigurationDSValueStore<Value>;
     storeBuilder: IDSStoreBuilder<StoreName> | undefined;
 
     constructor(
         storeName: StoreName,
-        configuration?: ConfigurationDSValueStore<StateValue, Value>
+        configuration?: ConfigurationDSValueStore<Value>
     ) {
         this.storeName = storeName;
         this.storeManager = undefined;
@@ -101,13 +101,12 @@ export class DSValueStore<
         }
     }
 
-    public getEntities(): { key: Key, stateValue: StateValue }[] {
+    public getEntities(): { key: Key, stateValue: IDSStateValue<Value> }[] {
         return [];
     }
 
     public listenDirtyRelated<
-        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
-        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedValueStore extends IDSValueStore<RelatedKey, RelatedValue, RelatedStoreName>,
         RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
         RelatedValue = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
         RelatedStoreName extends string = RelatedValueStore['storeName']
@@ -119,15 +118,14 @@ export class DSValueStore<
         if (index < 0) {
             this.enableEmitDirtyFromValueChanged = true;
             this.arrEmitDirtyRelated = (this.arrEmitDirtyRelated || []).concat([{ msg: msg, valueStore: relatedValueStore }]);
-            return (() => { this.unlistenDirtyRelated<RelatedValueStore, RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>(relatedValueStore); });
+            return (() => { this.unlistenDirtyRelated<RelatedValueStore, RelatedKey, RelatedValue, RelatedStoreName>(relatedValueStore); });
         } else {
             return (() => { });
         }
     }
 
     public unlistenDirtyRelated<
-        RelatedValueStore extends IDSValueStore<RelatedStateValue, RelatedKey, RelatedValue, RelatedStoreName>,
-        RelatedStateValue extends IDSStateValue<RelatedValue> = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue'],
+        RelatedValueStore extends IDSValueStore<RelatedKey, RelatedValue, RelatedStoreName>,
         RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
         RelatedValue = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
         RelatedStoreName extends string = RelatedValueStore['storeName']
@@ -140,13 +138,13 @@ export class DSValueStore<
         }
     }
 
-    public emitDirtyFromValueChanged(stateValue?: StateValue, properties?: Set<keyof Value>): void {
+    public emitDirtyFromValueChanged(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
         if (this.enableEmitDirtyFromValueChanged) {
             this.emitDirty(stateValue, properties);
         }
     }
 
-    public emitDirty(stateValue?: StateValue, properties?: Set<keyof Value>): void {
+    public emitDirty(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
         if (dsLog.enabled) {
             dsLog.infoACME("DS", "DSValueStore", "emitDirty", this.storeName);
         }
@@ -167,7 +165,7 @@ export class DSValueStore<
         }
     }
 
-    public listenEmitDirty(msg: string, callback: DSEmitDirtyHandler<StateValue, Value>): DSUnlisten {
+    public listenEmitDirty(msg: string, callback: DSEmitDirtyHandler<Value>): DSUnlisten {
         // think about
         this.enableEmitDirtyFromValueChanged = true;
 
@@ -175,12 +173,11 @@ export class DSValueStore<
         return this.unlistenEmitDirty.bind(this, callback);
     }
 
-    public unlistenEmitDirty(callback: DSEmitDirtyHandler<StateValue, Value>): void {
+    public unlistenEmitDirty(callback: DSEmitDirtyHandler<Value>): void {
         this.arrEmitDirtyHandler = this.arrEmitDirtyHandler.filter((cb) => cb.handler !== callback);
     }
 
     public processDirty(): void {
-        this.isDirty = false;
     }
 
     public emitUIUpdate(uiStateValue: IDSUIStateValue<Value>) {
@@ -216,6 +213,7 @@ export class DSValueStore<
         } else {
             this.mapEventHandlers.set(key, arrEventHandlers.concat([{ msg: msg, handler: callback as DSEventHandler }]));
         }
+        (this.storeManager as IDSStoreManagerInternal).isupdateRegisteredEventsDone=false;
         return this.unlistenEvent.bind(this, { storeName: this.storeName, event: event }, callback as DSEventHandler);
     }
 

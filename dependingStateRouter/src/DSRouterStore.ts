@@ -16,20 +16,28 @@ import {
     IDSStateValue,
     DSObjectStore,
     ConfigurationDSValueStore,
-    IDSPropertiesChanged,
     getPropertiesChanged,
     DSEventHandler,
     DSUnlisten,
-    DSEventHandlerResult
+    DSEventHandlerResult,
+    dsLog
 } from 'dependingState';
 
 import {
     injectQuery
 } from './injectQuery';
 
+import {
+    routerLocationChanged,
+    routerPush,
+    routerReplace,
+    dsRouterBuilder,
+    LocationChangedEvent,
+    LocationChangedPayload
+} from './DSRouterAction';
 
-import { routerPush, routerReplace, dsRouterBuilder, LocationChangedEvent, LocationChangedPayload } from './DSRouterAction';
-import { Path, routerLocationChanged } from '.';
+import type { DSRouterValue } from './DSRouterValue';
+import { Path } from './history';
 import { catchLog } from 'dependingState';
 
 function noop() { }
@@ -67,18 +75,17 @@ export interface IDSRouterStore {
 }
 
 export class DSRouterStore<
-    StateValue extends IDSStateValue<Value>,
-    Value extends IDSRouterValue = StateValue['value'],
+    Value extends IDSRouterValue = DSRouterValue,
     LocationState extends HistoryState = HistoryState
-    > extends DSObjectStore<StateValue, Value, "router"> implements IDSRouterStore {
+    > extends DSObjectStore<Value, "router"> implements IDSRouterStore {
     history: History<LocationState>;
     historyUnlisten: () => void;
     suspressNavigator: boolean;
 
     constructor(
         history: History<LocationState>,
-        stateValue: StateValue,
-        configuration?: ConfigurationDSValueStore<StateValue, Value>
+        stateValue: IDSStateValue<Value>,
+        configuration?: ConfigurationDSValueStore<Value>
     ) {
         super("router", stateValue, configuration);
         this.history = history;
@@ -103,7 +110,7 @@ export class DSRouterStore<
             }
             this.history.replace(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
-        routerLocationChanged.listenEvent
+        //routerLocationChanged.listenEvent
         this.subscribe();
     }
 
@@ -140,7 +147,7 @@ export class DSRouterStore<
     }
 
     historyListener(update: HistoryUpdate<LocationState>): DSEventHandlerResult {
-        console.warn("historyListener", this.suspressNavigator, update);
+        //console.warn("historyListener", this.suspressNavigator, update);
         const suspressNavigator = this.suspressNavigator;
         this.suspressNavigator = false;
         const locationPC = getPropertiesChanged(this.stateValue);
@@ -150,11 +157,12 @@ export class DSRouterStore<
         locationPC.valueChangedIfNeeded();
         if (suspressNavigator) {
             // may be changed but ignore it
+            dsLog.debugACME("DS", "DSRouterStore", "historyListener", update.location.pathname, "suspressNavigator")
+        } else {
             const p = routerLocationChanged.emitEvent(this.stateValue.value);
             if (p && typeof p.then === "function") {
                 return catchLog("handleSetLocation", p);
             }
-        } else {
         }
     }
 

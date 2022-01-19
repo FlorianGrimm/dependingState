@@ -4,7 +4,7 @@ import { IAppStoreManager } from "../../store/AppStoreManager";
 import { compAUIStoreBuilder, changeProjectName } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
 
-export class CompAStore extends DSEntityStore<CompAValue, string,  CompAValue, "CompAStore">{
+export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">{
     constructor() {
         super("CompAStore", {
             create: (item: CompAValue) => item,
@@ -29,11 +29,11 @@ export class CompAStore extends DSEntityStore<CompAValue, string,  CompAValue, "
         projectStore.listenEventValue(this.storeName, (e) => {
             const properties = e.payload.properties;
             if (properties === undefined || properties.has("ProjectName")) {
-                const key = e.payload.entity.value.ProjectId;
+                const key = e.payload.entity!.value.ProjectId;
                 var compAUIState = this.get(key);
                 if (compAUIState) {
                     const compAUIStatePC = getPropertiesChanged(compAUIState.value);
-                    compAUIStatePC.setIf("ProjectName", e.payload.entity.value.ProjectName);
+                    compAUIStatePC.setIf("ProjectName", e.payload.entity!.value.ProjectName);
                     compAUIStatePC.valueChangedIfNeeded();
                 } else {
                     dsLog.warn(`compAUIState wiht ${key} not found.`)
@@ -53,9 +53,9 @@ export class CompAStore extends DSEntityStore<CompAValue, string,  CompAValue, "
         this.listenEventValue("a+b=c", (e) => {
             const properties = e.payload.properties;
             if (properties === undefined || properties.has("nbrA") || properties.has("nbrB")) {
-                const compAValue = e.payload.entity;
+                const compAValue = e.payload.entity!;
                 const compAValuePC = getPropertiesChanged(compAValue);
-                compAValuePC.setIf("nbrC", compAValue.nbrA + compAValue.nbrB);
+                compAValuePC.setIf("nbrC", compAValue.value.nbrA + compAValue.value.nbrB);
                 compAValuePC.valueChangedIfNeeded();
             }
         });

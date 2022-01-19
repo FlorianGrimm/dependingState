@@ -36,7 +36,9 @@ function main() {
         );
     setAppStoreManager(appStoreManager);
     appStoreManager.setSelfInGlobal();
-    
+    appStoreManager.enableTiming=true;
+    appStoreManager.postAttached();
+
     const rootElement = React.createElement(
             AppView,
             appStoreManager.appUIStore.stateValue.getViewProps()

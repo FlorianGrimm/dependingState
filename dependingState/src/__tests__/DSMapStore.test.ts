@@ -1,9 +1,6 @@
 import {
     DSMapStore,
     DSStoreManager,
-    DSEventValue,
-    DSEventAttach,
-    DSStateValue
 } from "../index";
 
 type VSA = {
@@ -21,7 +18,7 @@ type VSAB = {
 
 test('DSMapStore process implicit', async () => {
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSMapStore<DSStateValue<VSA>, number>("a");
+    const valueStoreA = new DSMapStore<number, VSA>("a");
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -32,7 +29,7 @@ test('DSMapStore process implicit', async () => {
 
     const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
-        actA = dsEvent.payload.entity.value.a;
+        actA = dsEvent.payload.entity!.value.a;
     });
 
     valueA.value = { a: 11 };
@@ -54,7 +51,7 @@ test('DSMapStore process implicit', async () => {
 
 test('DSMapStore process explicit', async () => {
     const storeManager = new DSStoreManager();
-    const valueStoreA = new DSMapStore<DSStateValue<VSA>, number>("a");
+    const valueStoreA = new DSMapStore<number, VSA>("a");
     storeManager.attach(valueStoreA);
     expect(valueStoreA.storeManager).toBe(storeManager);
 
@@ -66,7 +63,7 @@ test('DSMapStore process explicit', async () => {
     //const valueB = valueStoreA.create({ a: 2 });
     const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
         actHit = true;
-        actA = dsEvent.payload.entity.value.a;
+        actA = dsEvent.payload.entity!.value.a;
     });
 
     await storeManager.process("test", () => {
@@ -91,9 +88,9 @@ test('DSMapStore process explicit', async () => {
 test('DSMapStore listen', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSMapStore<DSStateValue<VSA>, number>("a");
-    const valueStoreB = new DSMapStore<DSStateValue<VSB>, number>("b");
-    const valueStoreAB = new DSMapStore<DSStateValue<VSAB>, number>("ab");
+    const valueStoreA = new DSMapStore<number, VSA>("a");
+    const valueStoreB = new DSMapStore<number, VSB>("b");
+    const valueStoreAB = new DSMapStore<number, VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB).postAttached();
 
     const valueA = valueStoreA.create(42, { a: 0 });
@@ -101,12 +98,12 @@ test('DSMapStore listen', async () => {
     const valueAB = valueStoreAB.create(42, { a: 0, b: 0, cnt: 0 });
 
     const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
-        valueAB.value.a = dsEvent.payload.entity.value.a;
+        valueAB.value.a = dsEvent.payload.entity!.value.a;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
     const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
-        valueAB.value.b = dsEvent.payload.entity.value.b;
+        valueAB.value.b = dsEvent.payload.entity!.value.b;
         valueAB.value.cnt++;
         valueAB.valueChanged();
     });
@@ -124,9 +121,9 @@ test('DSMapStore listen', async () => {
 test('DSMapStore process promise', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSMapStore<DSStateValue<VSA>, number>("a");
-    const valueStoreB = new DSMapStore<DSStateValue<VSB>, number>("b");
-    const valueStoreAB = new DSMapStore<DSStateValue<VSAB>, number>("ab");
+    const valueStoreA = new DSMapStore<number, VSA>("a");
+    const valueStoreB = new DSMapStore<number, VSB>("b");
+    const valueStoreAB = new DSMapStore<number, VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     const valueA = valueStoreA.create(42, { a: 0 });
@@ -134,7 +131,7 @@ test('DSMapStore process promise', async () => {
     const valueAB = valueStoreAB.create(42, { a: 0, b: 0, cnt: 0 });
 
     const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
-        valueAB.value.a = dsEvent.payload.entity.value.a;
+        valueAB.value.a = dsEvent.payload.entity!.value.a;
         valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
         var result = new Promise((resolve) => {
             setTimeout(() => { valueAB.valueChanged(); }, 200);
@@ -143,7 +140,7 @@ test('DSMapStore process promise', async () => {
         return result;
     });
     const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
-        valueAB.value.b = dsEvent.payload.entity.value.b;
+        valueAB.value.b = dsEvent.payload.entity!.value.b;
         valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
         var result = new Promise((resolve) => {
             setTimeout(() => { valueAB.valueChanged(); }, 50);
@@ -167,9 +164,9 @@ test('DSMapStore process promise', async () => {
 test('DSMapStore copy', async () => {
     const storeManager = new DSStoreManager();
 
-    const valueStoreA = new DSMapStore<DSStateValue<VSA>, number>("a");
-    const valueStoreB = new DSMapStore<DSStateValue<VSB>, number>("b");
-    const valueStoreAB = new DSMapStore<DSStateValue<VSAB>, number>("ab");
+    const valueStoreA = new DSMapStore<number, VSA>("a");
+    const valueStoreB = new DSMapStore<number, VSB>("b");
+    const valueStoreAB = new DSMapStore<number, VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
 
     valueStoreA.listenEventAttach("test", (dsEvent) => {

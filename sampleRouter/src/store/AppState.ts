@@ -8,7 +8,7 @@ export class AppState extends DSStateValueSelf<AppState> {
     }
 }
 
-export class AppStore extends DSObjectStore<AppState, AppState, "appStore"> {
+export class AppStore extends DSObjectStore<AppState, "appStore"> {
     constructor(value: AppState) {
         super("appStore", value);
         value.startTime = (new Date()).toISOString();

@@ -74,7 +74,7 @@ function main() {
 
     setTimeout(() => {
         appLog.logACME("app", "main", "timeoutHallo", "HALLO");
-        appStore.stateValue.language= "HALLO";
+        appStore.stateValue.value.language= "HALLO";
         appStore.stateValue.valueChanged();
     }, 1000);
 

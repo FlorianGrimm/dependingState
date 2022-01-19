@@ -1,28 +1,22 @@
 import {
-    dsLog,
-    DSObjectStore,
-    DSStateValue,
-    DSStateValueSelf,
     DSUIProps,
     DSUIViewStateBase
 } from "dependingState";
 import React from "react";
-import type { AppState } from "../../store/AppState";
-import { IAppStoreManager } from "../../store/AppStoreManager";
-import { getAppStoreManager } from "../../singletonAppStoreManager";
 import { AppUIValue } from "./AppUIValue";
-
-
+import { calculatorView } from "../Calculator/CalculatorView";
+import { getAppStoreManager } from "~/singletonAppStoreManager";
 
 type AppViewProps = {
-    //stateRoot: TStateRootAppStates;
 } & DSUIProps<AppUIValue>;
 
 type AppViewState = {
-
 } & DSUIViewStateBase;
 
 //UIViewState<{}>;
+export function appView(props:AppViewProps){
+    return React.createElement(AppView, props);
+}
 
 export default class AppView extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
@@ -40,16 +34,25 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
 
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        const language = "Todo"
+        const calculator= getAppStoreManager().calculatorStore.stateValue
         return (<div>
-            App
             <div>
-                language:{language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+                AppUIView -  StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
             <div>
-                show page here
+                {viewProps.calculator && calculatorView(viewProps.calculator.getViewProps())}
             </div>
 
+            <div>
+                {calculator && calculatorView(calculator.getViewProps())}
+            </div>
+            <div>
+                {viewProps.calculator && calculatorView(viewProps.calculator.getViewProps())}
+            </div>
+
+            <div>
+                {calculator && calculatorView(calculator.getViewProps())}
+            </div>
         </div>);
     }
 }
