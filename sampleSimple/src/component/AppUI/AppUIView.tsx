@@ -34,7 +34,7 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
 
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        const calculator= getAppStoreManager().calculatorStore.stateValue
+        const calculator= getAppStoreManager().calculatorStore.stateValue;
         return (<div>
             <div>
                 AppUIView -  StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}

@@ -19,3 +19,4 @@ export * from './DSLog';
 export * from './DSPropertiesChanged';
 export * from './PromiseHelper';
 export * from './DSArrayHelper';
+export * from './DSLooseStore';
