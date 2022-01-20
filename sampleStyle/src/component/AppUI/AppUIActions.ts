@@ -1,6 +1,7 @@
 import { storeBuilder } from "dependingState";
 import type { AppUIStore } from "./AppUIStore";
+//import type { AppUIValue } from "./AppUIValue";
 
 export const appUIStoreBuilder = storeBuilder<AppUIStore['storeName']>("AppUIStore");
-export const countDown = appUIStoreBuilder.createAction<undefined>("countDown");
-export const countUp = appUIStoreBuilder.createAction<undefined>("countUp");
+
+//export const clearInput = appUIStoreBuilder.createAction<CalculatorValue>("clearInput");

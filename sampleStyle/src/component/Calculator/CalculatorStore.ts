@@ -1,4 +1,4 @@
-import { DSObjectStore, getPropertiesChanged } from "dependingState";
+import { DSObjectStore, getPropertiesChanged, hasChangedProperty } from "dependingState";
 import { calculatorStoreBuilder, clearInput } from "./CalculatorActions";
 import { CalculatorValue } from "./CalculatorValue";
 
@@ -40,8 +40,12 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
             const { properties, entity:calculatorValue } = e.payload;
             // since DSObjectStore is used calculatorValue and this.stateValue is the same.
             // but if DSArrayStore or DSEntityStore is used this is not true (since they use an array or map).
+            
+            //if (properties === undefined || properties.has("nbrA") || properties.has("nbrB"))
+            // this is the same as
+            // if (hasChangedProperty(properties, "nbrA", "nbrB")) 
 
-            if (properties === undefined || properties.has("nbrA") || properties.has("nbrB")) {
+            if (hasChangedProperty(properties, "nbrA", "nbrB")) {
                 const calculatorValuePC = getPropertiesChanged(calculatorValue);
                 const nbrC = calculatorValue.value.nbrA + calculatorValue.value.nbrB;
                 calculatorValuePC.setIf("nbrC", nbrC);

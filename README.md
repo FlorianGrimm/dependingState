@@ -37,6 +37,11 @@ type MyComponentViewProps = DSUIProps<MyComponentValue>;
 type MyComponentViewState = {
 } & DSUIViewStateBase;
 
+// optional
+export function myComponentView(props: MyComponentViewProps) {
+    return React.createElement(MyComponentView, props);
+}
+
 export default class MyComponentView extends React.Component<MyComponentViewProps, MyComponentViewState>{
     constructor(props: MyComponentViewProps) {
         super(props);
@@ -52,12 +57,7 @@ export default class MyComponentView extends React.Component<MyComponentViewProp
     }
 
     handleMyAction() {
-        console.group("myaction");
-        try {
-            myaction.emitEvent(this.props.getRenderProps().myprop);
-        } finally {
-            console.groupEnd();
-        }
+        myaction.emitEvent(this.props.getRenderProps().myprop);
     }
     render(): React.ReactNode {
         const renderProps = this.props.getRenderProps();
@@ -81,9 +81,20 @@ embedding a child element.
         </div>);
         // looks wild, but works nicely
     }
-
 ```
 
+-or- if you added myComponentView
+```typescript
+    render(): React.ReactNode {
+        const renderProps = this.props.getRenderProps();
+        const { myChildValue } = renderProps;
+        return (<div>
+            rendering MyChildView now:
+            { myComponentView(myChildValue.getViewProps()) }
+        </div>);
+        // looks wild, but works nicely
+    }
+```
 currently no hooks - an I'm not sure if I like hooks, but anyway I'm investingating for them.
 
 ## sample

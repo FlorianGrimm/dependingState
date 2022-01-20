@@ -179,6 +179,7 @@ export class DSValueStore<
     }
 
     public processDirty(): void {
+        this.isDirty = false;
     }
 
     public emitUIUpdate(uiStateValue: IDSUIStateValue<Value>) {

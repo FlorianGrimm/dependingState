@@ -2,13 +2,14 @@ import {
     DSStateValueSelf
 } from "dependingState";
 
-import type { CalculatorValue } from "~/component/Calculator/CalculatorValue";
-
 export class AppUIValue extends DSStateValueSelf<AppUIValue> {
-    calculator: CalculatorValue | undefined;
-    calculatorStateVersion: number;
+    counter: number;
+    clicks: number;
+
     constructor() {
         super();
-        this.calculatorStateVersion=0;
+
+        this.counter = 0;
+        this.clicks = 0;
     }
 }

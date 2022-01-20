@@ -87,7 +87,7 @@ export class DSStoreAction<
         Event extends DSEvent<Payload, EventType, StoreName>
     >(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], Event['storeName']>): DSUnlisten {
         if (this.valueStore === undefined){
-            throw new Error(`DS DSStoreAction.listenEvent valueStore is not set ${this.storeName}.`);
+            throw new Error(`DS DSStoreAction.listenEvent valueStore is not set ${this.storeName} - Did you call builder.bindValueStore(this) in the constructor?`);
         } else {
             if (!msg){
                 msg=`${this.storeName}/${this.event}`;

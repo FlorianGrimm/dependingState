@@ -331,6 +331,8 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                         }
                     }
                 } catch (reason) {
+                    dsLog.infoACME("DS", "DSStoreManager", "processOneEvent-failed", key, `${reason} ${(reason as Error).stack}`);
+                    
                     if (event.thenPromise !== undefined) {
                         event.thenPromise[1](reason);
                     }
