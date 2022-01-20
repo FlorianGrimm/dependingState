@@ -6,7 +6,8 @@ import type {
     IDSUIStateValue,
     ValueStoreInternal,
     IDSValueStoreBase,
-    IDSAnyValueStore
+    IDSAnyValueStore,
+    DSManyEventHandlerResult
 } from "./types";
 
 import { dsLog } from "./DSLog";
@@ -218,7 +219,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         }
     }
 
-    public async process(msg?: string, fn?: () => DSEventHandlerResult) {
+    public process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult {
         // todo conditional
         let dt: number = 0;
         const enableTiming = this.enableTiming && dsLog.enabled && (this.isProcessing === 0);
@@ -226,27 +227,28 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             // console.time("DS DSStoreManager process");
             dt = (window.performance) ? performance.now() : Date.now();
         }
-        let result: any | undefined = undefined;
-
+        let result: DSManyEventHandlerResult = undefined;
+        this.updateRegisteredEvents();
         this.isProcessing++;
         if (dsLog.enabled) {
             dsLog.group(`DS processEvent ${(msg || "")} isProcessing:${this.isProcessing}`);
         }
-        this.updateRegisteredEvents();
         try {
-            if (this.lastPromise) {
-                await this.lastPromise;
-                this.lastPromise = undefined;
-            }
             if (fn) {
                 this.incrementStateVersion();
 
                 const p = fn();
                 if (p && typeof p.then === "function") {
-                    // result = await catchLog(`process fn:${fn.name}`, p);
-                    result = await p;
+                    return p.then((resultValue: any) => {
+                        const p2 = this.process();
+                        if (p2 && typeof p2.then === "function") {
+                            return p2.then(() => resultValue, () => resultValue);
+                        }
+                        return resultValue;
+                    });
                 }
             }
+
             if (this.events.length === 0) {
                 this.processDirty();
                 this.processUIUpdates();
@@ -254,16 +256,28 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             for (let watchdog = 0; (this.events.length > 0) && (watchdog < 100); watchdog++) {
                 this.incrementStateVersion();
 
-                const events = this.events;
-                this.events = [];
+                /*
+                    const events = this.events;
+                    this.events = [];
 
-                for (const event of events) {
+                    for (const event of events) {
+                        const p = this.processOneEvent(event);
+                        if (p && typeof p.then === "function") {
+                            if (result === undefined) { result = []; }
+                            result.push(p);
+                        }
+                    }
+                */
+
+                while(this.events.length>0){
+                    const event = this.events.splice(0, 1)[0];
                     const p = this.processOneEvent(event);
-                    // thinkof await
                     if (p && typeof p.then === "function") {
-                        await p;
+                        if (result === undefined) { result = []; }
+                        result.push(p);
                     }
                 }
+
                 {
                     this.processDirty();
                     this.processUIUpdates();
@@ -278,20 +292,23 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             dsLog.groupEnd();
         }
         if (enableTiming) {
-            const time = (window.performance) ? (performance.now()-dt) : (Date.now()-dt);
+            const time = (window.performance) ? (performance.now() - dt) : (Date.now() - dt);
             // console.timeLog("DS DSStoreManager process");
-            this.timeInProcess += time; 
-            dsLog.infoACME("DS", "DSStoreManager", "process", { current: Math.round(time*1000)/10, sum: Math.round(this.timeInProcess*1000)/10 }, (window.performance) ? "µs timing":"ms timing");
+            this.timeInProcess += time;
+            dsLog.infoACME("DS", "DSStoreManager", "process", { current: Math.round(time * 1000) / 10, sum: Math.round(this.timeInProcess * 1000) / 10 }, (window.performance) ? "µs timing" : "ms timing");
         }
-        return result;
+        if (result === undefined) {
+            return;
+        } else {
+            return Promise.allSettled(result);
+        }
     }
 
     public processOneEvent(event: DSEvent<any, string, string>): DSEventHandlerResult {
         //if (this.isupdateRegisteredEventsDone) { this.updateRegisteredEvents(); }
 
-        let result: Promise<any | void> | undefined = undefined;
+        let result: DSManyEventHandlerResult = undefined;
 
-        let runProcessEventOnceQ: boolean = false;
         const valueStoreInternal = this.mapValueStoreInternal.get(event.storeName)
         if (valueStoreInternal === undefined) {
             if (dsLog.logEnabled) {
@@ -301,19 +318,50 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         } else {
             const key = `${event.storeName}/${event.event}`;
             const arrEventHandlers = valueStoreInternal.mapEventHandlers.get(key);
-            if (arrEventHandlers) {
-                for (const eventHandlers of arrEventHandlers) {
-                    let p: DSEventHandlerResult = ((result && typeof result.then === "function")
-                        ? (result as Promise<void>).then(() => eventHandlers.handler(event))
-                        : (eventHandlers.handler(event))
-                    );
+            if ((arrEventHandlers !== undefined) && (arrEventHandlers.length > 0)) {
 
-                    if (p && typeof p.then === "function") {
-                        result = catchLog("processOneEvent", p);
+                try {
+                    for (const eventHandler of arrEventHandlers) {
+                        dsLog.infoACME("DS", "DSStoreManager", "processOneEvent", eventHandler.msg);
+                        const p = eventHandler.handler(event);
+                        if (p && typeof p.then === "function") {
+                            const cp = catchLog("processOneEvent", p);
+                            if (result === undefined) { result = []; }
+                            result.push(cp);
+                        }
+                    }
+                } catch (reason) {
+                    if (event.thenPromise !== undefined) {
+                        event.thenPromise[1](reason);
+                    }
+                    return;
+                }
+
+                if (event.thenPromise !== undefined) {
+                    if (result === undefined) {
+                        event.thenPromise[0](undefined);
+                    } else {
+                        const p = Promise.allSettled(result).then(event.thenPromise[0], event.thenPromise[1]);
+                        return p;
                     }
                 }
             }
         }
+
+        /*
+        if (arrEventHandlers) {
+            for (const eventHandlers of arrEventHandlers) {
+                let p: DSEventHandlerResult = ((result && typeof result.then === "function")
+                    ? (result as Promise<void>).then(() => eventHandlers.handler(event))
+                    : (eventHandlers.handler(event))
+                );
+
+                if (p && typeof p.then === "function") {
+                    result = catchLog("processOneEvent", p);
+                }
+            }
+        }
+        */
         /*
         for (const valueStore of this.valueStores) {
             let runProcessEventQ: boolean;
@@ -348,8 +396,8 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         if (!runProcessEventOnceQ && dsLog.enabled) {
             dsLog.infoACME("DS", "DSStoreManager", "processOneEvent-skip", `${event.storeName}/${event.event}`, `/skipped by all stores`);
         }
-        */
         return result;
+        */
     }
     public processDirty(): void {
         for (const valueStore of this.arrValueStores) {

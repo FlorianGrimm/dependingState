@@ -253,7 +253,7 @@ export type DSEvent<
         storeName: StoreName;
         event: EventType;
         payload: Payload;
-        postPromise? : Promise<any>
+        thenPromise? : [(value:any)=>void,(reason:any)=>void]
     };
 
 export type DSPayloadEntitySV<
@@ -308,6 +308,7 @@ export type DSEventEntityVSValue<
 export type DSEmitDirtyHandler<Value> = (stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>) => void;
 
 export type DSEventHandlerResult = (Promise<any | void> | void);
+export type DSManyEventHandlerResult = (Promise<any | void>[] | undefined);
 
 export type DSEventHandler<
     Payload = any,

@@ -73,3 +73,13 @@ export class DSPropertiesChanged<
         return Array.from(this.properties.keys()).join(", ");
     }
 }
+
+export function hasChangedProperty<Value>(    properties: Set<keyof Value>|undefined, property1:keyof Value, property2?:keyof Value, property3?:keyof Value, property4?:keyof Value){
+    return ((properties===undefined) 
+        || ((property1===undefined) || (properties.has(property1)))
+        || ((property2===undefined) || (properties.has(property2)))
+        || ((property3===undefined) || (properties.has(property3)))
+        || ((property4===undefined) || (properties.has(property4)))
+        ); 
+}
+//
