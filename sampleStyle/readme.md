@@ -10,22 +10,26 @@ npm run serve
 
 o value
 
-    defines the value type
+define the value type
 
+3 ways to do this.
+
+
+a) poco object
 ```typescript
 // file MyValue.ts
-import { DSStateValueSelf } from "dependingState";
+import type { DSStateValue } from "dependingState";
 
-export class MyValue extends DSStateValueSelf<MyValue> {
+export type MyValue = {
     myProp: string;
-    constructor() {
-        super();
-        this.myProp = "";
-    }
 }
+
+export type MyValueSV = DSStateValue<MyValue>;
 ```
 
 -or-
+
+b) simple class
 
 ```typescript
 // file MyValue.ts
@@ -44,20 +48,33 @@ export type MyValueSV = DSStateValue<MyValue>;
 
 -or-
 
+c) DSStateValueSelf to save memory
+
+you need only 1 object instead of 2.
+
+hint: this.value === this
+
 ```typescript
 // file MyValue.ts
-import type { DSStateValue } from "dependingState";
+import { DSStateValueSelf } from "dependingState";
 
-export type MyValue = {
+export class MyValue extends DSStateValueSelf<MyValue> {
     myProp: string;
+    constructor() {
+        super();
+        this.myProp = "";
+    }
 }
-
-export type MyValueSV = DSStateValue<MyValue>;
-
+```
 
 o builder
 
-    adds events
+the builder define the 
+
+o name 
+o events
+
+if you don't have events you don't need this.
 
 
 ```typescript
@@ -75,6 +92,8 @@ o store
 
     - setStoreBuilder binds the actions to this store
     - listenEvent binds the logic (the listener)
+    - processDirty runs if isDirty was set.
+    - isDirty can be set by any listener.
 
 ```typescript
 // file MyStore.ts
@@ -103,6 +122,43 @@ export class MyStore extends DSObjectStore<MyValue, "MyStore">{
 }
 ```
 
+o AppStoreManager
+
+add the new store in the AppStoreManager
+
+The order of the attach calls matters.
+In this order the processDirty is called.
+So you can relay on the previous ones to be 'clean'.
+
+```typescript
+import {
+    IDSStoreManager,
+    DSStoreManager
+} from "dependingState";
+
+import type { AppStore } from "./AppState";
+import type { AppUIStore } from "~/component/AppUI/AppUIStore";
+import type { MyStore } from "src/component/My/MyStore";
+
+export interface IAppStoreManager extends IDSStoreManager {
+    appStore: AppStore;
+    appUIStore:AppUIStore;
+    myStore: MyStore;
+}
+
+export class AppStoreManager extends DSStoreManager implements IAppStoreManager {
+    constructor(
+        public appStore: AppStore,
+        public appUIStore:AppUIStore,
+        public myStore: MyStore,
+    ) {
+        super();
+        this.attach(appStore);
+        this.attach(appUIStore);
+        this.attach(myStore);
+    }
+}
+```
 o emit the event
 
 ```typescript
