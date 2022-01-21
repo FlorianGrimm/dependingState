@@ -12,7 +12,7 @@ import { CalculatorStore } from './component/Calculator/CalculatorStore';
 import { AppUIValue } from './component/AppUI/AppUIValue';
 import { AppUIStore } from './component/AppUI/AppUIStore';
 import { AppState, AppStore } from './store/AppState';
-import { CalculatorStyleStore } from './component/CalculatorStyle/CalculatorStyle';
+import { CalculatorStyleStore } from './component/CalculatorStyle/CalculatorStyleStore';
 
 function main() {
     // for debugging Browser F12 Console window.dsLog
@@ -40,7 +40,7 @@ function main() {
     setAppStoreManager(appStoreManager);
     appStoreManager.setSelfInGlobal();
     appStoreManager.enableTiming=true;
-    appStoreManager.postAttached();
+    appStoreManager.initialize();
 
     const rootElement = React.createElement(
             AppView,

@@ -2,7 +2,7 @@ import React from "react";
 import NumberInput from "../NumberInput/NumberInput";
 import { DSUIProps, DSUIViewStateBase, getPropertiesChanged } from "dependingState";
 import type { CalculatorValue } from "./CalculatorValue";
-import type { CalculatorStyleValue } from "../CalculatorStyle/CalculatorStyle";
+import type { CalculatorStyleValue } from "../CalculatorStyle/CalculatorStyleValue";
 import { getAppStoreManager } from "../../singletonAppStoreManager";
 import { clearInput } from "./CalculatorActions";
 
@@ -15,9 +15,6 @@ type CalculatorViewProps =
 type CalculatorViewState = {
 } & DSUIViewStateBase;
 
-const rootStyle: React.CSSProperties = {
-    backgroundColor: "yellow",
-};
 const inputStyle: React.CSSProperties = {
     width: 30,
 };
@@ -25,6 +22,7 @@ const inputStyle: React.CSSProperties = {
 export function calculatorView(props: CalculatorViewProps) {
     return React.createElement(CalculatorView, props);
 }
+
 export default class CalculatorView extends React.Component<CalculatorViewProps, CalculatorViewState>{
     constructor(props: CalculatorViewProps) {
         super(props);

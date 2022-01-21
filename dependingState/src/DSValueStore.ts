@@ -12,15 +12,13 @@ import type {
     ConfigurationDSValueStore,
     IDSStoreBuilder,
     IDSAnyValueStore,
-    ArrayElement,
-    IDSStoreManagerInternal
+    IDSValueStoreBase,
+    ThenPromise
 } from './types'
 
 import {
     dsLog
 } from './DSLog';
-import { DSStoreManager } from '.';
-
 
 // State Value extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
 
@@ -106,31 +104,21 @@ export class DSValueStore<
         return [];
     }
 
-    public listenDirtyRelated<
-        RelatedValueStore extends IDSValueStore<RelatedKey, RelatedValue, RelatedStoreName>,
-        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
-        RelatedValue = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
-        RelatedStoreName extends string = RelatedValueStore['storeName']
-    >(msg: string, relatedValueStore: RelatedValueStore): DSUnlisten {
+    public listenDirtyRelated(msg: string, relatedValueStore: IDSValueStoreBase): DSUnlisten {
         if (this.arrEmitDirtyRelated === undefined) {
             this.arrEmitDirtyRelated = [];
         }
         const index = this.arrEmitDirtyRelated.findIndex((item) => (item.valueStore === relatedValueStore));
         if (index < 0) {
             this.enableEmitDirtyFromValueChanged = true;
-            this.arrEmitDirtyRelated = (this.arrEmitDirtyRelated || []).concat([{ msg: msg, valueStore: relatedValueStore }]);
-            return (() => { this.unlistenDirtyRelated<RelatedValueStore, RelatedKey, RelatedValue, RelatedStoreName>(relatedValueStore); });
+            this.arrEmitDirtyRelated = (this.arrEmitDirtyRelated || []).concat([{ msg: msg, valueStore: relatedValueStore as IDSAnyValueStore }]);
+            return (() => { this.unlistenDirtyRelated(relatedValueStore); });
         } else {
             return (() => { });
         }
     }
 
-    public unlistenDirtyRelated<
-        RelatedValueStore extends IDSValueStore<RelatedKey, RelatedValue, RelatedStoreName>,
-        RelatedKey = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['key'],
-        RelatedValue = ArrayElement<ReturnType<RelatedValueStore["getEntities"]>>['stateValue']['value'],
-        RelatedStoreName extends string = RelatedValueStore['storeName']
-    >(relatedValueStore: RelatedValueStore): void {
+    public unlistenDirtyRelated(relatedValueStore: IDSValueStoreBase): void {
         if (this.arrEmitDirtyRelated !== undefined) {
             this.arrEmitDirtyRelated = this.arrEmitDirtyRelated.filter((item) => (item.valueStore !== relatedValueStore));
             if (this.arrEmitDirtyRelated.length === 0) {
@@ -192,11 +180,16 @@ export class DSValueStore<
 
     public emitEvent<
         Event extends DSEvent<any, string, StoreName>
-    >(eventType: Event['event'], payload: Event['payload']): DSEventHandlerResult {
-        const event = {
+    >(
+        eventType: Event['event'],
+        payload: Event['payload'],
+        thenPromise?: ThenPromise | undefined
+    ): DSEventHandlerResult {
+        const event: DSEvent<Event['payload'], Event['event'], Event['storeName']> = {
             storeName: this.storeName,
             event: eventType,
-            payload: payload
+            payload: payload,
+            thenPromise: thenPromise
         };
         if (this.storeManager === undefined) {
             return this.processEvent(event);
@@ -215,10 +208,11 @@ export class DSValueStore<
         } else {
             this.mapEventHandlers.set(key, arrEventHandlers.concat([{ msg: msg, handler: callback as DSEventHandler }]));
         }
-        (this.storeManager as IDSStoreManagerInternal).isupdateRegisteredEventsDone=false;
+        this.storeManager?.resetRegisteredEvents();
         return this.unlistenEvent.bind(this, { storeName: this.storeName, event: event }, callback as DSEventHandler);
     }
 
+    /*
     public listenEventAnyStore<
         Payload = any,
         EventType extends string = string,
@@ -239,6 +233,7 @@ export class DSValueStore<
         this.storeManager?.resetRegisteredEvents();
         return this.unlistenEvent.bind(this, { storeName: event.storeName, event: event.event }, callback as DSEventHandler);
     }
+    */
 
     public unlistenEvent<
         Payload = any,

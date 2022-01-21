@@ -102,9 +102,62 @@ currently no hooks - an I'm not sure if I like hooks, but anyway I'm investingat
 sampleSimple
 sampleRouter
 
-# 
+# install
 
-cd dependingState && npm install && cd ..
-cd dependingStateRouter && npm install && cd ..
-cd sample && npm install && cd ..
-cd sampleRouter && npm install && cd ..
+```
+
+cd dependingState
+npm install
+cd ..
+
+cd dependingStateRouter
+npm install
+cd ..
+
+cd sample
+npm install
+cd ..
+
+cd sampleSimple
+npm install
+cd ..
+
+cd sampleStyle
+npm install
+cd ..
+
+cd sampleRouter
+npm install
+cd ..
+
+```
+
+# compile
+
+```
+
+cd dependingState
+npx tsc -noEmit
+cd ..
+
+cd dependingStateRouter
+npx tsc -noEmit
+cd ..
+
+cd sample
+npx tsc -noEmit
+cd ..
+
+cd sampleSimple
+npx tsc -noEmit
+cd ..
+
+cd sampleStyle
+npx tsc -noEmit
+cd ..
+
+cd sampleRouter
+npx tsc -noEmit
+cd ..
+
+```

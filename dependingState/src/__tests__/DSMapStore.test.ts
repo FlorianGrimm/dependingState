@@ -20,6 +20,7 @@ test('DSMapStore process implicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSMapStore<number, VSA>("a");
     storeManager.attach(valueStoreA);
+    storeManager.initialize();
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     let actHit = false;
@@ -53,6 +54,7 @@ test('DSMapStore process explicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSMapStore<number, VSA>("a");
     storeManager.attach(valueStoreA);
+    storeManager.initialize();
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     let actHit = false;
@@ -91,7 +93,8 @@ test('DSMapStore listen', async () => {
     const valueStoreA = new DSMapStore<number, VSA>("a");
     const valueStoreB = new DSMapStore<number, VSB>("b");
     const valueStoreAB = new DSMapStore<number, VSAB>("ab");
-    storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB).postAttached();
+    storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     const valueA = valueStoreA.create(42, { a: 0 });
     const valueB = valueStoreB.create(42, { b: 0 });
@@ -125,6 +128,7 @@ test('DSMapStore process promise', async () => {
     const valueStoreB = new DSMapStore<number, VSB>("b");
     const valueStoreAB = new DSMapStore<number, VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     const valueA = valueStoreA.create(42, { a: 0 });
     const valueB = valueStoreB.create(42, { b: 0 });
@@ -168,6 +172,7 @@ test('DSMapStore copy', async () => {
     const valueStoreB = new DSMapStore<number, VSB>("b");
     const valueStoreAB = new DSMapStore<number, VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     valueStoreA.listenEventAttach("test", (dsEvent) => {
         const key = dsEvent.payload.key!;

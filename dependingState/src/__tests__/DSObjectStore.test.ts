@@ -24,6 +24,7 @@ test('DSObjectStore process implicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
+    storeManager.initialize();
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     const valueA = valueStoreA.stateValue;
@@ -58,6 +59,7 @@ test('DSObjectStore process explicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
+    storeManager.initialize();
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     const valueA = valueStoreA.stateValue;
@@ -95,6 +97,7 @@ test('DSObjectStore listen', async () => {
     const valueStoreB = new DSObjectStore<VSB>("b", stateValue({ b: 0 }));
     const valueStoreAB = new DSObjectStore<VSAB>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     const valueA = valueStoreA.stateValue;
     const valueB = valueStoreB.stateValue;
@@ -128,6 +131,7 @@ test('DSObjectStore process promise', async () => {
     const valueStoreB = new DSObjectStore<VSB>("b", stateValue({ b: 0 }));
     const valueStoreAB = new DSObjectStore<VSAB>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     const valueA = valueStoreA.stateValue;
     const valueB = valueStoreB.stateValue;

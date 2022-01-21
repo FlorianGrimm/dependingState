@@ -20,6 +20,7 @@ test('DSArrayStore process implicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSArrayStore<VSA>("a");
     storeManager.attach(valueStoreA);
+    storeManager.initialize();
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     let actHit = false;
@@ -53,6 +54,7 @@ test('DSArrayStore process explicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSArrayStore<VSA>("a");
     storeManager.attach(valueStoreA);
+    storeManager.initialize();
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     let actHit = false;
@@ -92,6 +94,7 @@ test('DSArrayStore listen', async () => {
     const valueStoreB = new DSArrayStore<VSB>("b");
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     const valueA = valueStoreA.create({ a: 0 });
     const valueB = valueStoreB.create({ b: 0 });
@@ -125,6 +128,7 @@ test('DSArrayStore process promise', async () => {
     const valueStoreB = new DSArrayStore<VSB>("b");
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     const valueA = valueStoreA.create({ a: 0 });
     const valueB = valueStoreB.create({ b: 0 });
@@ -168,6 +172,7 @@ test('DSArrayStore array', async () => {
     const valueStoreB = new DSArrayStore<VSB>("b");
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+    storeManager.initialize();
 
     valueStoreA.listenEventAttach("test", (dsEvent) => {
         const idxB = valueStoreB.entities.findIndex((b) => b.value.b === dsEvent.payload.entity.value.a);

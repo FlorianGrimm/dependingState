@@ -1,11 +1,11 @@
 // hint1: file found
-// normally I would split the file - but for a quick overview..
 
 import {
-    DSLooseStore,
-    DSStateValueSelf,
-    storeBuilder
+    DSLooseStore
 } from "dependingState";
+import { calculatorStyleBuilder, rotateColors } from "./CalculatorStyleActions";
+
+import { CalculatorStyleValue } from "./CalculatorStyleValue";
 
 const rootStyle1: React.CSSProperties = {
     backgroundColor: "red",
@@ -36,18 +36,6 @@ const rootStyle4: React.CSSProperties = {
     padding: 20,
 };
 
-export const calculatorStyleBuilder = storeBuilder<CalculatorStyleStore['storeName']>("CalculatorStyleStore");
-
-export const rotateColors = calculatorStyleBuilder.createAction<undefined>("rotateColors");
-
-export class CalculatorStyleValue extends DSStateValueSelf<CalculatorStyleValue>{
-    rootStyle: React.CSSProperties;
-    constructor() {
-        super();
-        this.rootStyle = {};
-    }
-}
-
 export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "CalculatorStyleStore">{
     style1: CalculatorStyleValue;
     style2: CalculatorStyleValue;
@@ -62,7 +50,8 @@ export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "Ca
         this.style3 = new CalculatorStyleValue();
         this.style4 = new CalculatorStyleValue();
         
-        // hint2 this is missing calculatorStyleBuilder.bindValueStore(this);
+        // hint2 this is missing 
+        calculatorStyleBuilder.bindValueStore(this);
     }
     
     public postAttached(): void {

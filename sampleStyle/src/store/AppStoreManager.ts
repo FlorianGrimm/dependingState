@@ -6,7 +6,7 @@ import {
 import type { AppStore } from "./AppState";
 import type { AppUIStore } from "~/component/AppUI/AppUIStore";
 import type { CalculatorStore } from "src/component/Calculator/CalculatorStore";
-import type { CalculatorStyleStore } from "~/component/CalculatorStyle/CalculatorStyle";
+import type { CalculatorStyleStore } from "~/component/CalculatorStyle/CalculatorStyleStore";
 
 export interface IAppStoreManager extends IDSStoreManager {
     appStore: AppStore;

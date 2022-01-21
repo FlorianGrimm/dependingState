@@ -6,7 +6,7 @@ import React from "react";
 import { AppUIValue } from "./AppUIValue";
 import { calculatorView } from "../Calculator/CalculatorView";
 import { getAppStoreManager } from "~/singletonAppStoreManager";
-import { rotateColors } from "../CalculatorStyle/CalculatorStyle";
+import { rotateColors } from "../CalculatorStyle/CalculatorStyleActions";
 
 type AppViewProps = {
 } & DSUIProps<AppUIValue>;

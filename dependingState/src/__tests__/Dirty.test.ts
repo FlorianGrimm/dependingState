@@ -15,8 +15,31 @@ class Project {
 }
 
 class ProjectStore extends DSEntityStore<string, Project>{
+    processDirtyCount:number
     constructor(storeName: string) {
         super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
+        this.processDirtyCount=0;
+    }
+
+    public static create(project: Project): DSStateValue<Project> {
+        return new DSStateValue<Project>(project);
+    }
+    public static getKey(project: Project): string {
+        return project.ProjectId;
+    }
+
+    public processDirty(): void {
+        super.processDirty();
+        this.processDirtyCount++;
+    }
+}
+
+
+class ProjectStoreNoProcessDirty extends DSEntityStore<string, Project>{
+    processDirtyCount:number
+    constructor(storeName: string) {
+        super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
+        this.processDirtyCount=0;
     }
 
     public static create(project: Project): DSStateValue<Project> {
@@ -52,10 +75,20 @@ class DSStoreManagerDirty extends DSStoreManager {
     }
 }
 
+test('processDirty is overwriten', ()=>{
+    const projectStore = new ProjectStore("project");
+    const projectStoreNoProcessDirty = new ProjectStoreNoProcessDirty("ProjectStoreNoProcessDirty")
+    expect(projectStore.processDirty === ProjectStore.prototype.processDirty).toBe(true);
+    expect(projectStore.processDirty !== DSEntityStore.prototype.processDirty).toBe(true);
+    expect(projectStoreNoProcessDirty.processDirty === DSEntityStore.prototype.processDirty).toBe(true);
+});
+
 test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
     const projectUIStore = new DSMapStore<string, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
+    storeManager.initialize();
+    
     projectStore.listenEventAttach("test", (projectValue) => {
         const project = projectValue.payload.entity.value;
         projectUIStore.attach(project.ProjectId, new ProjectUI(project))

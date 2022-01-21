@@ -1,4 +1,4 @@
-import type { 
+import type {
     IDSAnyValueStore,
     DSEventHandler,
     DSEventHandlerResult,
@@ -6,11 +6,12 @@ import type {
     IDSStoreAction,
     IDSStoreBuilder,
     IDSValueStore,
-    DSEvent
+    DSEvent,
+    ThenPromise
 } from "./types";
 
 import {
-     dsLog, 
+    dsLog,
 } from "./DSLog";
 
 export function storeBuilder<
@@ -43,7 +44,7 @@ export class DSStoreBuilder<
             this.storeName
         );
         const key = `${this.storeName}/${event}`;
-        if (this.actions.has(key)){
+        if (this.actions.has(key)) {
             throw new Error(`DS createAction event with that name already created. ${key}.`);
         }
         this.actions.set(key, result);
@@ -77,39 +78,44 @@ export class DSStoreAction<
 
     // TODO would it be better to create a DSBoundStoreAction
     bindValueStore(valueStore: IDSAnyValueStore): void {
-        if (this.storeName !== valueStore.storeName){ 
+        if (this.storeName !== valueStore.storeName) {
             throw new Error("wrong IDSValueStore");
         }
         this.valueStore = valueStore;
     }
 
+    /**
+     * add the callback to the event. if the event is emitted (emitEvent) all callback are invoked.
+     * @param msg this message is shown in the console
+     * @param callback this function is called
+     * @returns a function that removes the event
+     * @throws throw an Error if the store-constructor doesn't call theStoresBuilder.bindValueStore(this)
+     */
     public listenEvent<
         Event extends DSEvent<Payload, EventType, StoreName>
     >(msg: string, callback: DSEventHandler<Event['payload'], Event['event'], Event['storeName']>): DSUnlisten {
-        if (this.valueStore === undefined){
-            throw new Error(`DS DSStoreAction.listenEvent valueStore is not set ${this.storeName} - Did you call builder.bindValueStore(this) in the constructor?`);
+        if (this.valueStore === undefined) {
+            throw new Error(`DS DSStoreAction.listenEvent valueStore is not set ${this.storeName} - Did you call theStore's-Builder.bindValueStore(this) in the constructor?`);
         } else {
-            if (!msg){
-                msg=`${this.storeName}/${this.event}`;
+            if (!msg) {
+                msg = `${this.storeName}/${this.event}`;
             }
             return this.valueStore.listenEvent(msg, this.event, callback);
         }
     }
 
-    /*
-    public listenEventAnyStore<
-        Payload = any,
-        EventType extends string = string,
-        StoreName extends string = string
-    >(msg: string, event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): DSUnlisten {
-    }
-    */
-
-    emitEvent(payload: Payload): DSEventHandlerResult {
-        if (this.valueStore===undefined){
-            throw new Error(`DS DSStoreAction.emitEvent valueStore is not set ${this.storeName}.`);
+    /**
+     * 
+     * @param payload 
+     */
+    emitEvent(
+        payload: Payload,
+        thenPromise?: ThenPromise | undefined
+        ): DSEventHandlerResult {
+        if (this.valueStore === undefined) {
+            throw new Error(`DS DSStoreAction.emitEvent valueStore is not set ${this.storeName} - Did you call theStore's-Builder.bindValueStore(this) in the constructor?`);
         } else {
-            this.valueStore.emitEvent(this.event, payload);
+            this.valueStore.emitEvent(this.event, payload, thenPromise);
         }
     }
 }
