@@ -1,41 +1,44 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import ReactDom from 'react-dom';
 
 import {
     dsLog
 } from 'dependingState';
 
-import AppView from './component/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { AppUIValue } from './component/AppUI/AppUIValue';
 import { AppUIStore } from './component/AppUI/AppUIStore';
-import { AppState, AppStore } from './store/AppState';
+
+import AppView from './component/AppUI/AppUIView';
 
 function main() {
     // for debugging Browser F12 Console window.dsLog
-    dsLog.setSelfInGlobal();
-    dsLog.setMode("enabled");
+    dsLog.initialize();
+    // for easy now
+    dsLog.setEnabled();
+
     /*
     dsLog.applyFromLocalStorage();
     dsLog.setEnabled();
     dsLog.setDisabled();
-    */
-    
+    */   
     if (dsLog.enabled){
         dsLog.info("main()");
     }
-    const appStore=new AppStore(new AppState());
+
+    // create all stores
     const appUIStore=new AppUIStore(new AppUIValue());
+
+    // create appStoreManager
     const appStoreManager = new AppStoreManager(
-        appStore,
         appUIStore
         );
     setAppStoreManager(appStoreManager);
-    appStoreManager.setSelfInGlobal();
-    appStoreManager.enableTiming=true;
+    dsLog.attach(appStoreManager);
     appStoreManager.initialize();
 
+    // start React
     const rootElement = React.createElement(
             AppView,
             appStoreManager.appUIStore.stateValue.getViewProps()

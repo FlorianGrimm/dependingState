@@ -2,7 +2,9 @@ import {
     DSUIProps,
     DSUIViewStateBase
 } from "dependingState";
+
 import React from "react";
+
 import { AppUIValue } from "./AppUIValue";
 import { countDown, countUp } from "./AppUIActions";
 
@@ -12,10 +14,6 @@ type AppViewProps = {
 type AppViewState = {
 } & DSUIViewStateBase;
 
-export function appView(props: AppViewProps) {
-    return React.createElement(AppView, props);
-}
-
 const counterStyle: React.CSSProperties = {
     backgroundColor: "#dddddd",
     borderColor: "black",
@@ -23,6 +21,11 @@ const counterStyle: React.CSSProperties = {
     borderStyle: "solid",
     padding: 20,
 };
+
+export function appView(props: AppViewProps) {
+    return React.createElement(AppView, props);
+}
+
 export default class AppView extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
         super(props);

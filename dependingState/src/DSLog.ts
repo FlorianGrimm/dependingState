@@ -1,11 +1,15 @@
-import { Component } from "react";
+import type { Component } from "react";
+import type { IDSStoreManager } from "./types";
+import type { DSStoreManager } from "./DSStoreManager";
 
 function noop() {
 }
+
 function warnIfCalled(...data: any[]) {
     console.warn("warn log not conditional");
     console.trace(data);
 }
+
 //
 export class DSLog {
     // assert(condition?: boolean, ...data: any[]): void;
@@ -37,12 +41,15 @@ export class DSLog {
     enabled: boolean;
     logEnabled: boolean;
     mode: "disabled" | "enabled" | "WarnIfCalled";
+    enableTiming: boolean;
+    storeManager: IDSStoreManager|undefined;
 
     constructor(
         public name: string
     ) {
         this.enabled = false;
         this.logEnabled = false;
+        this.enableTiming = false;
         this.mode = "disabled";
 
         this.group = noop;
@@ -55,6 +62,26 @@ export class DSLog {
         this.error = noop;
 
         this.trace = noop;
+    }
+    public initialize(){
+        // for now
+        dsLog.setSelfInGlobal();
+        dsLog.setMode("enabled");
+
+        // TODO: thinkof
+        this.applyFromLocalStorage();
+        if (this.enabled){
+            dsLog.setSelfInGlobal();
+        }
+    }
+    public attach(storeManager: IDSStoreManager):void{
+        this.storeManager = storeManager;
+
+        // TODO: thinkof same as initialize
+        if (this.enabled){
+            (storeManager as DSStoreManager).enableTiming = this.enableTiming;
+            (storeManager as DSStoreManager).setSelfInGlobal();
+        }
     }
 
     public setDisabled(): this {

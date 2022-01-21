@@ -3,7 +3,7 @@ import {
 } from "dependingState";
 
 import { appUIStoreBuilder, countDown, countUp } from "./AppUIActions";
-import type { AppUIValue } from "./AppUIValue";
+import { AppUIValue } from "./AppUIValue";
 
 export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     constructor(value: AppUIValue) {
