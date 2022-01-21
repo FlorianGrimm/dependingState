@@ -1,29 +1,33 @@
 import {
-    DSObjectStore,
     DSUIProps,
     DSUIViewStateBase
 } from "dependingState";
+
 import React from "react";
 
-import { getAppStoreManager } from "../../singletonAppStoreManager";
-import AppViewProjects from "../AppUIProjects/AppUIProjectsView";
-import { AppUIValue } from "./AppUIValue";
-
+import type { __Name__Value } from "./__Name__Value";
 
 type AppViewProps = {
-} & DSUIProps<AppUIValue>;
+} & DSUIProps<__Name__Value>;
 
 type AppViewState = {
 } & DSUIViewStateBase;
 
-export default class AppUIView extends React.Component<AppViewProps, AppViewState>{
+/**
+ * create a new __Name__View
+ * @param props stateValue.getViewProps()
+ */
+export function __name__View(props:AppViewProps): React.ReactNode{
+    return React.createElement(__Name__View, props)
+}
+export default class __Name__View extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
         super(props);
         this.state = {
             stateVersion: this.props.getStateVersion()
         };
         this.props.wireStateVersion(this);
-        this.handleClickAdd = this.handleClickAdd.bind(this);
+        this.handleClick = this.handleClick.bind(this);
     }
 
     componentWillUnmount() {
@@ -31,35 +35,20 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
     }
 
     handleClickAdd() {
-        const storeManager = getAppStoreManager();
-        const projectStore = storeManager.projectStore;
-        storeManager.process("handleClickAdd",() => {
-            //dsLog.group("handleClick - Adding");
-            for (let i = 0; i < 1000; i++) {
-                const n = projectStore.entities.size + 1;
-                projectStore.set({ ProjectId: n.toString(), ProjectName: `Name - ${n}` });
-            }
-            // dsLog.groupEnd();
-            // dsLog.group("handleClick - Added");
-            storeManager.process();
-            // dsLog.groupEnd();
-        });
     }
 
     render(): React.ReactNode {
-        const viewProps = this.props.getRenderProps();
-        const language = (viewProps.appState?.language) || "";
-        const appViewProjectsUIStateValue = viewProps.appViewProjectsUIStateValue;
+        const renderProps = this.props.getRenderProps();
 
         return (<div>
             App
             <div>
-                language:{language} - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+                __Name__ - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
             <div>
                 <button onClick={this.handleClickAdd}>add</button>
             </div>
-            { appViewProjectsUIStateValue && React.createElement(AppViewProjects, appViewProjectsUIStateValue.getViewProps())}
+            
         </div>);
     }
 }

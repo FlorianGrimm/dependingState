@@ -18,12 +18,11 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
             this.stateValue.value.counter--;
             this.stateValue.value.clicks++;
             this.stateValue.valueChanged();
-            // valueChanged triggers the update of the ui or depending objects
         });      
         countUp.listenEvent("countUp",(e)=>{
             this.stateValue.value.counter++;
             this.stateValue.value.clicks++;
-            // hint1
+            this.stateValue.valueChanged();
         });      
     }
 }

@@ -58,7 +58,7 @@ function GeneratorProject{
 
     [string]$TemplateFolder = [System.IO.Path]::Combine($ProjectTemplateFolder, $Template)
     [string]$TargetFolder = [System.IO.Path]::Combine($Location, $upName)
-    
+        
     <#
     Write-Host "TemplateFolder: $TemplateFolder;"
     Write-Host "TargetFolder  : $TargetFolder;"
@@ -146,7 +146,7 @@ function GeneratorComponent{
     #>
 
     [string]$TemplateFolder = [System.IO.Path]::Combine($ComponentTemplateFolder, $Template)
-    [string]$TargetFolder = [System.IO.Path]::Combine($Location, $upName)
+    [string]$TargetFolder = $Location
     
     <#
     Write-Host "TemplateFolder: $TemplateFolder;"

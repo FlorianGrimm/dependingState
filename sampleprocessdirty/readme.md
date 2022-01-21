@@ -1,6 +1,11 @@
-#samle simple
+#samle processdirty
 
-find the bug.
+store.processDirty() can be used to calculate the state in dependency of other states.<br>
+a little bit like selectors in redux.<br>
+ The difference is the selector must compare the incoming state.<br>
+ Here you to take care that you set the store dirty - not too often and not too rarely.
+
+## find the bug.
 
 please run:
 
@@ -10,82 +15,63 @@ npm run serve
 ```
 
 
-- the AppUIValue defines properties <br/>
-    see src\component\AppUI\AppUIValue.ts
+- a store has an flag isDirty
+- DSStoreManager.process checks for events, for stores that are dirty and IDSUIStateValue that must be updated.<br/>
+    for all store in stores (in the order or DSStoreManager.attach(store) is called), check isDirty and call store.processDirty<>
 
 ```typescript
-    counter: number;
-    clicks: number;
-```
-
-- the AppUIView is a React.Component that renders the AppUIValue and the button triggers the events (like redux actions).<br/>
-    see src\component\AppUI\AppUIView.tsx
-
-- the builder is used to define events/actions for the store.<br/>
-    see src\component\AppUI\AppUIActions.ts<br/>
-    (if the store don't need events the builder is not required)
-```typescript
-import { storeBuilder } from "dependingState";
-import type { AppUIStore } from "./AppUIStore";
-
-export const appUIStoreBuilder = storeBuilder<AppUIStore['storeName']>("AppUIStore");
-export const countDown = appUIStoreBuilder.createAction<undefined>("countDown");
-export const countUp = appUIStoreBuilder.createAction<undefined>("countUp");
-```
-
-- if the builder defines events for the store the store has to call bindValueStore.<br/>
-    see src\component\AppUI\AppUIStore.ts <br/>
-```typescript
-export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
-    constructor(value: AppUIValue) {
-        super("AppUIStore", value);
-        appUIStoreBuilder.bindValueStore(this);
-    }
-}
-```
-
-- the AppUIStore is a store with an single object - it's the purpuse of DSObjectStore. <br>
-    - the appUIStore.stateValue references one IDSStateValue<AppUIValue>
-    - the appUIStore.stateValue.value references one AppUIValue
-
-- all stores (extending the DSValueStore) can listen to events. (To their own or to others.). In the method postAttached() call listenEvent registers a callback.
-```typescript
-    public postAttached(): void {
-        super.postAttached();
-
-        countDown.listenEvent("countDown",(e)=>{
-            console.log("countDown was emitted.")
-        });      
+    public processDirty(): void {
+        for (const valueStore of this.arrValueStores) {
+            if (valueStore.isDirty) {
+                valueStore.isDirty = false;
+                valueStore.processDirty();
+            }
+        }
     }
 ```
 
-- if you change a value you have to call stateValue.valueChanged() <br>
-their is  is a helper reached via getPropertiesChanged()
-  
-```typescript
-    public postAttached(): void {
-        super.postAttached();
+- if you want to calculate the state of one store in dependcy of another store you have to listen for this.
 
-        countDown.listenEvent("countDown",(e)=>{
-            console.log("countDown was emitted.")
-            this.stateValue.value.counter--;
-            this.stateValue.value.clicks++;
-            this.stateValue.valueChanged();
-            // valueChanged triggers the update of the ui or depending objects
-        });      
-    }
+a) Option store.listenEmitDirty<br>
+    in the target store in postAttached call listenEmitDirty so each time a value in sourceStore has changed this is called.<br>
+    The callback parameter stateValue contains the current stateValue or undefined (if all values has been changed).<br>
+    The callback parameter properties contains the names of the changed properties or undefined (if all properties has been changed).<br>
+    <br>
+
+```typescript
+    sourceStore.listenEmitDirty("chain", (stateValue, properties)=>{
+        // may be check properties and/or stateValue
+        this.isDirty=true;
+    });
 ```
 
- -or- <br>
+b) Option store.listenDirtyRelated<br>
+    in the target store in postAttached call listenDirtyRelated so each time a value in sourceStore has changed this(store) gets dirty.<br>
+    You don't have the possiblity to add an condition.<br>
 
- ```typescript
-     getPropertiesChanged(this.stateValue);
-    stateValuePC.setIf("answer", 42);
+```typescript
+        sourceStore.listenDirtyRelated(this.storeName, this);
 
-    // conditionally call valueChanged
-    stateValuePC.valueChangedIfNeeded();
+```
+
+- overwrite the processDirty to update your state.<br/>
+```typescript
+    public processDirty(): void {
+        super.processDirty();
+        const appUIStore = (this.storeManager! as IAppStoreManager).appUIStore;
+        const counterStore = (this.storeManager! as IAppStoreManager).counterStore;
+        
+        const sumPC = getPropertiesChanged(this.stateValue);
+        sumPC.setIf("sumValue", appUIStore.stateValue.value.counter + counterStore.stateValue.value.nbrValue);
+        sumPC.valueChangedIfNeeded();
+    }
 ```
 
 - Need help? 
 
 Search for "// hint1" within the files *.ts.
+
+
+- Need more help? 
+
+Search for "// hint2" within the files *.ts.

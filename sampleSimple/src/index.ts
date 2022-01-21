@@ -13,16 +13,12 @@ import { AppUIStore } from './component/AppUI/AppUIStore';
 import AppView from './component/AppUI/AppUIView';
 
 function main() {
-    // for debugging Browser F12 Console window.dsLog
+    // initialize log
     dsLog.initialize();
-    // for easy now
+
+    // remove this if going productive
     dsLog.setEnabled();
 
-    /*
-    dsLog.applyFromLocalStorage();
-    dsLog.setEnabled();
-    dsLog.setDisabled();
-    */   
     if (dsLog.enabled){
         dsLog.info("main()");
     }

@@ -1,47 +1,32 @@
 import {
     DSObjectStore,
 } from "dependingState";
-import type { IAppStoreManager } from "../../store/AppStoreManager";
-import { AppUIValue } from "./AppUIValue";
+import type { IAppStoreManager } from "~/store/AppStoreManager";
+import { __name__StoreBuilder, countDown, countUp } from "./__Name__Actions";
+import { __Name__Value } from "./__Name__Value";
 
 
-export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
-    appStateStateVersion: number;
-    appViewProjectsUIStoreStateVersion: number;
+export class __Name__Store extends DSObjectStore<__Name__Value, "__Name__Store"> {
 
-    constructor(value: AppUIValue) {
-        super("AppUIStore", value);
-        this.appStateStateVersion = 0;
-        this.appViewProjectsUIStoreStateVersion=0;
+    constructor(value: __Name__Value) {
+        super("__Name__Store", value);
+        __name__StoreBuilder.bindValueStore(this);
     }
 
     public postAttached(): void {
         super.postAttached();
+        
+        //const xxxStore = (this.storeManager! as IAppStoreManager).xxxStore;
+        //xxxStore.listenDirtyRelated(this.storeName, this);      
 
-        const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
-        appState.listenDirtyRelated(this.storeName, this);
+        countDown.listenEvent("TODO", (e)=>{
+        });
 
-        this.stateValue.value.appState = appState.stateValue.value;
-        this.isDirty = true;
+        countUp.listenEvent("TODO", (e)=>{
+        });
     }
 
     public processDirty(): void {
-        const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
-        const appViewProjectsUIStore = (this.storeManager! as unknown as IAppStoreManager).appViewProjectsUIStore;
-        let changed=false;
-        if (this.appStateStateVersion !== appState.stateVersion) {
-            this.appStateStateVersion = appState.stateVersion;
-            this.stateValue.value.appState   = appState.stateValue.value;
-            changed=true;
-        }
-     
-        if (this.appViewProjectsUIStoreStateVersion !== appViewProjectsUIStore.stateVersion) {
-            this.appViewProjectsUIStoreStateVersion = appViewProjectsUIStore.stateVersion;
-            this.stateValue.value.appViewProjectsUIStateValue = appViewProjectsUIStore.stateValue.value;
-            changed=true;
-        }
-        if (changed){
-            this.stateValue.valueChanged();
-        }
+        super.processDirty();
     }
 }

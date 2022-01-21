@@ -5,16 +5,15 @@ import {
 import React from "react";
 import { AppUIValue } from "./AppUIValue";
 import { countDown, countUp } from "./AppUIActions";
+import { getAppStoreManager } from "~/singletonAppStoreManager";
+import { counterView } from "../Counter/CounterView";
+import { sumView } from "../Sum/SumView";
 
 type AppViewProps = {
 } & DSUIProps<AppUIValue>;
 
 type AppViewState = {
 } & DSUIViewStateBase;
-
-export function appView(props: AppViewProps) {
-    return React.createElement(AppView, props);
-}
 
 const counterStyle: React.CSSProperties = {
     backgroundColor: "#dddddd",
@@ -23,6 +22,11 @@ const counterStyle: React.CSSProperties = {
     borderStyle: "solid",
     padding: 20,
 };
+
+export function appView(props: AppViewProps) {
+    return React.createElement(AppView, props);
+}
+
 export default class AppView extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
         super(props);
@@ -49,23 +53,34 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         const {counter, clicks} = this.props.getRenderProps();
 
         return (<div>
-            <h1>samplesimple</h1>
+            <h1>sampleprocessdirty</h1>
             <div>
                 AppUIView -  StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
 
             <div style={counterStyle}>
-                Counter: {counter} <button onClick={this.handleDown}>&lt;</button> <button onClick={this.handleUp}>&gt;</button> <br/>
+                Counter1: {counter} <button onClick={this.handleDown}>&lt;</button> <button onClick={this.handleUp}>&gt;</button> <br/>
                 Clicks: {clicks}
             </div>
 
+            {counterView(getAppStoreManager().counterStore.stateValue.getViewProps())}
+            
+            {sumView(getAppStoreManager().sumStore.stateValue.getViewProps())}
+
             <div>
                 P.S.<br />
+
+                Counter1 + Counter2 = Sum<br />
+
+                Find the bug!<br />
+                
+                Counter1 Up; Counter2 Up; Counter1 Up;<br />
+                Why does the Counter2 not effect the sum?
             
-                Why does count-down work and count-up not? <br />
-                Have a look at F12 - Console and click down then up. Can you spot the difference?<br />
+                Have a look at F12 - Console. Can you spot the difference?<br />
                 Please read the readme.md<br />
                 Need help? search for "// hint1" within the files *.ts.
+                Need more help? search for "// hint2" within the files *.ts.
             </div>
 
         </div>);

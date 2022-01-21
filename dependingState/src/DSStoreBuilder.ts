@@ -105,8 +105,9 @@ export class DSStoreAction<
     }
 
     /**
-     * 
-     * @param payload 
+     * emit the event - if needed process will be called
+     * @param payload the payload
+     * @param thenPromise ignore it for now
      */
     emitEvent(
         payload: Payload,
