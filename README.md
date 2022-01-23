@@ -17,9 +17,10 @@ I asume you have npm and vs code installed - or any other editor you like more.
     - open the readme.md (File ContextMenu OpenPreview)
     - follow the instructions
 
-2) sampleStyle
-3) sampleSimple
-4) sampleRouter
+2) sampleLog
+3) sampleStyle
+4) sampleSimple
+5) sampleRouter
 
 ## overview
 ```

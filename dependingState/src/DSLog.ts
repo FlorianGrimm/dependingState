@@ -6,7 +6,7 @@ function noop() {
 }
 
 function warnIfCalled(...data: any[]) {
-    console.warn("warn log not conditional");
+    console.warn("warn log was not conditional. please add 'if (dsLog.enabled) { }' ");
     console.trace(data);
 }
 
@@ -368,7 +368,7 @@ export class DSLogACME extends DSLogBase {
     }
 
     public saveToLocalStorage(key?: string): this {
-        const data = {
+        const data = (this.amceEnabled)?{
             mode: this.mode,
             watchoutEnabled: this.amceEnabled,
             watchoutApp: this.watchoutApp,
@@ -376,8 +376,13 @@ export class DSLogACME extends DSLogBase {
             watchoutMethod: this.watchoutMethod,
             watchoutExtraArg: this.watchoutExtraArg,
             watchoutStopAt: this.watchoutStopAt
+        }:{
+            mode: this.mode
         };
+
         window.localStorage.setItem(key || this.name, JSON.stringify(data));
+        console.info(`window.localStorage.setItem('${(key || this.name)}', '${JSON.stringify(data)}');`)
+        
         return this;
     }
 

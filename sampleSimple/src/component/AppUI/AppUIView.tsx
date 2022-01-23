@@ -7,6 +7,7 @@ import React from "react";
 
 import { AppUIValue } from "./AppUIValue";
 import { countDown, countUp } from "./AppUIActions";
+import { getAppStoreManager } from "~/singletonAppStoreManager";
 
 type AppViewProps = {
 } & DSUIProps<AppUIValue>;
@@ -41,15 +42,21 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
     componentWillUnmount() {
         this.props.unwireStateVersion(this);
     }
-    handleDown(){
-        countDown.emitEvent(undefined);
+
+    handleDown() {
+        getAppStoreManager().process("handleDown", () => {
+            countDown.emitEvent(undefined);
+        });
     }
-    handleUp(){
-        countUp.emitEvent(undefined);
+
+    handleUp() {
+        getAppStoreManager().process("handleUp", () => {
+            countUp.emitEvent(undefined);
+        });
     }
 
     render(): React.ReactNode {
-        const {counter, clicks} = this.props.getRenderProps();
+        const { counter, clicks } = this.props.getRenderProps();
 
         return (<div>
             <h1>samplesimple</h1>
@@ -58,13 +65,13 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
             </div>
 
             <div style={counterStyle}>
-                Counter: {counter} <button onClick={this.handleDown}>&lt;</button> <button onClick={this.handleUp}>&gt;</button> <br/>
+                Counter: {counter} <button onClick={this.handleDown}>&lt;</button> <button onClick={this.handleUp}>&gt;</button> <br />
                 Clicks: {clicks}
             </div>
 
             <div>
                 P.S.<br />
-            
+
                 Why does count-down work and count-up not? <br />
                 Have a look at F12 - Console and click down then up. Can you spot the difference?<br />
                 Please read the readme.md<br />

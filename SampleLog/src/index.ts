@@ -12,17 +12,17 @@ import { AppUIValue } from './component/AppUI/AppUIValue';
 import { AppUIStore } from './component/AppUI/AppUIStore';
 
 function main() {
-     // initialize log
-     dsLog.initialize();
+    // initialize log
+    dsLog.initialize();
 
-     // remove this if going productive
-     dsLog.setEnabled();
- 
-     if (dsLog.enabled){
-         dsLog.info("__Name__ main()");
-     }
- 
-     // create all stores
+    // remove this if going productive
+    dsLog.setEnabled();
+
+    if (dsLog.enabled) {
+        dsLog.info("SampleLog main()");
+    }
+
+    // create all stores
     const appUIStore = new AppUIStore(new AppUIValue());
 
     // create appStoreManager
@@ -48,5 +48,5 @@ function main() {
 try {
     main();
 } catch (err) {
-    console.error("Error while __Name__ boots.", err);
+    console.error("Error while SampleLog boots.", err);
 }
