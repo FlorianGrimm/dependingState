@@ -24,7 +24,7 @@ function Get-ComponentTemplates {
 }
 
 
-function GeneratorProject{
+function New-DSProject{
     [CmdletBinding()]
     param(
         [Parameter(Position = 0, Mandatory)]
@@ -107,7 +107,7 @@ function GeneratorProject{
     }
 }
 
-function GeneratorComponent{
+function New-DSComponent{
     [CmdletBinding()]
     param(
         [Parameter(Position = 0, Mandatory)]
@@ -197,13 +197,13 @@ function GeneratorComponent{
 }
 
 Write-Host ""
-Write-Host "GeneratorProject"
+Write-Host "New-DSProject"
 Get-ProjectTemplates | ForEach-Object{
-    Write-Host "GeneratorProject -Template $($_) -Name abc"
+    Write-Host "New-DSProject -Template $($_) -Name abc"
 }
 
 Write-Host ""
-Write-Host "GeneratorComponent"
+Write-Host "New-DSComponent"
 Get-ComponentTemplates | ForEach-Object{
-    Write-Host "GeneratorComponent -Template $($_) -Name abc"
+    Write-Host "New-DSComponent -Template $($_) -Name abc"
 }

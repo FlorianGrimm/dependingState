@@ -149,6 +149,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
+                dsLog.debugACME("DS", "DSStateValueSelf", "valueChanged", "store is undefined");
                 this.uiStateValue.triggerUIUpdate();
             } else {
                 this.store.emitUIUpdate(this.uiStateValue);

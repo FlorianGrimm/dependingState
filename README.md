@@ -8,6 +8,18 @@ o fast
 o simple and not too much magic
 o a little bit like redux
 
+## Tutorial - Find the bug
+
+I asume you have npm and vs code installed - or any other editor you like more.
+
+1) SampleTimer<br>
+    - (in vs code) open the folder SampleTimer 
+    - open the readme.md (File ContextMenu OpenPreview)
+    - follow the instructions
+
+2) sampleStyle
+3) sampleSimple
+4) sampleRouter
 
 ## overview
 ```

@@ -69,7 +69,10 @@ export class DSValueStore<
             //
         } else {
             this._isDirty = value;
-            if (value) {
+            if(this.storeManager!==undefined){
+                this.storeManager.isDirty=true;
+            }
+            if (value) {                
                 dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "true");
             } else {
                 //dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "false");

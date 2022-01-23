@@ -40,6 +40,8 @@ export interface IDSStoreManager {
     process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult;
 
     processUIUpdates(): void;
+
+    isDirty: boolean;
 }
 export interface IDSStoreManagerInternal extends IDSStoreManager {
     isupdateRegisteredEventsDone: boolean;
@@ -121,7 +123,7 @@ export interface IDSValueStore<
      * emit the event.
      * @param eventType the event
      * @param payload  the payload
-     * @param thenPromise 
+     * @param thenPromise ignore for now
      */
     emitEvent<
         Event extends DSEvent<Payload, EventType, StoreName>,

@@ -4,4 +4,4 @@ import { storeBuilder } from "dependingState";
 import type { AppUIStore } from "./AppUIStore";
 
 export const appUIStoreBuilder = storeBuilder<AppUIStore['storeName']>("AppUIStore");
-export const loadData = appUIStoreBuilder.createAction<undefined>("loadData");
+export const timerStopGo = appUIStoreBuilder.createAction<boolean>("timerStopGo");

@@ -11,7 +11,7 @@ function warnIfCalled(...data: any[]) {
 }
 
 //
-export class DSLog {
+export class DSLogBase {
     // assert(condition?: boolean, ...data: any[]): void;
     // clear(): void;
     // count(label?: string): void;
@@ -253,7 +253,7 @@ function templateAMCE(
     }
 }
 
-export class DSLogACME extends DSLog {
+export class DSLogACME extends DSLogBase {
     convertArg: (currentArg: any) => string;
     amceEnabled: boolean;
     watchoutApp: string | undefined;
@@ -415,13 +415,13 @@ export class DSLogACME extends DSLog {
 }
 
 
-export class DSLogApp extends DSLogACME {
-    constructor(name?: string) {
-        super(name || "dsLogApp");
+export class DSLog extends DSLogACME {
+    constructor(name: string) {
+        super(name || "dsLog");
     }
     setSelfInGlobal() {
         (window as any).dsLog = this;
     }
 }
 
-export const dsLog = new DSLogApp("dsLogLib");
+export const dsLog = new DSLog("dsLog");

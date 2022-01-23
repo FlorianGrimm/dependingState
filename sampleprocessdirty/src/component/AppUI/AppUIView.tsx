@@ -71,16 +71,17 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
                 P.S.<br />
 
                 Counter1 + Counter2 = Sum<br />
-
+                <br />
                 Find the bug!<br />
+                <br />
                 
                 Counter1 Up; Counter2 Up; Counter1 Up;<br />
-                Why does the Counter2 not effect the sum?
+                Why does the Counter2 not effect the sum?<br />
             
                 Have a look at F12 - Console. Can you spot the difference?<br />
                 Please read the readme.md<br />
-                Need help? search for "// hint1" within the files *.ts.
-                Need more help? search for "// hint2" within the files *.ts.
+                Need help? search for "// hint1" within the files *.ts.<br />
+                Need more help? search for "// hint2" within the files *.ts.<br />
             </div>
 
         </div>);
