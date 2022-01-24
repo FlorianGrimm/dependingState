@@ -1,5 +1,6 @@
 import type {
     DSEmitDirtyHandler,
+    DSEmitDirtyValueHandler,
     DSEvent,
     DSEventHandler,
     DSEventHandlerResult,
@@ -34,7 +35,8 @@ export class DSValueStore<
     stateVersion: number;
     listenToAnyStore: boolean;
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler<any, string, string> }[]>;
-    arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<Value> }[];
+    arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<any> }[];
+    arrEmitDirtyValueHandler: { msg: string, handler: DSEmitDirtyValueHandler<Value> }[];
     arrEmitDirtyRelated: { msg: string, valueStore: IDSAnyValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
     enableEmitDirtyFromValueChanged: boolean;
@@ -50,6 +52,7 @@ export class DSValueStore<
         this.listenToAnyStore = false;
         this.mapEventHandlers = new Map();
         this.arrEmitDirtyHandler = [];
+        this.arrEmitDirtyValueHandler = [];
         this._isDirty = false;
         this.stateVersion = 1;
         this.enableEmitDirtyFromValueChanged = false;
@@ -96,8 +99,8 @@ export class DSValueStore<
         }
     }
 
-    public  initializeBoot() :void{
-        
+    public initializeBoot(): void {
+
     }
 
     public getNextStateVersion(stateVersion: number): number {
@@ -137,11 +140,11 @@ export class DSValueStore<
 
     public emitDirtyFromValueChanged(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
         if (this.enableEmitDirtyFromValueChanged) {
-            this.emitDirty(stateValue, properties);
+            this.emitDirtyValue(stateValue, properties);
         }
     }
 
-    public emitDirty(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
+    public emitDirtyValue(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
         if (dsLog.enabled) {
             dsLog.infoACME("DS", "DSValueStore", "emitDirty", this.storeName);
         }
@@ -154,25 +157,41 @@ export class DSValueStore<
                 dirtyRelated.valueStore.isDirty = true;
             }
         }
-        for (const dirtyHandler of this.arrEmitDirtyHandler) {
+        for (const dirtyHandler of this.arrEmitDirtyValueHandler) {
             if (dsLog.enabled) {
                 dsLog.infoACME("DS", "DSValueStore", "emitDirty", dirtyHandler.msg, "/dirtyHandler");
             }
             dirtyHandler.handler(stateValue, properties);
         }
+        this.isDirty = true;
     }
 
-    public listenEmitDirty(msg: string, callback: DSEmitDirtyHandler<Value>): DSUnlisten {
+    public listenemitDirtyValue(msg: string, callback: DSEmitDirtyValueHandler<Value>): DSUnlisten {
         // think about
         this.enableEmitDirtyFromValueChanged = true;
 
-        this.arrEmitDirtyHandler.push({ msg: msg, handler: callback });
-        return this.unlistenEmitDirty.bind(this, callback);
+        this.arrEmitDirtyValueHandler.push({ msg: msg, handler: callback });
+        return this.unlistenemitDirtyValue.bind(this, callback);
     }
 
-    public unlistenEmitDirty(callback: DSEmitDirtyHandler<Value>): void {
-        this.arrEmitDirtyHandler = this.arrEmitDirtyHandler.filter((cb) => cb.handler !== callback);
+    public unlistenemitDirtyValue(callback: DSEmitDirtyValueHandler<Value>): void {
+        this.arrEmitDirtyValueHandler = this.arrEmitDirtyValueHandler.filter((cb) => cb.handler !== callback);
     }
+
+    public emitDirty(selfDirty:boolean): void{
+        if (selfDirty){
+
+        }
+    }
+
+    public listenDirty(msg: string, callback: DSEmitDirtyHandler<Value>): DSUnlisten{
+        return this.unlistenDirty.bind(this, callback);
+    }
+
+    public unlistenDirty(callback: DSEmitDirtyHandler<Value>): void{
+
+    }
+
 
     public processDirty(): void {
         this.isDirty = false;
@@ -201,7 +220,7 @@ export class DSValueStore<
         };
         const key = `${this.storeName}/${event.event}`;
         let arrEventHandlers = this.mapEventHandlers.get(key);
-        if ((arrEventHandlers===undefined) || (arrEventHandlers?.length===0)){
+        if ((arrEventHandlers === undefined) || (arrEventHandlers?.length === 0)) {
             if ((event.event === "attach") || (event.event === "detach") || (event.event === "value")) {
             } else {
                 dsLog.warnACME("DS", "DSValueStore", "emitEvent", key, "No event registered for listening");

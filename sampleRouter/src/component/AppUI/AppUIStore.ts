@@ -20,7 +20,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
         appStore.listenDirtyRelated(this.storeName, this);
 
-        navigatorStore.listenEmitDirty("AppUIStore listen to router", (stateValue, properties) => {
+        navigatorStore.listenDirtyValue("AppUIStore listen to router", (stateValue, properties) => {
             if (this.isDirty) { return; }
             if ((properties == undefined) || properties.has("page")) {
                 this.isDirty = true;

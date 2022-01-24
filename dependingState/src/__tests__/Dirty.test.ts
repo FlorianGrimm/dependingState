@@ -93,7 +93,7 @@ test('Dirty', async () => {
         const project = projectValue.payload.entity.value;
         projectUIStore.attach(project.ProjectId, new ProjectUI(project))
     });
-    projectStore.listenEmitDirty("test", (project) => {
+    projectStore.listenemitDirtyValue("test", (project) => {
         const projectUI = projectUIStore.get(project!.value.ProjectId) as (ProjectUI | undefined);
         if (projectUI) {
             projectUI.isDirty = true;

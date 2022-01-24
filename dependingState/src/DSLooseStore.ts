@@ -14,8 +14,8 @@ export class DSLooseStore<
         this.dirtyEntities=[]
     }
     
-    public emitDirty(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
-        super.emitDirty(stateValue, properties);
+    public emitDirtyValue(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
+        super.emitDirtyValue(stateValue, properties);
         if (stateValue !== undefined){
             this.dirtyEntities.push(stateValue);
         }

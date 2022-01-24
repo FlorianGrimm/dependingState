@@ -39,7 +39,7 @@ a) Option store.listenEmitDirty<br>
     <br>
 
 ```typescript
-    sourceStore.listenEmitDirty("chain", (stateValue, properties)=>{
+    sourceStore.listenemitDirtyValue("chain", (stateValue, properties)=>{
         // may be check properties and/or stateValue
         this.isDirty=true;
     });

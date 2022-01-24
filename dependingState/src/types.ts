@@ -51,6 +51,7 @@ export interface IDSStoreManagerInternal extends IDSStoreManager {
 export type ValueStoreInternal = {
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
     arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<any> }[];
+    arrEmitDirtyValueHandler: { msg: string, handler: DSEmitDirtyValueHandler<any> }[];
     arrEmitDirtyRelated: { msg: string, valueStore: IDSAnyValueStore }[] | undefined;
     setEffectiveEvents: Set<string> | undefined;
 } & IDSAnyValueStore;
@@ -111,9 +112,14 @@ export interface IDSValueStore<
     setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void;
 
     emitDirtyFromValueChanged(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void;
-    emitDirty(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void;
-    listenEmitDirty(msg: string, callback: DSEmitDirtyHandler<Value>): DSUnlisten;
-    unlistenEmitDirty(callback: DSEmitDirtyHandler<Value>): void;
+    emitDirtyValue(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void;
+    listenemitDirtyValue(msg: string, callback: DSEmitDirtyValueHandler<Value>): DSUnlisten;
+    unlistenemitDirtyValue(callback: DSEmitDirtyValueHandler<Value>): void;
+
+    emitDirty(selfDirty:boolean): void;
+    listenemitDirty(msg: string, callback: DSEmitDirtyValueHandler<Value>): DSUnlisten;
+    unlistenemitDirty(callback: DSEmitDirtyValueHandler<Value>): void;
+
     listenDirtyRelated(msg: string, relatedValueStore: IDSValueStoreBase): DSUnlisten;
     unlistenDirtyRelated(relatedValueStore: IDSValueStoreBase): void;
 
@@ -319,7 +325,8 @@ export type DSEventEntityVSValue<
     StoreName extends string = string
     > = DSEvent<DSPayloadEntitySVValue<Value>, "value", StoreName>;
 
-export type DSEmitDirtyHandler<Value> = (stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>) => void;
+export type DSEmitDirtyHandler<Value> = () => void;
+export type DSEmitDirtyValueHandler<Value> = (stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>) => void;
 
 export type DSEventHandlerResult = (Promise<any | void> | void);
 export type DSManyEventHandlerResult = (Promise<any | void>[] | undefined);

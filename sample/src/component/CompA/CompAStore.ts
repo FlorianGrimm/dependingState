@@ -73,7 +73,7 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
     }
 
     public processDirty(): void {
-        this.emitDirty(null!);
+        this.emitDirty();
     }
     // public processDirty(): void {
     //     const compAUIStates = (Array.from(this.entities.values())

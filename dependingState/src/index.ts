@@ -4,7 +4,7 @@ export * from './types';
 //     DSEventEntitySVDetach as DSEventDetach,
 //     DSPayloadEntitySVValue as DSPayloadEntityPropertiesChanged,
 //     DSEventEntityVSValue as DSEventValue,
-//     DSEmitDirtyHandler as DSDirtyHandler,
+//     DSEmitDirtyValueHandler as DSDirtyHandler,
 
 export * from "./DSStoreManager";
 export * from './DSValueStore';

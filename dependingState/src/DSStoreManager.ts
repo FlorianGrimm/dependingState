@@ -15,7 +15,7 @@ import { catchLog } from "./PromiseHelper";
 
 // type ValueStoreInternal = {
 //     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
-//     arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<any, any> }[];
+//     arrEmitDirtyValueHandler: { msg: string, handler: DSEmitDirtyValueHandler<any, any> }[];
 //     arrDirtyRelated: { msg: string, valueStore: IDSValueStore<any, any, any, string> }[] | undefined;
 //     setEffectiveEvents: Set<string> | undefined;
 // } & IDSValueStore<any, any, any, string>;
@@ -189,10 +189,10 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                             dsLog.info(`DS DSStoreManager updateRegisteredEvents dirtyRelated ${valueStore.storeName} -> ${dirtyRelatedNames}`);
                         }
                     } {
-                        if ((valueStoreInternal.arrEmitDirtyHandler || []).length === 0) {
+                        if ((valueStoreInternal.arrEmitDirtyValueHandler || []).length === 0) {
                             dsLog.info(`DS DSStoreManager updateRegisteredEvents dirtyHandlers ${valueStore.storeName} -> %`);
                         } else {
-                            const dirtyNames = (valueStoreInternal.arrEmitDirtyHandler || []).map(r => r.msg).join(", ");
+                            const dirtyNames = (valueStoreInternal.arrEmitDirtyValueHandler || []).map(r => r.msg).join(", ");
                             dsLog.info(`DS DSStoreManager updateRegisteredEvents dirtyHandlers ${valueStore.storeName} -> ${dirtyNames}`);
                         }
 

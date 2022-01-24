@@ -22,7 +22,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         });        
     
         const navigatorStore = getAppStoreManager().navigatorStore;
-        navigatorStore.listenEmitDirty("AppUIStore listen to router", (stateValue, properties) => {
+        navigatorStore.listenemitDirtyValue("AppUIStore listen to router", (stateValue, properties) => {
             if (hasChangedProperty(properties, "page")) {
                 this.stateValue.emitUIUpdate();
             }

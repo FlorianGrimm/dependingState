@@ -24,6 +24,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         this.listenEventValue("value has changed", (e)=>{
             if (hasChangedProperty(e.payload.properties, "name")){
                 this.isDirty=true;
+                this.emitDirty
             }            
         });
     }
