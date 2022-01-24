@@ -9,7 +9,7 @@ export class PageBStore extends DSObjectStore<PageBValue, "PageBStore">{
         this.setStoreBuilder(pageAUIStoreBuilder);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         doSomething.listenEvent("handle doSomething", (e) => {
         });
         this.listenEventValue("a+b=c", (e) => {

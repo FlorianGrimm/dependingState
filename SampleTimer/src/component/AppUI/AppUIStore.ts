@@ -19,8 +19,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         this.handleTick = this.handleTick.bind(this);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         timerStopGo.listenEvent("handle", (e) => {
             if (e.payload) {

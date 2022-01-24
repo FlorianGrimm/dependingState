@@ -54,8 +54,8 @@ export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "Ca
         calculatorStyleBuilder.bindValueStore(this);
     }
     
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
         this.style1.rootStyle = rootStyle1;
         this.style1.setStore(this);
         this.style2.rootStyle = rootStyle2;

@@ -109,4 +109,6 @@ window.localStorage.setItem('dsLog', '{"mode":"disabled"}');
 - can you fix the warning?
 
 
-- todo dsLog.setWatchout
+- TODO dsLog.setWatchout
+
+- TODO appStoreManager

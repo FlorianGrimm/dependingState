@@ -46,8 +46,8 @@ export class DSNavigatorStore<
         return result;
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
         if (this.routerStore === undefined) {
             this.routerStore = this.storeManager!.getValueStore("router") as (IDSRouterStore | undefined);
         }

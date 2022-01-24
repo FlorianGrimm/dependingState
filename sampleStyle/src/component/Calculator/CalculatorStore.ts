@@ -8,7 +8,7 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
         this.setStoreBuilder(calculatorStoreBuilder);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         clearInput.listenEvent("handle clearInput", (e) => {
             // valueChanged is used 
             // or if you expect many related effects you can use valueChangedIfNeeded

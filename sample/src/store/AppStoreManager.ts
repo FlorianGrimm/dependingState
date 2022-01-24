@@ -31,7 +31,5 @@ export class AppStoreManager extends DSStoreManager implements IAppStoreManager 
         this.attach(appUIStore);
         this.attach(compAStore);
         this.attach(appViewProjectsUIStore);
-
-        this.postAttached();
     }
 }

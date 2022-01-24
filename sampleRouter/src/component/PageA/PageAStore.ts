@@ -20,7 +20,7 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
         this.pageChanged = new DSValueChanged();
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 
         navigatorStore.listenEventValue("pageChanged", (e) => {
@@ -39,6 +39,10 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
                 pageAValuePC.setIf("nbrC", pageAValue.value.nbrA + pageAValue.value.nbrB);
                 pageAValuePC.valueChangedIfNeeded();
             }
+        });
+
+        pageALoadData.listenEvent("do nothing",()=>{
+
         });
     }
 }

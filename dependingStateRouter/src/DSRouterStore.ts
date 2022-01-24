@@ -94,7 +94,7 @@ export class DSRouterStore<
         dsRouterBuilder.bindValueStore(this);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         routerPush.listenEvent("push", (e) => {
             const location = e.payload;
             if (e.payload.noListener === true) {
@@ -111,6 +111,9 @@ export class DSRouterStore<
             this.history.replace(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
         //routerLocationChanged.listenEvent
+    }
+    
+    public initializeBoot(): void {
         this.subscribe();
     }
 

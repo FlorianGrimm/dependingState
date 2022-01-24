@@ -15,8 +15,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         appUIStoreBuilder.bindValueStore(this);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
         
         loadData.listenEvent("TODO", (e)=>{
         });        

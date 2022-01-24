@@ -33,7 +33,7 @@ npm run serve
 - if you want to calculate the state of one store in dependcy of another store you have to listen for this.
 
 a) Option store.listenEmitDirty<br>
-    in the target store in postAttached call listenEmitDirty so each time a value in sourceStore has changed this is called.<br>
+    in the target store in initializeStore call listenEmitDirty so each time a value in sourceStore has changed this is called.<br>
     The callback parameter stateValue contains the current stateValue or undefined (if all values has been changed).<br>
     The callback parameter properties contains the names of the changed properties or undefined (if all properties has been changed).<br>
     <br>
@@ -46,7 +46,7 @@ a) Option store.listenEmitDirty<br>
 ```
 
 b) Option store.listenDirtyRelated<br>
-    in the target store in postAttached call listenDirtyRelated so each time a value in sourceStore has changed this(store) gets dirty.<br>
+    in the target store in initializeStore call listenDirtyRelated so each time a value in sourceStore has changed this(store) gets dirty.<br>
     You don't have the possiblity to add an condition.<br>
 
 ```typescript

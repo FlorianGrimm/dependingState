@@ -8,7 +8,7 @@ please run:
 npm install
 npm run serve
 ```
-
+- Why does count-down work and count-up not?
 
 - the AppUIValue defines properties <br/>
     see src\component\AppUI\AppUIValue.ts
@@ -48,10 +48,10 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     - the appUIStore.stateValue references one IDSStateValue<AppUIValue>
     - the appUIStore.stateValue.value references one AppUIValue
 
-- all stores (extending the DSValueStore) can listen to events. (To their own or to others.). In the method postAttached() call listenEvent registers a callback.
+- all stores (extending the DSValueStore) can listen to events. (To their own or to others.). In the method initializeStore() call listenEvent registers a callback.
 ```typescript
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         countDown.listenEvent("countDown",(e)=>{
             console.log("countDown was emitted.")
@@ -63,8 +63,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
 their is  is a helper reached via getPropertiesChanged()
   
 ```typescript
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         countDown.listenEvent("countDown",(e)=>{
             console.log("countDown was emitted.")
@@ -85,6 +85,8 @@ their is  is a helper reached via getPropertiesChanged()
     // conditionally call valueChanged
     stateValuePC.valueChangedIfNeeded();
 ```
+
+- Why does count-down work and count-up not?
 
 - Need help? 
 

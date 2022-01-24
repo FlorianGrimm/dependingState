@@ -44,6 +44,7 @@ export interface IDSStoreManager {
     isDirty: boolean;
 }
 export interface IDSStoreManagerInternal extends IDSStoreManager {
+    isProcessing: number;
     isupdateRegisteredEventsDone: boolean;
 }
 
@@ -90,7 +91,8 @@ export interface IDSValueStoreBase {
      * call form storeManager.initialize()
      * @param storeManager 
      */
-    postAttached(storeManager: IDSStoreManager): void;
+    initializeStore(storeManager: IDSStoreManager): void;
+    initializeBoot():void;
 
     getNextStateVersion(stateVersion: number): number;
 }
@@ -165,7 +167,7 @@ export interface IDSObjectStore<
 }
 
 export type ConfigurationDSValueStore<Value> = {
-    postAttached?: () => void;
+    initializeStore?: () => void;
 }
 
 export interface IDSArrayStore<

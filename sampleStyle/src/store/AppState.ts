@@ -15,8 +15,8 @@ export class AppStore extends DSObjectStore<AppState, "appStore"> {
         super("appStore", value);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
         this.stateValue.value.calculator = (this.storeManager! as IAppStoreManager).calculatorStore.stateValue.value;
     }
 }

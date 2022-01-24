@@ -14,8 +14,8 @@ export class SumStore extends DSObjectStore<SumValue, "SumStore"> {
         sumStoreBuilder.bindValueStore(this);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         const appUIStore = (this.storeManager! as IAppStoreManager).appUIStore;
         appUIStore.listenDirtyRelated(this.storeName, this);

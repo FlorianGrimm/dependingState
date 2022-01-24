@@ -31,12 +31,12 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
     componentWillUnmount() {
         this.props.unwireStateVersion(this);
     }
-    handleClickPageA(){
-        routerPush.emitEvent({to:"/PageA"});
+    handleClickPageA() {
+        routerPush.emitEventAndProcess("to/PageA", { to: "/PageA" });
         //(this.props.getRenderProps().store!.storeManager! as IAppStoreManager).routerStore.
     }
-    handleClickPageB(){
-        routerPush.emitEvent({to:"/PageB"});
+    handleClickPageB() {
+        routerPush.emitEventAndProcess("to/PageB", { to: "/PageB" });
     }
 
     render(): React.ReactNode {
@@ -58,8 +58,8 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
                 <a href="/PageB">PageB</a>
             </div>
             <div>
-            {viewProps.navigatorValue ? "show router now" :"show router here but it's empty"}
-                
+                {viewProps.navigatorValue ? "show router now" : "show router here but it's empty"}
+
             </div>
             {viewProps.navigatorValue && React.createElement(NavigatorView, viewProps.navigatorValue.getViewProps())}
         </div>);

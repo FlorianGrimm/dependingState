@@ -11,8 +11,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         super("AppUIStore", value);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         // TODO
         /*

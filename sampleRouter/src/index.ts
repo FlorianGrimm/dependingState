@@ -4,9 +4,6 @@ import ReactDom from 'react-dom';
 import {
     dsLog, DSStateValue,
 } from 'dependingState';
-import {
-    appLog
-} from './feature/appLog/appLog';
 
 import AppUIView from './component/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
@@ -21,32 +18,17 @@ import { NavigatorStore } from './component/Navigator/NavigatorStore';
 import { NavigatorValue } from './component/Navigator/NavigatorValue';
 
 function main() {
-    dsLog.setSelfInGlobal();
-    appLog.setSelfInGlobal();
-    dsLog.setMode("enabled");
-    appLog.setMode("enabled");
-    /*
-    dsLog.applyFromLocalStorage();
-    dsLog.setEnabled();
-    dsLog.setDisabled();
-    */
-    /*
-    dsLog.setEnabled();
-    dsLog.saveToLocalStorage()
+    // initialize log
+    dsLog.initialize();
 
-    dsLog.setWatchout("DS", "DSUIStateValue", "triggerUIUpdate", "AppViewProjects", 2);
-    dsLog.setWatchout("DS", "DSStateValue", "stateVersion", "PageAValue", 5);
-    dsLog.saveToLocalStorage()
-    
-    dsLog.setWatchout()
+    // remove this if going productive
     dsLog.setEnabled();
 
-    dsLog.clearFromLocalStorage()
-    dsLog.saveToLocalStorage()
-    */
-    if (dsLog.enabled) {
+    if (dsLog.enabled){
         dsLog.info("main()");
     }
+
+    // create all stores
     const routerStore = new DSRouterStore<DSRouterValue>(createBrowserHistory(), getDSRouterValueInitial());
     const navigatorStore = new NavigatorStore(new DSStateValue<NavigatorValue>({ page: "home", pathName: "", pathArguments: {}, isExact: false }));
     navigatorStore.setRouter(routerStore);
@@ -63,8 +45,8 @@ function main() {
         pageBStore
     );
     setAppStoreManager(appStoreManager);
-    appStoreManager.setSelfInGlobal();
-    appStoreManager.process("boot", () => { });
+    dsLog.attach(appStoreManager);
+    appStoreManager.initialize();
 
     const rootElement = React.createElement(
         AppUIView,

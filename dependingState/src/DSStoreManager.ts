@@ -104,10 +104,10 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             throw new Error(`storeManagerState=${this.storeManagerState} has an unexpected value;`);
         }
         if (dsLog.enabled) {
-            dsLog.infoACME("DS", "DSStoreManager", "postAttached", "");
+            dsLog.infoACME("DS", "DSStoreManager", "initialize", "");
         }
         for (const valueStore of this.arrValueStores) {
-            valueStore.postAttached(this);
+            valueStore.initializeStore(this);
         }
         if (this.storeManagerState === 2) {
             this.storeManagerState = 3;
@@ -115,7 +115,11 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             throw new Error(`storeManagerState=${this.storeManagerState} has an unexpected value;`);
         }
         this.updateRegisteredEvents();
-        this.process();
+        this.process("boot", ()=>{
+            for (const valueStore of this.arrValueStores) {
+                valueStore.initializeBoot();
+            }
+        });
         return this;
     }
 

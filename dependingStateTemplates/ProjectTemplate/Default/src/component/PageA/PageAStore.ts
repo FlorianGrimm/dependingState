@@ -8,7 +8,7 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
         this.setStoreBuilder(pageAStoreBuilder);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         doSomething.listenEvent("handle doSomething", (e) => {
             const stateValuePC = getPropertiesChanged(this.stateValue);
             stateValuePC.setIf("myPropA", "Hello World");

@@ -13,8 +13,8 @@ export class __Name__Store extends DSObjectStore<__Name__Value, "__Name__Store">
         __name__StoreBuilder.bindValueStore(this);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
         
         //const xxxStore = (this.storeManager! as IAppStoreManager).xxxStore;
         //xxxStore.listenDirtyRelated(this.storeName, this);      

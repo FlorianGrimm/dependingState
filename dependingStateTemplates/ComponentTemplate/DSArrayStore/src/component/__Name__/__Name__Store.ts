@@ -15,8 +15,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         this.appViewProjectsUIStoreStateVersion=0;
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
         appState.listenDirtyRelated(this.storeName, this);

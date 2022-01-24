@@ -105,7 +105,9 @@ export class DSLogBase {
 
         return this;
     }
+
     public setEnabled(): this {
+        if (this.mode == "enabled"){return this;}
         console.debug(`${this.name} setEnabled`);
         this.enabled = true;
         this.logEnabled = true;
@@ -126,6 +128,7 @@ export class DSLogBase {
     }
 
     public setWarnIfCalled(): this {
+        if (this.mode == "WarnIfCalled"){return this;}
         console.debug(`${this.name} setWarnIfCalled`);
         this.enabled = true;
         this.logEnabled = false;

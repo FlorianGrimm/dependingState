@@ -19,6 +19,7 @@ import type {
 import {
     dsLog
 } from './DSLog';
+import { IDSStoreManagerInternal } from '.';
 
 // State Value extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
 
@@ -69,10 +70,10 @@ export class DSValueStore<
             //
         } else {
             this._isDirty = value;
-            if(this.storeManager!==undefined){
-                this.storeManager.isDirty=true;
+            if (this.storeManager !== undefined) {
+                this.storeManager.isDirty = true;
             }
-            if (value) {                
+            if (value) {
                 dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "true");
             } else {
                 //dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "false");
@@ -88,11 +89,15 @@ export class DSValueStore<
         storeBuilder.bindValueStore(this);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         this.stateVersion = this.storeManager!.getNextStateVersion(0);
-        if (this.configuration.postAttached !== undefined) {
-            this.configuration.postAttached();
+        if (this.configuration.initializeStore !== undefined) {
+            this.configuration.initializeStore();
         }
+    }
+
+    public  initializeBoot() :void{
+        
     }
 
     public getNextStateVersion(stateVersion: number): number {
@@ -194,7 +199,15 @@ export class DSValueStore<
             payload: payload,
             thenPromise: thenPromise
         };
-        if (this.storeManager === undefined) {
+        const key = `${this.storeName}/${event.event}`;
+        let arrEventHandlers = this.mapEventHandlers.get(key);
+        if ((arrEventHandlers===undefined) || (arrEventHandlers?.length===0)){
+            if ((event.event === "attach") || (event.event === "detach") || (event.event === "value")) {
+            } else {
+                dsLog.warnACME("DS", "DSValueStore", "emitEvent", key, "No event registered for listening");
+            }
+        } else if (this.storeManager === undefined) {
+            dsLog.warnACME("DS", "DSValueStore", "emitEvent", key, "this.storeManager is undefined");
             return this.processEvent(event);
         } else {
             return this.storeManager.emitEvent(event);

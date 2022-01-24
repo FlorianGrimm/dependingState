@@ -12,8 +12,8 @@ export class CounterStore extends DSObjectStore<CounterValue, "CounterStore"> {
         counterStoreBuilder.bindValueStore(this);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
 
         countDown.listenEvent("countDown", (e)=>{
             this.stateValue.value.nbrValue--;

@@ -1,8 +1,8 @@
 import {
+    dsLog,
     DSObjectStore,
     getPropertiesChanged
 } from "dependingState";
-import { appLog } from "~/feature/appLog/appLog";
 import type { IAppStoreManager } from "~/store/AppStoreManager";
 import { AppUIValue } from "./AppUIValue";
 
@@ -11,8 +11,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         super("AppUIStore", value);
     }
 
-    public postAttached(): void {
-        super.postAttached();
+    public initializeStore(): void {
+        super.initializeStore();
         this.isDirty = true;
         this.enableEmitDirtyFromValueChanged = true;
 
@@ -32,7 +32,9 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     }
 
     public processDirty(): void {
-        appLog.debugACME("app", "AppUIStore", "processDirty", "%");
+        if (dsLog.enabled){
+            dsLog.debugACME("app", "AppUIStore", "processDirty", "%");
+        }
         const appStore = (this.storeManager! as IAppStoreManager).appStore;
         const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 

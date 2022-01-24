@@ -7,7 +7,9 @@ export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIState
         super("appViewProjectsUIStore", value);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
+        super.initializeStore();
+        
         const compAUIStore = (this.storeManager! as IAppStoreManager).compAStore;
         //compAUIStore.listenDirtyRelated(this.storeName, this);
         compAUIStore.listenEventAttach(this.storeName, (e) => {

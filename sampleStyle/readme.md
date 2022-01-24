@@ -109,7 +109,7 @@ export class MyStore extends DSObjectStore<MyValue, "MyStore">{
         this.setStoreBuilder(myStoreBuilder);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
         myAction.listenEvent("handle myAction", (e) => {
             const myValue = e.payload.entity;
             
@@ -177,8 +177,8 @@ o the bug in this sample
 ```
 index.ts:58 Error while app boots. Error: DS DSStoreAction.listenEvent valueStore is not set CalculatorStyleStore - Did you call builder.bindValueStore(this) in the constructor?
     at DSStoreAction.listenEvent (DSStoreBuilder.ts)
-    at CalculatorStyleStore.postAttached (CalculatorStyle.ts)
-    at AppStoreManager.postAttached (DSStoreManager.ts)
+    at CalculatorStyleStore.initializeStore (CalculatorStyle.ts)
+    at AppStoreManager.initializeStore (DSStoreManager.ts)
     at ...
 ```    
 

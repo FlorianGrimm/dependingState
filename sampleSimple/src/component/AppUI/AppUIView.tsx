@@ -53,6 +53,7 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         getAppStoreManager().process("handleUp", () => {
             countUp.emitEvent(undefined);
         });
+        countUp.emitEventAndProcess
     }
 
     render(): React.ReactNode {

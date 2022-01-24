@@ -13,7 +13,8 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
         this.setStoreBuilder(compAUIStoreBuilder);
     }
 
-    public postAttached(): void {
+    public initializeStore(): void {
+        super.initializeStore();
         var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
         projectStore.listenEventAttach(this.storeName, (e) => {
             const project = e.payload.entity.value;
