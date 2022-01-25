@@ -3,7 +3,8 @@ import {
     DSMapStore,
     DSStoreManager,
     DSStateValue,
-    DSEntityStore
+    DSEntityStore,
+    dsLog
 } from "../index";
 
 class Project {
@@ -28,9 +29,10 @@ class ProjectStore extends DSEntityStore<string, Project>{
         return project.ProjectId;
     }
 
-    public processDirty(): void {
+    public processDirty(): boolean {
         super.processDirty();
         this.processDirtyCount++;
+        return true;
     }
 }
 
@@ -76,6 +78,7 @@ class DSStoreManagerDirty extends DSStoreManager {
 }
 
 test('processDirty is overwriten', ()=>{
+    dsLog.initialize("disabled");
     const projectStore = new ProjectStore("project");
     const projectStoreNoProcessDirty = new ProjectStoreNoProcessDirty("ProjectStoreNoProcessDirty")
     expect(projectStore.processDirty === ProjectStore.prototype.processDirty).toBe(true);
@@ -84,26 +87,24 @@ test('processDirty is overwriten', ()=>{
 });
 
 test('Dirty', async () => {
+    dsLog.initialize("disabled");
     const projectStore = new ProjectStore("project");
     const projectUIStore = new DSMapStore<string, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
-    storeManager.initialize();
     
     projectStore.listenEventAttach("test", (projectValue) => {
         const project = projectValue.payload.entity.value;
         projectUIStore.attach(project.ProjectId, new ProjectUI(project))
     });
-    projectStore.listenemitDirtyValue("test", (project) => {
-        const projectUI = projectUIStore.get(project!.value.ProjectId) as (ProjectUI | undefined);
+    projectStore.listenValueChanged("test", (project) => {
+        const projectUI = projectUIStore.get(project!.value.ProjectId);
         if (projectUI) {
-            projectUI.isDirty = true;
-            projectUIStore.isDirty = true;
-            projectUI.t = projectUI.t + 1;
-            //projectUI.valueChanged();
-            //if (projectUI.isDirty){}
+            projectUIStore.setDirty("test");
+            projectUI.value.t = projectUI.value.t + 1;
         }
     });
-
+    storeManager.initialize();
+    
     // init
     projectStore.set(new Project("1", "one"));
     expect(projectStore.get("1")!.value.ProjectName).toBe("one");
@@ -116,13 +117,10 @@ test('Dirty', async () => {
     await storeManager.process("Dirty", () => {
         var project1 = projectStore.get("1");
         var projectUI1 = projectUIStore.get("1");
+        expect(project1 === projectUI1).toBe(true);
         if (project1 && projectUI1) {
             project1.value.ProjectName = "eins";
-            expect(project1.isDirty).toBe(false);
-            expect(projectUI1.isDirty).toBe(false);
-            project1.valueChanged();
-            expect(project1.isDirty).toBe(false);
-            expect(projectUI1.isDirty).toBe(true);
+            project1.valueChanged("eins");
             expect(projectUI1.value.t).toBe(1);
         }
 

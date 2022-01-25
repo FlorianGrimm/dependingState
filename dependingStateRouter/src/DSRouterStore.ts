@@ -157,7 +157,7 @@ export class DSRouterStore<
         locationPC.setIf("action", update.action || "PUSH");
         locationPC.setIf("location", injectQuery(update.location));
         locationPC.setIf("updateMode", update.updateMode);
-        locationPC.valueChangedIfNeeded();
+        locationPC.valueChangedIfNeeded("historyListener");
         if (suspressNavigator) {
             // may be changed but ignore it
             dsLog.debugACME("DS", "DSRouterStore", "historyListener", update.location.pathname, "suspressNavigator")

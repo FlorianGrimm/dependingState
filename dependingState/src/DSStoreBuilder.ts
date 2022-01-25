@@ -5,15 +5,16 @@ import type {
     DSUnlisten,
     IDSStoreAction,
     IDSStoreBuilder,
-    IDSValueStore,
     DSEvent,
-    ThenPromise
+    IDSStoreManagerInternal,
+    IDSValueStoreBase,
+    ThenPromise,
+    IDSAnyValueStoreInternal
 } from "./types";
 
 import {
     dsLog,
 } from "./DSLog";
-import { IDSStoreManagerInternal } from ".";
 
 export function storeBuilder<
     StoreName extends string = string
@@ -55,8 +56,8 @@ export class DSStoreBuilder<
         return result;
     }
 
-    public bindValueStore(valueStore: IDSAnyValueStore): void {
-        this.valueStore = valueStore;
+    public bindValueStore(valueStore: IDSValueStoreBase): void {
+        this.valueStore = valueStore as IDSAnyValueStore;
         for (const action of this.actions.values()) {
             dsLog.debugACME("DS", "DSStoreBuilder", "bindValueStore", `${action.storeName}/${action.event}`);
             action.bindValueStore(valueStore);
@@ -69,7 +70,7 @@ export class DSStoreAction<
     StoreName extends string
     > implements IDSStoreAction<Payload, EventType, StoreName> {
 
-    valueStore: IDSAnyValueStore | undefined;
+    valueStore: IDSAnyValueStoreInternal | undefined;
 
     constructor(
         public event: EventType,
@@ -78,11 +79,11 @@ export class DSStoreAction<
     }
 
     // TODO would it be better to create a DSBoundStoreAction
-    bindValueStore(valueStore: IDSAnyValueStore): void {
-        if (this.storeName !== valueStore.storeName) {
+    bindValueStore(valueStore: IDSValueStoreBase): void {
+        if (this.storeName !== (valueStore as IDSAnyValueStoreInternal).storeName) {
             throw new Error("wrong IDSValueStore");
         }
-        this.valueStore = valueStore;
+        this.valueStore = (valueStore as IDSAnyValueStoreInternal);
     }
 
     /**
@@ -138,9 +139,11 @@ export class DSStoreAction<
             throw new Error(`DS DSStoreAction.emitEvent valueStore is not set ${this.storeName} - Did you call theStore's-Builder.bindValueStore(this) in the constructor?`);
         } else {
             if ((storeManager as IDSStoreManagerInternal).isProcessing === 0) {
-                storeManager.process(msg, () => {
-                    valueStore.emitEvent(this.event, payload, thenPromise);
-                });
+                if ((this.valueStore as IDSAnyValueStoreInternal).hasEventHandlersFor(this.event)) {
+                    storeManager.process(msg, () => {
+                        valueStore.emitEvent(this.event, payload, thenPromise);
+                    });
+                }
             } else {
                 valueStore.emitEvent(this.event, payload, thenPromise);
             }

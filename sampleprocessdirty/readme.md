@@ -32,14 +32,14 @@ npm run serve
 
 - if you want to calculate the state of one store in dependcy of another store you have to listen for this.
 
-a) Option store.listenEmitDirty<br>
-    in the target store in initializeStore call listenEmitDirty so each time a value in sourceStore has changed this is called.<br>
+a) Option store.listenDirty<br>
+    in the target store in initializeStore call listenDirty so each time a value in sourceStore has changed this is called.<br>
     The callback parameter stateValue contains the current stateValue or undefined (if all values has been changed).<br>
     The callback parameter properties contains the names of the changed properties or undefined (if all properties has been changed).<br>
     <br>
 
 ```typescript
-    sourceStore.listenemitDirtyValue("chain", (stateValue, properties)=>{
+    sourceStore.listenDirtyValue("chain", (stateValue, properties)=>{
         // may be check properties and/or stateValue
         this.isDirty=true;
     });

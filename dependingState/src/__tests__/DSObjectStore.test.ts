@@ -1,3 +1,4 @@
+import { dsLog } from "../DSLog";
 import {
     DSObjectStore,
     DSStoreManager,
@@ -21,6 +22,7 @@ test('DSObjectStore process implicit', async () => {
     let actHit = false;
     let actA = 1;
 
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
@@ -56,6 +58,7 @@ test('DSObjectStore process explicit', async () => {
     let actHit = false;
     let actA = 1;
 
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
@@ -91,40 +94,7 @@ test('DSObjectStore process explicit', async () => {
 
 
 test('DSObjectStore listen', async () => {
-    const storeManager = new DSStoreManager();
-
-    const valueStoreA = new DSObjectStore<VSA>("a", stateValue( { a: 0 }));
-    const valueStoreB = new DSObjectStore<VSB>("b", stateValue({ b: 0 }));
-    const valueStoreAB = new DSObjectStore<VSAB>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
-    storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
-    storeManager.initialize();
-
-    const valueA = valueStoreA.stateValue;
-    const valueB = valueStoreB.stateValue;
-    const valueAB = valueStoreAB.stateValue;
-
-    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
-        valueAB.value.a = dsEvent.payload.entity!.value.a;
-        valueAB.value.cnt++;
-        valueAB.valueChanged();
-    });
-    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
-        valueAB.value.b = dsEvent.payload.entity!.value.b;
-        valueAB.value.cnt++;
-        valueAB.valueChanged();
-    });
-
-    valueA.value = { a: 1 };
-    valueB.value = { b: 2 };
-
-    expect(valueAB.value).toStrictEqual({ a: 1, b: 2, cnt: 2 });
-
-    unlistenA();
-    unlistenB();
-});
-
-
-test('DSObjectStore process promise', async () => {
+    dsLog.initialize("enabled");
     const storeManager = new DSStoreManager();
 
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: 0 }));
@@ -137,32 +107,71 @@ test('DSObjectStore process promise', async () => {
     const valueB = valueStoreB.stateValue;
     const valueAB = valueStoreAB.stateValue;
 
-    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
+    const unlistenA = valueStoreA.listenEventValue("testa", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity!.value.a;
-        valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
-        var result = new Promise((resolve) => {
-            setTimeout(() => { valueAB.valueChanged(); }, 200);
-            resolve(undefined);
-        });
-        return result;
+        valueAB.value.cnt++;
+        valueAB.valueChanged("testa");
     });
-    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
+    const unlistenB = valueStoreB.listenEventValue("testb", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity!.value.b;
-        valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
-        var result = new Promise((resolve) => {
-            setTimeout(() => { valueAB.valueChanged(); }, 50);
-            resolve(undefined);
-        });
-        return result;
+        valueAB.value.cnt++;
+        valueAB.valueChanged("testb");
     });
 
-    await storeManager.process("test", () => {
-        valueA.value = { a: 1 };
-        valueB.value = { b: 2 };
-    });
+    valueA.value = { a: 1 };
+    valueB.value = { b: 2 };
 
-    expect(valueAB.value).toStrictEqual({ a: 1, b: 2, cnt: 100 * 1 + 2 });
+    expect(valueAB.value).toStrictEqual({ a: 1, b: 2, cnt: 2 });
 
     unlistenA();
     unlistenB();
+});
+
+// npx jest --testNamePattern "DSObjectStore process promise"
+test('DSObjectStore process promise', async () => {
+    dsLog.initialize("enabled");
+    const storeManager = new DSStoreManager();
+
+    const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: 0 }));
+    const valueStoreB = new DSObjectStore<VSB>("b", stateValue({ b: 0 }));
+    const valueStoreAB = new DSObjectStore<VSAB>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
+    storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
+
+    const valueA = valueStoreA.stateValue;
+    const valueB = valueStoreB.stateValue;
+    const valueAB = valueStoreAB.stateValue;
+
+    storeManager.initialize(() => {
+        valueStoreA.listenEventValue("testa", (dsEvent) => {
+            valueAB.value.a = dsEvent.payload.entity!.value.a;
+            valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
+            var result = new Promise((resolve) => {
+                setTimeout(() => { valueAB.valueChanged("testa"); }, 200);
+                resolve(undefined);
+            });
+            return result;
+        });
+        valueStoreB.listenEventValue("testb", (dsEvent) => {
+            valueAB.value.b = dsEvent.payload.entity!.value.b;
+            valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
+            var result = new Promise((resolve) => {
+                setTimeout(() => { valueAB.valueChanged("testb"); }, 50);
+                resolve(undefined);
+            });
+            return result;
+        });
+        return;
+    }, () => {
+        return;
+    }
+    );
+
+    const p = storeManager.process("test", () => {
+        debugger;
+        valueA.value = { a: 1 };
+        valueB.value = { b: 2 };
+    });
+    if (p) { await p; }
+
+    expect(valueAB.value).toStrictEqual({ a: 1, b: 2, cnt: 100 * 1 + 2 });
 });

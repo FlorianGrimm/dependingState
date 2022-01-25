@@ -12,13 +12,11 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
     private _value: Value;
     private _stateVersion: number;
 
-    isDirty: boolean;
     store: IDSValueStoreWithValue<Value> | undefined;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
     constructor(value: Value) {
         this._value = value;
-        this.isDirty = false;
         this.store = undefined;
         this._stateVersion = 1;
         this.uiStateValue = undefined;
@@ -39,14 +37,13 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
 
     public set value(v: Value) {
         this._value = v;
-        this.valueChanged(undefined);
+        this.valueChanged("value", undefined);
     }
 
-    public valueChanged(properties?: Set<keyof Value> | undefined) {
-        this.isDirty = false;
+    public valueChanged(msg: string, properties?: Set<keyof Value> | undefined) {
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
-            this.store.emitDirtyFromValueChanged(this, properties);
+            this.store.emitValueChanged(msg ?? "valueChanged", this, properties);
             this.store.emitEvent<DSEventEntityVSValue<Value>>("value", { entity: this, properties: properties });
         }
         if (this.uiStateValue !== undefined) {
@@ -123,13 +120,11 @@ export function stateValue<Value>(value: Value) {
 }
 
 export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements IDSStateValue<Value>{
-    isDirty: boolean;
     store: IDSValueStoreWithValue<Value> | undefined;
     stateVersion: number;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
     constructor() {
-        this.isDirty = false;
         this.store = undefined;
         this.stateVersion = 1;
         this.uiStateValue = undefined;
@@ -139,11 +134,10 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         return this as unknown as Value;
     }
 
-    public valueChanged(properties?: Set<keyof Value> | undefined) {
-        this.isDirty = false;
+    public valueChanged(msg: string, properties?: Set<keyof Value> | undefined) {
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
-            this.store.emitDirtyFromValueChanged(this, properties);
+            this.store.emitValueChanged(msg ?? "valueChanged", this, properties);
             //this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, string, Value>>("value", { entity: this, properties: properties });
             this.store.emitEvent<DSEventEntityVSValue<Value>>("value", { entity: this, properties: properties });
         }

@@ -12,11 +12,13 @@ import { AppUIValue } from "./AppUIValue";
 
 export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     handleInterval: number | undefined;
+    timeInterval: number;
 
     constructor(value: AppUIValue) {
         super("AppUIStore", value);
         appUIStoreBuilder.bindValueStore(this);
         this.handleTick = this.handleTick.bind(this);
+        this.timeInterval = 1000;
     }
 
     public initializeStore(): void {
@@ -28,7 +30,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
                     if (dsLog.enabled) {
                         dsLog.infoACME("app", "timerStopGo", "toggle", "enable");
                     }
-                    this.handleInterval = window.setInterval(this.handleTick, 1000);
+                    this.handleInterval = window.setInterval(this.handleTick, this.timeInterval);
                     this.stateValue.value.isRunnging = true;
                     this.stateValue.valueChanged();
                 }
@@ -49,16 +51,13 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     public handleTick() {
         // hint1
         //getAppStoreManager().process("handleTick", ()=>{
-            if (dsLog.enabled) {
-                dsLog.infoACME("app" ,"AppUIStore", "handleTick", "tick");
-            }
-            const timerStore = (this.storeManager! as IAppStoreManager).timerStore;
-            const timerSV = timerStore.stateValue;
-            timerSV.value.counter++;
-            timerSV.valueChanged();
+        if (dsLog.enabled) {
+            dsLog.infoACME("app", "AppUIStore", "handleTick", "tick");
+        }
+        const timerStore = (this.storeManager! as IAppStoreManager).timerStore;
+        const timerSV = timerStore.stateValue;
+        timerSV.value.counter++;
+        timerSV.valueChanged();
         //});
-    }
-    public processDirty(): void {
-        super.processDirty();
     }
 }

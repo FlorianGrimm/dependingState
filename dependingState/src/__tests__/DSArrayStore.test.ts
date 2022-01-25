@@ -1,5 +1,6 @@
 import {
     DSArrayStore,
+    dsLog,
     DSStoreManager,
 } from "../index";
 
@@ -17,6 +18,7 @@ type VSAB = {
 }
 
 test('DSArrayStore process implicit', async () => {
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSArrayStore<VSA>("a");
     storeManager.attach(valueStoreA);
@@ -51,6 +53,7 @@ test('DSArrayStore process implicit', async () => {
 
 
 test('DSArrayStore process explicit', async () => {
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSArrayStore<VSA>("a");
     storeManager.attach(valueStoreA);
@@ -88,6 +91,7 @@ test('DSArrayStore process explicit', async () => {
 
 
 test('DSArrayStore listen', async () => {
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
 
     const valueStoreA = new DSArrayStore<VSA>("a");
@@ -100,15 +104,15 @@ test('DSArrayStore listen', async () => {
     const valueB = valueStoreB.create({ b: 0 });
     const valueAB = valueStoreAB.create({ a: 0, b: 0, cnt: 0 });
 
-    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
+    const unlistenA = valueStoreA.listenEventValue("testa", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity!.value.a;
         valueAB.value.cnt++;
-        valueAB.valueChanged();
+        valueAB.valueChanged("testa");
     });
-    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
+    const unlistenB = valueStoreB.listenEventValue("testb", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity!.value.b;
         valueAB.value.cnt++;
-        valueAB.valueChanged();
+        valueAB.valueChanged("testb");
     });
 
     valueA.value = { a: 1 };
@@ -134,20 +138,20 @@ test('DSArrayStore process promise', async () => {
     const valueB = valueStoreB.create({ b: 0 });
     const valueAB = valueStoreAB.create({ a: 0, b: 0, cnt: 0 });
 
-    const unlistenA = valueStoreA.listenEventValue("test", (dsEvent) => {
+    const unlistenA = valueStoreA.listenEventValue("testa", (dsEvent) => {
         valueAB.value.a = dsEvent.payload.entity!.value.a;
         valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
         var result = new Promise((resolve) => {
-            setTimeout(() => { valueAB.valueChanged(); }, 200);
+            setTimeout(() => { valueAB.valueChanged("testa"); }, 200);
             resolve(undefined);
         });
         return result;
     });
-    const unlistenB = valueStoreB.listenEventValue("test", (dsEvent) => {
+    const unlistenB = valueStoreB.listenEventValue("testb", (dsEvent) => {
         valueAB.value.b = dsEvent.payload.entity!.value.b;
         valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
         var result = new Promise((resolve) => {
-            setTimeout(() => { valueAB.valueChanged(); }, 50);
+            setTimeout(() => { valueAB.valueChanged("testb"); }, 50);
             resolve(undefined);
         });
         return result;

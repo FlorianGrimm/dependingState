@@ -17,12 +17,17 @@ export class DSArrayStore<
     StoreName extends string = string
     > extends DSValueStore<number, Value, StoreName> implements IDSArrayStore<number, Value, StoreName>    {
     entities: IDSStateValue<Value>[];
+    // dirtyEntities: { stateValue: IDSStateValue<Value>, properties?: Set<keyof Value> }[];
+    // isProcessDirtyEntityConfigured: boolean;
+
     constructor(
         storeName: StoreName,
         configuration?: ConfigurationDSArrayValueStore<Value>
     ) {
         super(storeName, configuration);
         this.entities = [];
+        // this.dirtyEntities = []
+        // this.isProcessDirtyEntityConfigured = false;
     }
 
     public getEntities(): { key: number; stateValue: IDSStateValue<Value>; }[] {
@@ -41,6 +46,23 @@ export class DSArrayStore<
             return result;
         }
     }
+
+    // public initializeRegisteredEvents(): void {
+    //     this.isProcessDirtyEntityConfigured = this.hasProcessDirtyEntityConfigured();
+    //     this.isProcessDirtyConfigured = this.isProcessDirtyEntityConfigured || this.hasProcessDirtyConfigured();
+    // }
+
+    // public hasProcessDirty(): boolean {
+    //     if (this.configuration.processDirty !== undefined) { return true; }
+    //     if (!(this.processDirty === DSArrayStore.prototype.processDirty)) { return true; }
+    //     return false;
+    // }
+
+    // public hasProcessDirtyEntityConfigured(): boolean {
+    //     if ((this.configuration as ConfigurationDSArrayValueStore<Value>).processDirtyEntity !== undefined) { return true; }
+    //     if (!(this.processDirtyEntity === DSArrayStore.prototype.processDirtyEntity)) { return true; }
+    //     return false;
+    // }
 
     public attach(stateValue: IDSStateValue<Value>): void {
         if (stateValue.setStore(this)) {
@@ -73,11 +95,27 @@ export class DSArrayStore<
         return this.listenEvent(msg, "detach", callback as any);
     }
 
-    /*
-    public processDirty(): void {
-        for (const entity of this.entities) {
-            entity.processDirty();
-        }
-    }
-    */
+    // public processDirty(): boolean {
+    //     let result = super.processDirty();
+    //     if (this.dirtyEntities.length > 0) {
+    //         const dirtyEntities = this.dirtyEntities;
+    //         this.dirtyEntities = [];
+    //         const processDirtyEntity = (this.configuration as ConfigurationDSArrayValueStore<Value>).processDirtyEntity;
+    //         if (processDirtyEntity === undefined) {
+    //             for (const { stateValue, properties } of dirtyEntities) {
+    //                 this.processDirtyEntity(stateValue, properties);
+    //             }
+    //         } else {
+    //             for (const { stateValue, properties } of dirtyEntities) {
+    //                 processDirtyEntity(stateValue, properties);
+    //                 this.processDirtyEntity(stateValue, properties);
+    //             }
+    //         }
+    //     }
+    //     return result;
+    // }
+
+    // processDirtyEntity(dirtyEntity?: IDSStateValue<Value>, properties?: Set<keyof Value>): boolean {
+    //     return false;
+    // }
 }

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import ReactDom from 'react-dom';
 
 import {
@@ -16,19 +16,13 @@ import { CalculatorStyleStore } from './component/CalculatorStyle/CalculatorStyl
 
 function main() {
     // for debugging Browser F12 Console window.dsLog
-    dsLog.setSelfInGlobal();
-    dsLog.setMode("enabled");
-    /*
-    dsLog.applyFromLocalStorage();
-    dsLog.setEnabled();
-    dsLog.setDisabled();
-    */
-    
-    if (dsLog.enabled){
+    dsLog.initialize("enabled");
+
+    if (dsLog.enabled) {
         dsLog.info("main()");
     }
-    const appStore=new AppStore(new AppState());
-    const appUIStore=new AppUIStore(new AppUIValue());
+    const appStore = new AppStore(new AppState());
+    const appUIStore = new AppUIStore(new AppUIValue());
     const calculatorStyleStore = new CalculatorStyleStore();
     const calculatorStore = new CalculatorStore();
     const appStoreManager = new AppStoreManager(
@@ -36,16 +30,16 @@ function main() {
         appUIStore,
         calculatorStore,
         calculatorStyleStore
-        );
+    );
     setAppStoreManager(appStoreManager);
     appStoreManager.setSelfInGlobal();
-    appStoreManager.enableTiming=true;
+    appStoreManager.enableTiming = true;
     appStoreManager.initialize();
 
     const rootElement = React.createElement(
-            AppView,
-            appStoreManager.appUIStore.stateValue.getViewProps()
-        );
+        AppView,
+        appStoreManager.appUIStore.stateValue.getViewProps()
+    );
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {
         ReactDom.render(rootElement, appRootElement);

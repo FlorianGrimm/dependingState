@@ -56,7 +56,7 @@ export class DSPropertiesChanged<
         cache.push(this as any);
     }
 
-    public valueChangedIfNeeded(): boolean {
+    public valueChangedIfNeeded(msg:string): boolean {
         if (this.properties.size === 0) {
             this.instance = null! as any;
             cache.push(this as any);
@@ -64,7 +64,7 @@ export class DSPropertiesChanged<
         } else {
             const instance = this.instance;
             this.instance = null! as any;
-            instance.valueChanged(this.properties);
+            instance.valueChanged(msg, this.properties);
             return true;
         }
     }

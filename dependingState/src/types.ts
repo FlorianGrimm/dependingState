@@ -1,4 +1,5 @@
 import type React from 'react';
+import { DSStoreManager } from '.';
 import type { DSUIStateValue } from './DSUIStateValue';
 
 export type ArrayElement<T> = T extends (infer U)[] ? U : never;
@@ -23,13 +24,13 @@ export interface IDSStoreManager {
      * @returns the store or undefined if not found.
      */
     getValueStore(storeName: string): (IDSValueStoreBase | undefined)
-    
+
     /**
      * initialize the storeManager and stores. Call this after you call forall stores storeManager.attach;
      * initialize invoke postAttach in all stores.
      * @returns this
      */
-    initialize(): void;
+    initialize(fnInitializeStore?: () => void, fnBoot?: () => void): this;
 
     resetRegisteredEvents(): void;
     // updateRegisteredEvents(): void;
@@ -44,18 +45,10 @@ export interface IDSStoreManager {
     isDirty: boolean;
 }
 export interface IDSStoreManagerInternal extends IDSStoreManager {
+    storeManagerState: number;
     isProcessing: number;
     isupdateRegisteredEventsDone: boolean;
 }
-
-export type ValueStoreInternal = {
-    mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler }[]>;
-    arrEmitDirtyHandler: { msg: string, handler: DSEmitDirtyHandler<any> }[];
-    arrEmitDirtyValueHandler: { msg: string, handler: DSEmitDirtyValueHandler<any> }[];
-    arrEmitDirtyRelated: { msg: string, valueStore: IDSAnyValueStore }[] | undefined;
-    setEffectiveEvents: Set<string> | undefined;
-} & IDSAnyValueStore;
-
 
 export interface IDSStoreBuilder<StoreName extends string = string> {
     createAction<
@@ -65,7 +58,7 @@ export interface IDSStoreBuilder<StoreName extends string = string> {
         event: EventType
     ): IDSStoreAction<Payload, EventType, StoreName>;
 
-    bindValueStore(valueStore: IDSAnyValueStore): void;
+    bindValueStore(valueStore: IDSValueStoreBase): void;
 }
 
 export interface IDSStoreAction<
@@ -73,7 +66,7 @@ export interface IDSStoreAction<
     EventType extends string = string,
     StoreName extends string = string
     > {
-    bindValueStore(valueStore: IDSAnyValueStore): void;
+    bindValueStore(valueStore: IDSValueStoreBase): void;
 
     listenEvent<
         Event extends DSEvent<Payload, EventType, StoreName>
@@ -86,19 +79,19 @@ export interface IDSValueStoreBase {
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
     listenToAnyStore: boolean;
-    isDirty: boolean;
+    get isDirty(): boolean;
 
     /**
      * call form storeManager.initialize()
      * @param storeManager 
      */
     initializeStore(storeManager: IDSStoreManager): void;
-    initializeBoot():void;
+    initializeBoot(): void;
 
     getNextStateVersion(stateVersion: number): number;
 }
 
-export type ThenPromise = (p:Promise<any|void>) => Promise<any|void> | void;
+export type ThenPromise = (p: Promise<any | void>) => Promise<any | void> | void;
 
 export interface IDSValueStore<
     Key,
@@ -107,28 +100,21 @@ export interface IDSValueStore<
     > extends IDSValueStoreBase {
     storeName: StoreName;
 
-    getEntities(): { key: Key, stateValue: IDSStateValue<Value> }[];
-
-    setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void;
-
-    emitDirtyFromValueChanged(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void;
-    emitDirtyValue(stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>): void;
-    listenemitDirtyValue(msg: string, callback: DSEmitDirtyValueHandler<Value>): DSUnlisten;
-    unlistenemitDirtyValue(callback: DSEmitDirtyValueHandler<Value>): void;
-
-    emitDirty(selfDirty:boolean): void;
-    listenemitDirty(msg: string, callback: DSEmitDirtyValueHandler<Value>): DSUnlisten;
-    unlistenemitDirty(callback: DSEmitDirtyValueHandler<Value>): void;
-
-    listenDirtyRelated(msg: string, relatedValueStore: IDSValueStoreBase): DSUnlisten;
-    unlistenDirtyRelated(relatedValueStore: IDSValueStoreBase): void;
-
-    processDirty(): void;
-
-    emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
+    get isDirty(): boolean;
 
     /**
-     * emit the event.
+     * binds the events/actions from the storeBuilder to this valueStore 
+     * @param storeBuilder the storeBuilder to bind
+     */
+    setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void;
+
+    /**
+     * gets all entities
+     */
+    getEntities(): { key: Key, stateValue: IDSStateValue<Value> }[];
+
+    /**
+     * emit the event by enqueue it within the DSStoreManager that will be handled in process() (that should already running)
      * @param eventType the event
      * @param payload  the payload
      * @param thenPromise ignore for now
@@ -143,25 +129,148 @@ export interface IDSValueStore<
             thenPromise?: ThenPromise | undefined
         ): DSEventHandlerResult;
 
+    /**
+     * register a callback for events that will be enqueued with emitEvent and invoked from process().
+     * @param msg a log message that will be logged before the callback will be invoked.
+     * @param event the current event name
+     * @param callback the callback that will be invoked.
+     */
     listenEvent<
         Event extends DSEvent<Payload, string, StoreName>,
         Payload = Event['payload']
     >(msg: string, event: Event['event'], callback: DSEventHandler<Event['payload'], Event['event'], Event['storeName']>): DSUnlisten;
 
+    /**
+     * unregister the callback.
+     * @param event the current event name
+     * @param callback the callback that will be removed.
+     */
     unlistenEvent<
-        Payload = any,
-        EventType extends string = string,
-        StoreName extends string = string
-    >(event: DSEventName<EventType, StoreName>, callback: DSEventHandler<Payload, EventType, StoreName>): void;
+        Event extends DSEvent<any, string, StoreName>
+    >(event: Event['event'], callback: DSEventHandler<Event['payload'], Event['event'], StoreName>): void;
 
+    /**
+     * should be called after a value change - or willbe called from DSPropertiesChanged.valueChangedIfNeeded().
+     * calls all callbacks - registed with listenDirtyValue - which can call setDirty if a relevant property was changed.
+     * @param msg the message is used for setDirty
+     * @param stateValue the entity that changed
+     * @param properties the properties that changed
+     */
+    emitValueChanged(msg: string, stateValue: IDSStateValue<Value>, properties?: Set<keyof Value>): void;
+
+    /**
+     * register a callback that is called from emitDirtyValue.
+     * @param msg the log message is logged before the callback is invoked.
+     * @param callback the callback that will be called
+     */
+    listenValueChanged(msg: string, callback: DSEmitValueChangedHandler<Value>): DSUnlisten;
+
+    /**
+    * unregister the callback
+    * @param callback the callback to unregister
+    */
+    unlistenValueChanged(callback: DSEmitValueChangedHandler<Value>): void;
+
+    /**
+     * set the isDirty flag and DSStoreManager.process will call processDirty
+     * @param msg the message is logged if the store was not dirty
+     */
+    setDirty(msg: string): void
+
+    /**
+     *  DSStoreManager.process call this if setDirty was called before
+     *  @returns true then emitCleanUp will be called
+     */
+    processDirty(): boolean;
+
+    /**
+     * would be called if processDirty returns true
+     */
+    emitCleanedUp(): void;
+
+    /**
+     * if this store gets cleanedup (processDirty returns true) the relatedValueStore gets dirty.
+     * @param msg 
+     * @param relatedValueStore 
+     */
+    listenCleanedUpRelated(msg: string, relatedValueStore: IDSValueStoreBase): DSUnlisten;
+
+    /**
+     * unregister the relatedValueStore
+     * @param relatedValueStore 
+     */
+    unlistenCleanedUpRelated(relatedValueStore: IDSValueStoreBase): void;
+
+    /**
+     * register a callback that is (directly) invoked by emitDirty
+     * @param msg 
+     * @param callback 
+     */
+    listenCleanedUp(msg: string, callback: DSEmitCleanedUpHandler<Value>): DSUnlisten;
+
+    /**
+     * unregister a callback
+     * @param callback 
+     */
+    unlistenCleanedUp(callback: DSEmitCleanedUpHandler<Value>): void;
+
+    /**
+     * enqueue the uiStateValue to be updated (within DSStoreManager.process - that should already running)
+     * @param uiStateValue 
+     */
+    emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
+}
+
+export interface IDSValueStoreInternals<Value> {
+    isProcessDirtyConfigured: boolean;
+    mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler<any, string, string> }[]>;
+    arrValueChangedHandler: ({ msg: string, handler: DSEmitValueChangedHandler<Value> }[]) | undefined;
+    arrCleanedUpRelated: ({ msg: string, valueStore: IDSValueStoreBase }[]) | undefined;
+    arrCleanedUpHandler: ({ msg: string, handler: DSEmitCleanedUpHandler<IDSValueStoreBase> }[]) | undefined;
+
+
+    /**
+     * call all listenDirtyValue, listenCleanedUp, listenCleanedUpRelated and listenEvent.
+     */
+    initializeStore(storeManager: DSStoreManager): void;
+
+    /**
+     * called after initializeStore
+     */
+    initializeRegisteredEvents(): void;
+
+    /**
+     * called after initializeStore
+     */
+    initializeBoot(): void;
+
+    /**
+     * returns if any eventhandler is registered for this event
+     * @param event the eventname
+     */
+    hasEventHandlersFor(event: string): boolean;
+
+    /**
+     * internal
+     * @param event 
+     */
     processEvent<
         Payload = any,
         EventType extends string = string,
         StoreName extends string = string
     >(event: DSEvent<Payload, EventType, StoreName>): DSEventHandlerResult;
-}
 
+    /**
+     * called after processDirty()
+     * @param processDirtyResult result of processDirty
+     */
+    postProcessDirty(processDirtyResult: boolean): void;
+}
 export type IDSAnyValueStore = IDSValueStore<any, any, string>;
+
+export type IDSAnyValueStoreInternal = IDSValueStore<any, any, string> & IDSValueStoreInternals<any>;
+
+
 
 export interface IDSObjectStore<
     Value = any,
@@ -174,6 +283,12 @@ export interface IDSObjectStore<
 
 export type ConfigurationDSValueStore<Value> = {
     initializeStore?: () => void;
+    initializeBoot?: () => void;
+    processDirty?: () => boolean;
+}
+
+export type ConfigurationDSLooseValueStore<Value> = ConfigurationDSValueStore<Value> & {
+    // processDirtyEntity?: (dirtyEntity: IDSStateValue<Value>, properties?: Set<keyof Value>) => boolean;
 }
 
 export interface IDSArrayStore<
@@ -187,6 +302,7 @@ export interface IDSArrayStore<
 }
 export type ConfigurationDSArrayValueStore<Value> = ConfigurationDSValueStore<Value> & {
     create?: ((value: Value) => IDSStateValue<Value>);
+    // processDirtyEntity?: (dirtyEntity: IDSStateValue<Value>, properties?: Set<keyof Value>) => boolean;
 }
 
 export interface IDSMapStore<
@@ -201,6 +317,7 @@ export type ConfigurationDSMapValueStore<
     Value = any
     > = ConfigurationDSValueStore<Value> & {
         create?: ((value: Value) => IDSStateValue<Value>);
+        // processDirtyEntity?: (dirtyEntity: IDSStateValue<Value>, properties?: Set<keyof Value>) => boolean;
     }
 
 export type ConfigurationDSEntityValueStore<
@@ -212,11 +329,10 @@ export type ConfigurationDSEntityValueStore<
     }
 
 export interface IDSStateValue<Value> {
-    isDirty: boolean;
     store: IDSValueStoreWithValue<Value> | undefined;
     stateVersion: number;
     value: Value;
-    valueChanged(properties?: Set<keyof Value> | undefined): void;
+    valueChanged(msg: string, properties?: Set<keyof Value> | undefined): void;
     getUIStateValue(): DSUIStateValue<Value>;
     setStore(store: IDSValueStoreWithValue<Value>): boolean;
 
@@ -244,7 +360,7 @@ export interface IDSPropertiesChanged<
 
     giveBack(): void;
 
-    valueChangedIfNeeded(): boolean;
+    valueChangedIfNeeded(msg: string): boolean;
 }
 
 export interface IDSUIStateValue<Value = any> {
@@ -325,8 +441,8 @@ export type DSEventEntityVSValue<
     StoreName extends string = string
     > = DSEvent<DSPayloadEntitySVValue<Value>, "value", StoreName>;
 
-export type DSEmitDirtyHandler<Value> = () => void;
-export type DSEmitDirtyValueHandler<Value> = (stateValue?: IDSStateValue<Value>, properties?: Set<keyof Value>) => void;
+export type DSEmitCleanedUpHandler<Value> = (store: Value) => void;
+export type DSEmitValueChangedHandler<Value> = (stateValue: IDSStateValue<Value>, properties?: Set<keyof Value>) => void;
 
 export type DSEventHandlerResult = (Promise<any | void> | void);
 export type DSManyEventHandlerResult = (Promise<any | void>[] | undefined);

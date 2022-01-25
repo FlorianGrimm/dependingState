@@ -120,7 +120,7 @@ export class DSNavigatorStore<
         stateValuePC.setIf("pathArguments", payload.pathArguments);
         stateValuePC.setIf("pathName", payload.pathName || "");
         stateValuePC.setIf("isExact", payload.isExact || false);
-        stateValuePC.valueChangedIfNeeded();
+        stateValuePC.valueChangedIfNeeded("handleSetLocation");
 
         if (payload.to !== undefined) {
             this.routerStore!.setLocationFromNavigator(payload.to);

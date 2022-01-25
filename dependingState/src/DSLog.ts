@@ -42,7 +42,7 @@ export class DSLogBase {
     logEnabled: boolean;
     mode: "disabled" | "enabled" | "WarnIfCalled";
     enableTiming: boolean;
-    storeManager: IDSStoreManager|undefined;
+    storeManager: IDSStoreManager | undefined;
 
     constructor(
         public name: string
@@ -63,22 +63,25 @@ export class DSLogBase {
 
         this.trace = noop;
     }
-    public initialize(){
+    public initialize(mode?: "disabled" | "enabled" | "WarnIfCalled" | "applyFromLocalStorage") {
         // for now
-        dsLog.setSelfInGlobal();
-        dsLog.setMode("enabled");
+        // dsLog.setSelfInGlobal();
+        // dsLog.setMode("enabled");
 
-        // TODO: thinkof
-        this.applyFromLocalStorage();
-        if (this.enabled){
+        if (mode === undefined) {
+            this.applyFromLocalStorage();
+        } else {
+            this.setMode(mode);
+        }
+        if (this.enabled) {
             dsLog.setSelfInGlobal();
         }
     }
-    public attach(storeManager: IDSStoreManager):void{
+    public attach(storeManager: IDSStoreManager): void {
         this.storeManager = storeManager;
 
         // TODO: thinkof same as initialize
-        if (this.enabled){
+        if (this.enabled) {
             (storeManager as DSStoreManager).enableTiming = this.enableTiming;
             (storeManager as DSStoreManager).setSelfInGlobal();
         }
@@ -107,7 +110,7 @@ export class DSLogBase {
     }
 
     public setEnabled(): this {
-        if (this.mode == "enabled"){return this;}
+        if (this.mode == "enabled") { return this; }
         console.debug(`${this.name} setEnabled`);
         this.enabled = true;
         this.logEnabled = true;
@@ -128,7 +131,7 @@ export class DSLogBase {
     }
 
     public setWarnIfCalled(): this {
-        if (this.mode == "WarnIfCalled"){return this;}
+        if (this.mode == "WarnIfCalled") { return this; }
         console.debug(`${this.name} setWarnIfCalled`);
         this.enabled = true;
         this.logEnabled = false;
@@ -292,7 +295,7 @@ export class DSLogACME extends DSLogBase {
 
     public setDisabled(): this {
         super.setDisabled();
-        
+
         if (this.amceEnabled) {
             this.bindACME();
         } else {
@@ -341,7 +344,7 @@ export class DSLogACME extends DSLogBase {
             this.bindACME();
         }
         dsLog.info("DS setWatchout", watchoutApp, watchoutClass, watchoutMethod, watchoutExtraArg);
-        this.enabled=this.amceEnabled || this.logEnabled;
+        this.enabled = this.amceEnabled || this.logEnabled;
         return this;
     }
     public bindACME(): void {
@@ -371,7 +374,7 @@ export class DSLogACME extends DSLogBase {
     }
 
     public saveToLocalStorage(key?: string): this {
-        const data = (this.amceEnabled)?{
+        const data = (this.amceEnabled) ? {
             mode: this.mode,
             watchoutEnabled: this.amceEnabled,
             watchoutApp: this.watchoutApp,
@@ -379,13 +382,13 @@ export class DSLogACME extends DSLogBase {
             watchoutMethod: this.watchoutMethod,
             watchoutExtraArg: this.watchoutExtraArg,
             watchoutStopAt: this.watchoutStopAt
-        }:{
+        } : {
             mode: this.mode
         };
 
         window.localStorage.setItem(key || this.name, JSON.stringify(data));
         console.info(`window.localStorage.setItem('${(key || this.name)}', '${JSON.stringify(data)}');`)
-        
+
         return this;
     }
 
@@ -414,7 +417,7 @@ export class DSLogACME extends DSLogBase {
                     );
                 } else {
                     this.amceEnabled = false;
-                    this.enabled=this.logEnabled;
+                    this.enabled = this.logEnabled;
                 }
             }
         }
@@ -428,7 +431,9 @@ export class DSLog extends DSLogACME {
         super(name || "dsLog");
     }
     setSelfInGlobal() {
-        (window as any).dsLog = this;
+        if (typeof window !== "undefined"){
+            (window as any).dsLog = this;
+        }
     }
 }
 
