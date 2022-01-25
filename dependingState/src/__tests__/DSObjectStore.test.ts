@@ -143,20 +143,24 @@ test('DSObjectStore process promise', async () => {
 
     storeManager.initialize(() => {
         valueStoreA.listenEventValue("testa", (dsEvent) => {
-            valueAB.value.a = dsEvent.payload.entity!.value.a;
-            valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
             var result = new Promise((resolve) => {
-                setTimeout(() => { valueAB.valueChanged("testa"); }, 200);
-                resolve(undefined);
+                setTimeout(() => { 
+                    valueAB.value.a = dsEvent.payload.entity.value.a;
+                    valueAB.value.cnt += dsEvent.payload.entity.value.a * 10+1;
+                    valueAB.valueChanged("testa"); 
+                    resolve(undefined);
+                }, 200);
             });
             return result;
         });
         valueStoreB.listenEventValue("testb", (dsEvent) => {
-            valueAB.value.b = dsEvent.payload.entity!.value.b;
-            valueAB.value.cnt = valueAB.value.cnt * 100 + 2;
             var result = new Promise((resolve) => {
-                setTimeout(() => { valueAB.valueChanged("testb"); }, 50);
-                resolve(undefined);
+                setTimeout(() => { 
+                    valueAB.value.b = dsEvent.payload.entity!.value.b;
+                    valueAB.value.cnt += dsEvent.payload.entity.value.b * 100+1;
+                    valueAB.valueChanged("testb");
+                    resolve(undefined);
+                 }, 50);
             });
             return result;
         });
@@ -166,12 +170,20 @@ test('DSObjectStore process promise', async () => {
     }
     );
 
-    const p = storeManager.process("test", () => {
-        debugger;
+    const p=storeManager.process("test", () => {
         valueA.value = { a: 1 };
         valueB.value = { b: 2 };
     });
-    if (p) { await p; }
+    console.log("process done")
+    if (p){ 
+        await p;
+        console.log("process awaited")
 
-    expect(valueAB.value).toStrictEqual({ a: 1, b: 2, cnt: 100 * 1 + 2 });
+    }
+    // await storeManager.processAsyncAllSettled();
+    // console.log("processAsyncAllSettled done")
+
+    expect(valueAB.value.a).toBe(1);
+    expect(valueAB.value.b).toBe(2);
+    expect(valueAB.value.cnt).toBe(212);
 });

@@ -23,7 +23,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
     storeManagerState: number;
     isProcessing: number;
     arrUIStateValue: IDSUIStateValue[];
-    lastPromise: Promise<any | void> | undefined;
+    lastPromise: Promise<any>[];
     isupdateRegisteredEventsDone: boolean;
     timeInProcess: number;
     enableTiming: boolean;
@@ -36,7 +36,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         this.events = [];
         this.isProcessing = 0;
         this.arrUIStateValue = [];
-        this.lastPromise = undefined;
+        this.lastPromise = [];
         this.isupdateRegisteredEventsDone = false;
         this.mapValueStoreInternal = new Map();
         this.timeInProcess = 0;
@@ -248,21 +248,20 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         }
     }
 
-    public process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult {
+    public async processAsync(msg?: string, fn?: () => DSEventHandlerResult): Promise<void> {
         let dt: number = 0;
         const enableTiming = this.enableTiming && dsLog.enabled && (this.isProcessing === 0);
         if (enableTiming) {
             dt = (window.performance) ? performance.now() : Date.now();
         }
-        let result: DSManyEventHandlerResult = undefined;
         this.updateRegisteredEvents();
         this.isProcessing++;
         if (dsLog.enabled) {
             dsLog.group(`DS processEvent ${(msg || "")} isProcessing:${this.isProcessing}`);
         }
         try {
+            this.incrementStateVersion();
             if (fn) {
-                this.incrementStateVersion();
 
                 const pFn = fn();
                 if (pFn && typeof pFn.then === "function") {
@@ -276,18 +275,35 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                 }
             }
             for (let watchdog = 0; (watchdog == 0) || ((this.events.length > 0) && (watchdog < 100)); watchdog++) {
-                this.incrementStateVersion();
+                let resultLoop: DSManyEventHandlerResult = undefined;
+
+                if (watchdog > 0) {
+                    this.incrementStateVersion();
+                }
                 while (this.events.length > 0) {
                     const event = this.events.splice(0, 1)[0];
                     const p = this.processOneEvent(event);
                     if (p && typeof p.then === "function") {
-                        if (result === undefined) { result = [p]; } else { result.push(p); }
+                        if (resultLoop === undefined) { resultLoop = [p]; } else { resultLoop.push(p); }
                     }
                 }
 
                 {
                     this.processDirty();
                     this.processUIUpdates();
+                }
+
+                if (resultLoop !== undefined) {
+                    if (resultLoop.length == 1) {
+                        await resultLoop[0];
+                    } else {
+                        await Promise.allSettled(resultLoop);
+                    }
+
+                    {
+                        this.processDirty();
+                        this.processUIUpdates();
+                    }
                 }
             }
 
@@ -303,14 +319,32 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             this.timeInProcess += time;
             dsLog.infoACME("DS", "DSStoreManager", "process", { current: Math.round(time * 1000) / 10, sum: Math.round(this.timeInProcess * 1000) / 10 }, (window.performance) ? "µs timing" : "ms timing");
         }
-        if (result === undefined) {
-            return;
-        } else {
-            return Promise.allSettled(result);
+    }
+
+    public process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult {
+        //const nextStateVersion = this.nextStateVersion;
+        const p = this.processAsync(msg, fn);
+        if (p && typeof p.then === "function") {
+            console.log("add lastPromise")
+            this.lastPromise.push(p);
+            p.then(()=>{
+                console.log("remove lastPromise")
+                const idx=this.lastPromise.indexOf(p);
+                if (0<=idx){
+                    this.lastPromise.splice(idx,1);
+                }
+            });
+            return p;
         }
     }
-    
-    //public processAsync(): Promise<any> { }
+    public async processAsyncAllSettled(){
+        if (this.lastPromise.length>0){
+            const promises = this.lastPromise;
+            this.lastPromise=[];
+            await Promise.allSettled(promises)
+        }
+    }
+
 
     public processOneEvent(event: DSEvent<any, string, string>): DSEventHandlerResult {
         //if (this.isupdateRegisteredEventsDone) { this.updateRegisteredEvents(); }
