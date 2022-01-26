@@ -1,14 +1,20 @@
 import {
     dsLog,
     DSObjectStore,
+    getPropertiesChanged,
+    getPropertiesSet,
 } from "dependingState";
-import { getAppStoreManager } from "~/singletonAppStoreManager";
+
+//import { getAppStoreManager } from "~/singletonAppStoreManager";
 
 import type { IAppStoreManager } from "~/store/AppStoreManager";
+import { TimerValue } from "~/component/Timer/TimerValue";
 
 import { appUIStoreBuilder, timerStopGo } from "./AppUIActions";
 import { AppUIValue } from "./AppUIValue";
 
+const propertysetIsRunning = getPropertiesSet<AppUIValue>(['isRunnging']);
+const propertysetCounter = getPropertiesSet<TimerValue>(['counter']);
 
 export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     handleInterval: number | undefined;
@@ -24,6 +30,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     public initializeStore(): void {
         super.initializeStore();
 
+
         timerStopGo.listenEvent("handle", (e) => {
             if (e.payload) {
                 if (this.handleInterval === undefined) {
@@ -32,7 +39,8 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
                     }
                     this.handleInterval = window.setInterval(this.handleTick, this.timeInterval);
                     this.stateValue.value.isRunnging = true;
-                    this.stateValue.valueChanged();
+                    getPropertiesChanged
+                    this.stateValue.valueChanged("running", propertysetIsRunning);
                 }
             } else {
                 if (this.handleInterval !== undefined) {
@@ -42,7 +50,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
                     window.clearInterval(this.handleInterval);
                     this.handleInterval = undefined;
                     this.stateValue.value.isRunnging = false;
-                    this.stateValue.valueChanged();
+                    this.stateValue.valueChanged("stopping", propertysetIsRunning);
                 }
             }
         });
@@ -57,7 +65,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         const timerStore = (this.storeManager! as IAppStoreManager).timerStore;
         const timerSV = timerStore.stateValue;
         timerSV.value.counter++;
-        timerSV.valueChanged();
+        timerSV.valueChanged("handleTick", propertysetCounter);
         //});
     }
 }

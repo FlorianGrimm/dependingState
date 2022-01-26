@@ -184,5 +184,5 @@ index.ts:58 Error while app boots. Error: DS DSStoreAction.listenEvent valueStor
 
 the listenEvent requires that the bindValueStore is called.
 
-if you don't find the bug search for "// hint1"               s<br>
+if you don't find the bug search for "// hint1"              <br>
 if you still don't find the bug search for "// hint2"

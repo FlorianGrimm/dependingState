@@ -3,16 +3,8 @@ import {
     storeBuilder,
 } from 'dependingState';
 
-export const navigatorBuilder = storeBuilder("navigator");
+import type { NavigatorSetLocationPayload } from './types';
 
-export type NavigatorSetLocationPayload<NavigatorPage = string, NavigatorPathArguments = {}> = {
-    page: NavigatorPage;
-    pathArguments: NavigatorPathArguments;
-    /** the logical name */
-    pathName?: string,
-    isExact?: boolean;
-    to?: string;
-    eventToProcess?: DSEvent<any, any, string> | undefined;
-};
-export const navigatorSetLocation = navigatorBuilder.createAction<NavigatorSetLocationPayload>("setLocation");
+export const navigatorBuilder = storeBuilder("navigator");
+export const navigatorSetLocation = navigatorBuilder.createAction<NavigatorSetLocationPayload, "setLocation">("setLocation");
 export type NavigatorChangePageEvent = DSEvent<NavigatorSetLocationPayload, "setLocation", "navigator">;

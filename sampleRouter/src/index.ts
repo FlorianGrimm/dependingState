@@ -11,7 +11,6 @@ import { setAppStoreManager } from './singletonAppStoreManager';
 import { PageAStore } from './component/PageA/PageAStore';
 import { AppUIValue } from './component/AppUI/AppUIValue';
 import { AppUIStore } from './component/AppUI/AppUIStore';
-import { AppState, AppStore } from './store/AppState';
 import { PageBStore } from './component/PageB/PageBStore';
 import { createBrowserHistory, DSRouterStore, DSRouterValue, getDSRouterValueInitial } from 'dependingStateRouter';
 import { NavigatorStore } from './component/Navigator/NavigatorStore';
@@ -19,33 +18,29 @@ import { NavigatorValue } from './component/Navigator/NavigatorValue';
 
 function main() {
     // initialize log
-    dsLog.initialize();
-
-    // remove this if going productive
-    dsLog.setEnabled();
-
+    dsLog.initialize("enabled");
+    dsLog.enableTiming=true;
     if (dsLog.enabled){
         dsLog.info("main()");
     }
 
     // create all stores
     const routerStore = new DSRouterStore<DSRouterValue>(createBrowserHistory(), getDSRouterValueInitial());
-    const navigatorStore = new NavigatorStore(new DSStateValue<NavigatorValue>({ page: "home", pathName: "", pathArguments: {}, isExact: false }));
+    const navigatorStore = new NavigatorStore(new DSStateValue<NavigatorValue>({ page: "home", pathArguments: {} }));
     navigatorStore.setRouter(routerStore);
     const pageAStore = new PageAStore();
     const pageBStore = new PageBStore();
-    const appStore = new AppStore(new AppState());
     const appUIStore = new AppUIStore(new AppUIValue());
     const appStoreManager = new AppStoreManager(
         routerStore,
         navigatorStore,
-        appStore,
         appUIStore,
         pageAStore,
         pageBStore
     );
     setAppStoreManager(appStoreManager);
-    dsLog.attach(appStoreManager);
+    dsLog.attach(appStoreManager);    
+    appStoreManager.enableTiming=true;
     appStoreManager.initialize();
 
     const rootElement = React.createElement(

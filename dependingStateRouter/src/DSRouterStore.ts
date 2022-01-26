@@ -95,7 +95,7 @@ export class DSRouterStore<
     }
 
     public initializeStore(): void {
-        routerPush.listenEvent("push", (e) => {
+        routerPush.listenEvent("router/push", (e) => {
             const location = e.payload;
             if (e.payload.noListener === true) {
                 this.suspressNavigator = true;
@@ -103,7 +103,7 @@ export class DSRouterStore<
             this.history.push(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
 
-        routerReplace.listenEvent("replace", (e) => {
+        routerReplace.listenEvent("router/replace", (e) => {
             const location = e.payload;
             if (e.payload.noListener === true) {
                 this.suspressNavigator = true;
@@ -164,7 +164,7 @@ export class DSRouterStore<
         } else {
             const p = routerLocationChanged.emitEvent(this.stateValue.value);
             if (p && typeof p.then === "function") {
-                return catchLog("handleSetLocation", p);
+                return catchLog("routerLocationChanged", p);
             }
         }
     }

@@ -91,19 +91,19 @@ test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
     const projectUIStore = new DSMapStore<string, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
-    
-    projectStore.listenEventAttach("test", (projectValue) => {
-        const project = projectValue.payload.entity.value;
-        projectUIStore.attach(project.ProjectId, new ProjectUI(project))
+    storeManager.initialize(()=>{
+        projectStore.listenEventAttach("test", (projectValue) => {
+            const project = projectValue.payload.entity.value;
+            projectUIStore.attach(project.ProjectId, new ProjectUI(project))
+        });
+        projectStore.listenValueChanged("test", (project) => {
+            const projectUI = projectUIStore.get(project!.value.ProjectId);
+            if (projectUI) {
+                projectUIStore.setDirty("test");
+                projectUI.value.t = projectUI.value.t + 1;
+            }
+        });
     });
-    projectStore.listenValueChanged("test", (project) => {
-        const projectUI = projectUIStore.get(project!.value.ProjectId);
-        if (projectUI) {
-            projectUIStore.setDirty("test");
-            projectUI.value.t = projectUI.value.t + 1;
-        }
-    });
-    storeManager.initialize();
     
     // init
     projectStore.set(new Project("1", "one"));
@@ -117,13 +117,11 @@ test('Dirty', async () => {
     await storeManager.process("Dirty", () => {
         var project1 = projectStore.get("1");
         var projectUI1 = projectUIStore.get("1");
-        expect(project1 === projectUI1).toBe(true);
+        expect(project1 && projectUI1 && (project1.value === projectUI1.value.projectValue)).toBe(true);
         if (project1 && projectUI1) {
             project1.value.ProjectName = "eins";
             project1.valueChanged("eins");
             expect(projectUI1.value.t).toBe(1);
         }
-
-        //projectStore.get("1")!.value.ProjectName="eins";
     });
 });

@@ -24,10 +24,10 @@ const counterStyle: React.CSSProperties = {
 };
 
 export function appView(props: AppViewProps) {
-    return React.createElement(AppView, props);
+    return React.createElement(AppUIView, props);
 }
 
-export default class AppView extends React.Component<AppViewProps, AppViewState>{
+export default class AppUIView extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
         super(props);
         this.state = {
@@ -43,10 +43,10 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         this.props.unwireStateVersion(this);
     }
     handleDown(){
-        countDown.emitEvent(undefined);
+        countDown.emitEventAndProcess("handler", undefined);
     }
     handleUp(){
-        countUp.emitEvent(undefined);
+        countUp.emitEventAndProcess("handler", undefined);
     }
 
     render(): React.ReactNode {

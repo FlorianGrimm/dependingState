@@ -1,17 +1,27 @@
+import { DSEvent } from 'dependingState';
 import type {
     Action as HistoryAction,
     Location as HistoryLocation,
     State as HistoryState,
     To as HistoryTo,
-    UpdateMode,
+    UpdateMode
 } from './history';
 
+export type NavigatorSetLocationPayload<NavigatorPage = string, NavigatorPathArguments = {}> = {
+    page: NavigatorPage;
+    pathArguments: NavigatorPathArguments;
+    /** the logical name */
+    // pathPattern?: string,
+    // isExact?: boolean;
+    to?: HistoryTo;
+    eventToProcess?: DSEvent<any, any, string> | undefined;
+};
 export type IDSNavigatorValue<NavigatorPageName = string, NavigatorPathArguments = {}> = {
     page: NavigatorPageName;
     pathArguments: NavigatorPathArguments;
-    /** the logical name */
-    pathName: string,
-    isExact: boolean;
+    // pathPattern: string,
+    // isExact: boolean;
+    // to?:HistoryTo;
 }
 
 export interface IDSRouterValue<S extends HistoryState = HistoryState> {

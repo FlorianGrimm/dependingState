@@ -8,10 +8,10 @@ type PageAViewProps = DSUIProps<PageAValue>;
 
 type PageAViewState = {
 } & DSUIViewStateBase;
-const inputStyle :React.CSSProperties={
+const inputStyle: React.CSSProperties = {
     width: 30,
 };
-export function pageAView(props:PageAViewProps){
+export function pageAView(props: PageAViewProps) {
     return React.createElement(PageAView, props);
 }
 export default class PageAView extends React.Component<PageAViewProps, PageAViewState>{
@@ -43,7 +43,7 @@ export default class PageAView extends React.Component<PageAViewProps, PageAView
             const renderProps = this.props.getRenderProps();
             const renderPropsPC = getPropertiesChanged(renderProps);
             renderPropsPC.setIf("nbrA", n);
-            renderPropsPC.valueChangedIfNeeded();
+            renderPropsPC.valueChangedIfNeeded("handleSetA");
         });
     }
     handleSetB(n: number) {
@@ -51,12 +51,24 @@ export default class PageAView extends React.Component<PageAViewProps, PageAView
             const renderProps = this.props.getRenderProps();
             const renderPropsPC = getPropertiesChanged(renderProps);
             renderPropsPC.setIf("nbrB", n);
-            renderPropsPC.valueChangedIfNeeded();
+            renderPropsPC.valueChangedIfNeeded("handleSetB");
         });
     }
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
+        if (viewProps.isLoading) {
+            return (<div>
+                <div>
+                    PageA - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+                </div>
+                <h2>PageA</h2>
+                loading 2secs
+            </div>);
+        }
         return (<div>
+            <div>
+                PageA - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
+            </div>
             <h2>PageA</h2>
             A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
             B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =

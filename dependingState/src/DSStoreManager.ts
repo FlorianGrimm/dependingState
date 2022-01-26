@@ -28,6 +28,8 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
     timeInProcess: number;
     enableTiming: boolean;
     isDirty: boolean;
+    warnUnlistenEvents: boolean;
+    warnEventsOutOfProcess: boolean;
 
     constructor() {
         this.nextStateVersion = 1;
@@ -43,6 +45,8 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         this.storeManagerState = 0;
         this.enableTiming = false;
         this.isDirty = true;
+        this.warnUnlistenEvents = false;
+        this.warnEventsOutOfProcess = true;
     }
 
     /**
@@ -163,6 +167,10 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             }
 
             this.mapValueStoreInternal = mapVS;
+            for (const valueStore of this.arrValueStores) {
+                const valueStoreInternal = valueStore as unknown as IDSAnyValueStoreInternal;
+                valueStoreInternal.validateRegisteredEvents();
+            }
 
             if (dsLog.enabled) {
                 for (const valueStore of this.arrValueStores) {
@@ -233,13 +241,11 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             }
             this.events.push(event);
             if (this.isProcessing === 0) {
-                if (dsLog.enabled) {
+
+                if (this.warnEventsOutOfProcess && dsLog.enabled) {
                     dsLog.warnACME("DS", "DSStoreManager", "emitEvent", `${event.storeName}/${event.event}`, "called out of process")
                 }
-                const p = this.process("immediately from emitEvent");
-                if (p && typeof p.then === "function") {
-                    return p;
-                }
+                return this.process("immediately from emitEvent");
             } else {
                 if (dsLog.enabled) {
                     dsLog.infoACME("DS", "DSStoreManager", "emitEvent", `${event.storeName}/${event.event}`, "queued");
@@ -257,94 +263,163 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         this.updateRegisteredEvents();
         this.isProcessing++;
         if (dsLog.enabled) {
-            dsLog.group(`DS processEvent ${(msg || "")} isProcessing:${this.isProcessing}`);
+            dsLog.group(`DS DSStoreManager processAsync ${(msg || "")} (${this.isProcessing})`);
         }
         try {
-            this.incrementStateVersion();
             if (fn) {
-
+                this.incrementStateVersion();
                 const pFn = fn();
                 if (pFn && typeof pFn.then === "function") {
-                    return pFn.then((resultValue: any) => {
-                        const pProcess = this.process();
-                        if (pProcess && typeof pProcess.then === "function") {
-                            return pProcess.then(() => resultValue, () => resultValue);
+                    for (let watchdog = 0; (watchdog == 0) || ((this.events.length > 0) && (watchdog < 100)); watchdog++) {
+                        const pLoop = this.processOneLoop();
+                        if (pLoop && typeof pLoop.then === "function") {
+                            await pLoop;
                         }
-                        return resultValue;
-                    });
+                    }
+                    await pFn;
                 }
             }
             for (let watchdog = 0; (watchdog == 0) || ((this.events.length > 0) && (watchdog < 100)); watchdog++) {
-                let resultLoop: DSManyEventHandlerResult = undefined;
-
-                if (watchdog > 0) {
-                    this.incrementStateVersion();
-                }
-                while (this.events.length > 0) {
-                    const event = this.events.splice(0, 1)[0];
-                    const p = this.processOneEvent(event);
-                    if (p && typeof p.then === "function") {
-                        if (resultLoop === undefined) { resultLoop = [p]; } else { resultLoop.push(p); }
-                    }
-                }
-
-                {
-                    this.processDirty();
-                    this.processUIUpdates();
-                }
-
-                if (resultLoop !== undefined) {
-                    if (resultLoop.length == 1) {
-                        await resultLoop[0];
-                    } else {
-                        await Promise.allSettled(resultLoop);
-                    }
-
-                    {
-                        this.processDirty();
-                        this.processUIUpdates();
-                    }
+                const pLoop = this.processOneLoop();
+                if (pLoop && typeof pLoop.then === "function") {
+                    await pLoop;
                 }
             }
 
         } finally {
             this.isProcessing--;
-        }
 
-        if (dsLog.enabled) {
-            dsLog.groupEnd();
-        }
-        if (enableTiming) {
-            const time = (window.performance) ? (performance.now() - dt) : (Date.now() - dt);
-            this.timeInProcess += time;
-            dsLog.infoACME("DS", "DSStoreManager", "process", { current: Math.round(time * 1000) / 10, sum: Math.round(this.timeInProcess * 1000) / 10 }, (window.performance) ? "µs timing" : "ms timing");
+            if (dsLog.enabled) {
+                dsLog.groupEnd();
+            }
+            if (enableTiming) {
+                const time = (window.performance) ? (performance.now() - dt) : (Date.now() - dt);
+                this.timeInProcess += time;
+                dsLog.infoACME("DS", "DSStoreManager", "processAsync", `current:${Math.round(time * 1000) / 10} sum:${Math.round(this.timeInProcess * 1000) / 10}`, (window.performance) ? "µs timing" : "ms timing");
+            }
         }
     }
 
     public process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult {
-        //const nextStateVersion = this.nextStateVersion;
-        const p = this.processAsync(msg, fn);
-        if (p && typeof p.then === "function") {
-            console.log("add lastPromise")
-            this.lastPromise.push(p);
-            p.then(()=>{
-                console.log("remove lastPromise")
-                const idx=this.lastPromise.indexOf(p);
-                if (0<=idx){
-                    this.lastPromise.splice(idx,1);
+        let dt: number = 0;
+        const enableTiming = this.enableTiming && dsLog.enabled ;//&& (this.isProcessing === 0);
+        if (enableTiming) {
+            dt = (window.performance) ? performance.now() : Date.now();
+        }
+        this.updateRegisteredEvents();
+        this.isProcessing++;
+        if (dsLog.enabled) {            
+            dsLog.group(`DS DSStoreManager process ${(msg || "")} (${this.isProcessing})`);
+        }
+        try {
+            if (fn) {
+                this.incrementStateVersion();
+                const pFn = fn();
+                if (pFn && typeof pFn.then === "function") {
+                    const pProcessAsync = this.processAsync(msg, undefined);
+                    const pAll = Promise.allSettled([pProcessAsync, pFn]);
+                    return this.addRemoveLastPromise(pAll);
                 }
-            });
-            return p;
+            }
+            for (let watchdog = 0; (watchdog == 0) || ((this.events.length > 0) && (watchdog < 100)); watchdog++) {
+                const pLoop = this.processOneLoop();
+                if (pLoop && typeof pLoop.then === "function") {
+                    const pAll = this.processAsync(`${msg} toAsync`, () => pLoop);
+                    return this.addRemoveLastPromise(pAll);
+                }
+            }
+        } finally {
+            this.isProcessing--;
+
+            if (dsLog.enabled) {
+                dsLog.groupEnd();
+            }
+            if (enableTiming) {
+                const time = (window.performance) ? (performance.now() - dt) : (Date.now() - dt);
+                this.timeInProcess += time;
+                dsLog.infoACME("DS", "DSStoreManager", "process", `current:${Math.round(time * 1000) / 10} sum:${Math.round(this.timeInProcess * 1000) / 10}`, (window.performance) ? "µs timing" : "ms timing");
+            }
         }
     }
-    public async processAsyncAllSettled(){
-        if (this.lastPromise.length>0){
+
+    addRemoveLastPromise(pLast: Promise<any | void>): Promise<any | void> {
+        const thisPromise = pLast;
+        this.lastPromise.push(pLast);
+        pLast.finally(() => {
+            const idx = this.lastPromise.indexOf(thisPromise);
+            if (0 <= idx) {
+                this.lastPromise.splice(idx, 1);
+            }
+        });
+        return pLast;
+    }
+
+    // public process2(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult {
+    //     const p = this.processAsync(msg, fn);
+    //     if (p && typeof p.then === "function") {
+    //         //console.log("add lastPromise")
+    //         this.lastPromise.push(p);
+    //         p.then(() => {
+    //             //console.log("remove lastPromise")
+    //             const idx = this.lastPromise.indexOf(p);
+    //             if (0 <= idx) {
+    //                 this.lastPromise.splice(idx, 1);
+    //             }
+    //         });
+    //         return p;
+    //     }
+    // }
+
+    public async processAsyncAllSettled() {
+        if (this.lastPromise.length > 0) {
             const promises = this.lastPromise;
-            this.lastPromise=[];
+            this.lastPromise = [];
             await Promise.allSettled(promises)
         }
     }
 
+    public processOneLoop() {
+
+        let resultLoop: DSManyEventHandlerResult = undefined;
+
+        this.incrementStateVersion();
+
+        const logGroup = dsLog.enabled;
+        if (logGroup) {
+            dsLog.group(`loop ${this.nextStateVersion}`);
+        }
+        try {
+
+            while (this.events.length > 0) {
+                const event = this.events.splice(0, 1)[0];
+                const p = this.processOneEvent(event);
+                if (p && typeof p.then === "function") {
+                    if (resultLoop === undefined) { resultLoop = [p]; } else { resultLoop.push(p); }
+                }
+            }
+
+            {
+                this.processDirty();
+                this.processUIUpdates();
+            }
+
+            if (resultLoop !== undefined) {
+                const pLoop = Promise.allSettled(resultLoop);
+                const pResult = pLoop.then(() => {
+                    {
+                        this.processDirty();
+                        this.processUIUpdates();
+                    }
+                });
+                return pResult;
+            }
+            return;
+        } finally {
+            if (logGroup) {
+                dsLog.groupEnd();
+            }
+        }
+    }
 
     public processOneEvent(event: DSEvent<any, string, string>): DSEventHandlerResult {
         //if (this.isupdateRegisteredEventsDone) { this.updateRegisteredEvents(); }
@@ -360,7 +435,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         } else {
             const arrEventHandlers = valueStoreInternal.mapEventHandlers.get(event.event);
             if ((arrEventHandlers !== undefined) && (arrEventHandlers.length > 0)) {
-
+                this.shouldIncrementStateVersion=true;
                 try {
                     for (const eventHandler of arrEventHandlers) {
                         dsLog.infoACME("DS", "DSStoreManager", "processOneEvent", eventHandler.msg);
@@ -385,10 +460,8 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                     if ((result === undefined) || (result.length === 0)) {
                         return;
                     } else if (result.length == 1) {
-                        console.info("354");
                         return result[0];
                     } else {
-                        console.info("357");
                         return Promise.allSettled(result).then((r) => {
                             if (r.length > 0) {
                                 const r0 = r[0];
@@ -403,11 +476,9 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                     if ((result === undefined) || (result.length === 0)) {
                         p = event.thenPromise(Promise.resolve(undefined));
                     } else if (result.length === 1) {
-                        console.info("372");
                         p = event.thenPromise(result[0]);
                     } else {
                         p = event.thenPromise(Promise.allSettled(result).then((r) => {
-                            console.info("376");
                             if (r.length > 0) {
                                 const r0 = r[0];
                                 if (r0.status == "fulfilled") { return Promise.resolve(r0.value); }
@@ -430,24 +501,40 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             for (const valueStore of this.arrValueStores) {
                 if (valueStore.isDirty) {
                     if (dsLog.enabled) {
-                        dsLog.infoACME("DS", "DSStoreManager", "processDirty", valueStore.storeName);
+                        dsLog.infoACME("DS", "DSStoreManager", "processDirty", valueStore.storeName, "isDirty");
                     }
                     const processDirtyResult = valueStore.processDirty();
                     valueStore.postProcessDirty(processDirtyResult);
+                    if (processDirtyResult){
+                        this.shouldIncrementStateVersion=true;
+                    }
+                } else {
+                    // TODO swtich for log
+                    // if (dsLog.enabled) {
+                    //     dsLog.infoACME("DS", "DSStoreManager", "processDirty", valueStore.storeName, "is clean");
+                    // }        
                 }
             }
+        } else {
+            // TODO swtich for log
+            // if (dsLog.enabled) {
+            //     dsLog.debugACME("DS", "DSStoreManager", "processDirty", "completely clean.");
+            // }
         }
     }
 
     public processUIUpdates(): void {
+        
         if (this.arrUIStateValue.length > 0) {
             if (dsLog.enabled) {
                 dsLog.infoACME("DS", "DSStoreManager", "processUIUpdates", `${this.arrUIStateValue.length}`);
             }
+            this.shouldIncrementStateVersion=true;
+
             const arrUIStateValue = this.arrUIStateValue;
             this.arrUIStateValue = [];
             for (const uiStateValue of arrUIStateValue) {
-                uiStateValue.triggerUIUpdate();
+                uiStateValue.triggerUIUpdate(this.nextStateVersion);
             }
         }
     }

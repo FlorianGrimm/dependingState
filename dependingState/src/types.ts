@@ -40,7 +40,7 @@ export interface IDSStoreManager {
 
     process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult;
 
-    processUIUpdates(): void;
+    // processUIUpdates(): void;
 
     isDirty: boolean;
 }
@@ -48,6 +48,8 @@ export interface IDSStoreManagerInternal extends IDSStoreManager {
     storeManagerState: number;
     isProcessing: number;
     isupdateRegisteredEventsDone: boolean;
+    warnUnlistenEvents:boolean;
+    warnEventsOutOfProcess: boolean;
 }
 
 export interface IDSStoreBuilder<StoreName extends string = string> {
@@ -240,6 +242,11 @@ export interface IDSValueStoreInternals<Value> {
     initializeRegisteredEvents(): void;
 
     /**
+     * called after initializeRegisteredEvents
+     */
+    validateRegisteredEvents(): void ;
+
+    /**
      * called after initializeStore
      */
     initializeBoot(): void;
@@ -338,7 +345,7 @@ export interface IDSStateValue<Value> {
 
     getViewProps(): DSUIProps<Value>;
     emitUIUpdate(): void;
-    triggerUIUpdate(): void;
+    triggerUIUpdate(stateVersion:number): void;
     triggerScheduled: boolean;
 }
 
@@ -365,7 +372,7 @@ export interface IDSPropertiesChanged<
 
 export interface IDSUIStateValue<Value = any> {
     getViewProps(): DSUIProps<Value>;
-    triggerUIUpdate(): void;
+    triggerUIUpdate(stateVersion:number): void;
     triggerScheduled: boolean;
 }
 

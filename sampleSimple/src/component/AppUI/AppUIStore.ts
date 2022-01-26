@@ -17,7 +17,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         countDown.listenEvent("countDown",(e)=>{
             this.stateValue.value.counter--;
             this.stateValue.value.clicks++;
-            this.stateValue.valueChanged();
+            this.stateValue.valueChanged("countDown");
             // valueChanged triggers the update of the ui or depending objects
         });      
         countUp.listenEvent("countUp",(e)=>{

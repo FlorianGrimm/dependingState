@@ -28,7 +28,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
 
     public set stateVersion(value: number) {
         this._stateVersion = value;
-        dsLog.infoACME("DS", "DSStateValue", "stateVersion", this._value);
+        //dsLog.infoACME("DS", "DSStateValue", "stateVersion", this._value);
     }
 
     public get value(): Value {
@@ -48,7 +48,8 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
-                this.uiStateValue.triggerUIUpdate();
+                dsLog.debugACME("DS", "DSStateValue", "valueChanged", "store is undefined");
+                this.uiStateValue.triggerUIUpdate(this.stateVersion);
             } else {
                 this.store.emitUIUpdate(this.uiStateValue);
             }
@@ -83,18 +84,18 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
     public emitUIUpdate(): void {
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
-                this.uiStateValue.triggerUIUpdate();
+                this.uiStateValue.triggerUIUpdate(this.stateVersion);
             } else {
                 this.store.emitUIUpdate(this.uiStateValue);
             }
         }
     }
 
-    public triggerUIUpdate(): void {
+    public triggerUIUpdate(stateVersion:number): void {
         if (this.uiStateValue === undefined) {
             // ignore
         } else {
-            return this.uiStateValue.triggerUIUpdate();
+            return this.uiStateValue.triggerUIUpdate(stateVersion);
         }
     }
 
@@ -138,13 +139,12 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
         if (this.store !== undefined) {
             this.stateVersion = this.store.getNextStateVersion(this.stateVersion);
             this.store.emitValueChanged(msg ?? "valueChanged", this, properties);
-            //this.store.emitEvent<DSEventValue<DSStateValueSelf<Value>, string, Value>>("value", { entity: this, properties: properties });
             this.store.emitEvent<DSEventEntityVSValue<Value>>("value", { entity: this, properties: properties });
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
                 dsLog.debugACME("DS", "DSStateValueSelf", "valueChanged", "store is undefined");
-                this.uiStateValue.triggerUIUpdate();
+                this.uiStateValue.triggerUIUpdate(this.stateVersion);
             } else {
                 this.store.emitUIUpdate(this.uiStateValue);
             }
@@ -179,17 +179,17 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
     public emitUIUpdate(): void {
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
-                this.uiStateValue.triggerUIUpdate();
+                this.uiStateValue.triggerUIUpdate(this.stateVersion);
             } else {
                 this.store.emitUIUpdate(this.uiStateValue);
             }
         }
     }
-    public triggerUIUpdate(): void {
+    public triggerUIUpdate(stateVersion:number): void {
         if (this.uiStateValue === undefined) {
             // ignore
         } else {
-            return this.uiStateValue.triggerUIUpdate();
+            return this.uiStateValue.triggerUIUpdate(stateVersion);
         }
     }
 

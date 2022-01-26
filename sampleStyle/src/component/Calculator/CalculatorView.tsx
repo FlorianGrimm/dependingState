@@ -49,7 +49,7 @@ export default class CalculatorView extends React.Component<CalculatorViewProps,
             const renderProps = this.props.calculator.getRenderProps();
             const renderPropsPC = getPropertiesChanged(renderProps);
             renderPropsPC.setIf("nbrA", n);
-            renderPropsPC.valueChangedIfNeeded();
+            renderPropsPC.valueChangedIfNeeded("handleSetA");
         });
     }
     handleSetB(n: number) {
@@ -57,7 +57,7 @@ export default class CalculatorView extends React.Component<CalculatorViewProps,
             const renderProps = this.props.calculator.getRenderProps();
             const renderPropsPC = getPropertiesChanged(renderProps);
             renderPropsPC.setIf("nbrB", n);
-            renderPropsPC.valueChangedIfNeeded();
+            renderPropsPC.valueChangedIfNeeded("handleSetB");
         });
     }
     render(): React.ReactNode {

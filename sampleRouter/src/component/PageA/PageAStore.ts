@@ -2,16 +2,21 @@ import {
     DSObjectStore,
     getPropertiesChanged,
     hasChangedProperty,
-    DSValueChanged
+    DSValueChanged,
+    getPropertiesSet
 } from "dependingState";
+import { navigatorSetLocation } from "dependingStateRouter";
+import { getAppStoreManager } from "~/singletonAppStoreManager";
 import { IAppStoreManager } from "../../store/AppStoreManager";
 import { NavigatorValue } from "../Navigator/NavigatorValue";
 import {
     pageAStoreBuilder,
-    pageALoadData
+    pageALoadData,
+    pageANavigate
 } from "./PageAActions";
 import { PageAValue } from "./PageAValue";
 
+const propertiesSetisLoading = getPropertiesSet<PageAValue>(["isLoading"]);
 export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
     pageChanged: DSValueChanged<string>;
     constructor() {
@@ -23,10 +28,29 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
     public initializeStore(): void {
         const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 
-        navigatorStore.listenEventValue("pageChanged", (e) => {
+        pageANavigate.listenEvent("handle pageANavigate", (e) => {
+            getAppStoreManager().navigatorStore.navigateToPageA("");
+            pageALoadData.emitEvent("");
+        });
+
+        pageALoadData.listenEvent("handle pageALoadData", (e) => {
+            this.stateValue.value.isLoading = true;
+            this.stateValue.valueChanged("loading...", propertiesSetisLoading);
+
+            const p = new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    this.stateValue.value.isLoading = false;
+                    this.stateValue.valueChanged("loadingDone", propertiesSetisLoading);
+                    resolve();
+                }, 2000);
+            });
+            return p;
+        });
+
+        navigatorStore.listenEventValue("handle pageChanged", (e) => {
             if (hasChangedProperty<NavigatorValue>(e.payload.properties, "page")) {
-                if (this.pageChanged.setValue(e.payload.entity.value.page)){
-                    pageALoadData.emitEvent("any")
+                if (this.pageChanged.setValue(e.payload.entity.value.page)) {
+                    pageALoadData.emitEvent("any");
                 }
             }
         });
@@ -37,12 +61,8 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
                 const pageAValue = e.payload.entity!;
                 const pageAValuePC = getPropertiesChanged(pageAValue);
                 pageAValuePC.setIf("nbrC", pageAValue.value.nbrA + pageAValue.value.nbrB);
-                pageAValuePC.valueChangedIfNeeded();
+                pageAValuePC.valueChangedIfNeeded("a+b=c");
             }
-        });
-
-        pageALoadData.listenEvent("do nothing",()=>{
-
         });
     }
 }

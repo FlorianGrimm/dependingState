@@ -21,3 +21,4 @@ export * from './PromiseHelper';
 export * from './DSArrayHelper';
 export * from './DSLooseStore';
 export * from './DSValueChanged'
+export * from './DSDeepEquals';

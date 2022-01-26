@@ -34,7 +34,7 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
     }
 
     handleRotateColors(){
-        rotateColors.emitEvent(undefined);
+        rotateColors.emitEventAndProcess("handleRotateColors", undefined);
     }
 
     render(): React.ReactNode {

@@ -78,7 +78,8 @@ export class DSStoreAction<
     ) {
     }
 
-    // TODO would it be better to create a DSBoundStoreAction
+    // TODO would it be better to create a DSBoundStoreAction?
+    
     bindValueStore(valueStore: IDSValueStoreBase): void {
         if (this.storeName !== (valueStore as IDSAnyValueStoreInternal).storeName) {
             throw new Error("wrong IDSValueStore");

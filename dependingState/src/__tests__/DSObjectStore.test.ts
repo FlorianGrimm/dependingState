@@ -18,24 +18,27 @@ type VSAB = {
     cnt: number;
 }
 
-test('DSObjectStore process implicit', async () => {
+test('DSObjectStore_process_implicit', async () => {
     let actHit = false;
     let actA = 1;
 
     dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
+    storeManager.warnEventsOutOfProcess = false;
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
-    storeManager.initialize();
+
+    let unlisten = () => { };
+    storeManager.initialize(() => {
+        unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
+            actHit = true;
+            actA = dsEvent.payload.entity!.value.a;
+        });
+    });
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     const valueA = valueStoreA.stateValue;
     expect(valueA.store).toBe(valueStoreA);
-
-    const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
-        actHit = true;
-        actA = dsEvent.payload.entity!.value.a;
-    });
 
     valueA.value = { a: 11 };
 
@@ -48,13 +51,12 @@ test('DSObjectStore process implicit', async () => {
     expect(actA).toBe(22);
 
     unlisten();
-
     valueA.value = { a: 33 };
     expect(actA).toBe(22);
 });
 
 
-test('DSObjectStore process explicit', async () => {
+test('DSObjectStore_process_explicit', async () => {
     let actHit = false;
     let actA = 1;
 
@@ -62,17 +64,18 @@ test('DSObjectStore process explicit', async () => {
     const storeManager = new DSStoreManager();
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: actA }));
     storeManager.attach(valueStoreA);
-    storeManager.initialize();
+    let unlisten = () => { };
+
+    storeManager.initialize(() => {
+        unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
+            actHit = true;
+            actA = dsEvent.payload.entity.value.a;
+        });
+    });
     expect(valueStoreA.storeManager).toBe(storeManager);
 
     const valueA = valueStoreA.stateValue;
     expect(valueA.store).toBe(valueStoreA);
-
-    //const valueB = valueStoreA.create({ a: 2 });
-    const unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
-        actHit = true;
-        actA = dsEvent.payload.entity!.value.a;
-    });
 
     await storeManager.process("test", () => {
         valueA.value = { a: 2 };
@@ -94,42 +97,42 @@ test('DSObjectStore process explicit', async () => {
 
 
 test('DSObjectStore listen', async () => {
-    dsLog.initialize("enabled");
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
 
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: 0 }));
     const valueStoreB = new DSObjectStore<VSB>("b", stateValue({ b: 0 }));
     const valueStoreAB = new DSObjectStore<VSAB>("ab", stateValue({ a: 0, b: 0, cnt: 0 }));
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
-    storeManager.initialize();
 
     const valueA = valueStoreA.stateValue;
     const valueB = valueStoreB.stateValue;
     const valueAB = valueStoreAB.stateValue;
 
-    const unlistenA = valueStoreA.listenEventValue("testa", (dsEvent) => {
-        valueAB.value.a = dsEvent.payload.entity!.value.a;
-        valueAB.value.cnt++;
-        valueAB.valueChanged("testa");
+    storeManager.initialize(() => {
+        valueStoreA.listenEventValue("testa", (dsEvent) => {
+            valueAB.value.a = dsEvent.payload.entity!.value.a;
+            valueAB.value.cnt++;
+            valueAB.valueChanged("testa");
+        });
+        valueStoreB.listenEventValue("testb", (dsEvent) => {
+            valueAB.value.b = dsEvent.payload.entity!.value.b;
+            valueAB.value.cnt++;
+            valueAB.valueChanged("testb");
+        });
+    }, () => {
+        valueA.value = { a: 1 };
+        valueB.value = { b: 2 };
     });
-    const unlistenB = valueStoreB.listenEventValue("testb", (dsEvent) => {
-        valueAB.value.b = dsEvent.payload.entity!.value.b;
-        valueAB.value.cnt++;
-        valueAB.valueChanged("testb");
-    });
-
-    valueA.value = { a: 1 };
-    valueB.value = { b: 2 };
 
     expect(valueAB.value).toStrictEqual({ a: 1, b: 2, cnt: 2 });
 
-    unlistenA();
-    unlistenB();
+
 });
 
 // npx jest --testNamePattern "DSObjectStore process promise"
-test('DSObjectStore process promise', async () => {
-    dsLog.initialize("enabled");
+test('DSObjectStore_process_promise', async () => {
+    dsLog.initialize("disabled");
     const storeManager = new DSStoreManager();
 
     const valueStoreA = new DSObjectStore<VSA>("a", stateValue({ a: 0 }));
@@ -144,10 +147,10 @@ test('DSObjectStore process promise', async () => {
     storeManager.initialize(() => {
         valueStoreA.listenEventValue("testa", (dsEvent) => {
             var result = new Promise((resolve) => {
-                setTimeout(() => { 
+                setTimeout(() => {
                     valueAB.value.a = dsEvent.payload.entity.value.a;
-                    valueAB.value.cnt += dsEvent.payload.entity.value.a * 10+1;
-                    valueAB.valueChanged("testa"); 
+                    valueAB.value.cnt += dsEvent.payload.entity.value.a * 10 + 1;
+                    valueAB.valueChanged("testa");
                     resolve(undefined);
                 }, 200);
             });
@@ -155,12 +158,12 @@ test('DSObjectStore process promise', async () => {
         });
         valueStoreB.listenEventValue("testb", (dsEvent) => {
             var result = new Promise((resolve) => {
-                setTimeout(() => { 
+                setTimeout(() => {
                     valueAB.value.b = dsEvent.payload.entity!.value.b;
-                    valueAB.value.cnt += dsEvent.payload.entity.value.b * 100+1;
+                    valueAB.value.cnt += dsEvent.payload.entity.value.b * 100 + 1;
                     valueAB.valueChanged("testb");
                     resolve(undefined);
-                 }, 50);
+                }, 50);
             });
             return result;
         });
@@ -170,16 +173,11 @@ test('DSObjectStore process promise', async () => {
     }
     );
 
-    const p=storeManager.process("test", () => {
+    const p = storeManager.process("test", () => {
         valueA.value = { a: 1 };
         valueB.value = { b: 2 };
     });
-    console.log("process done")
-    if (p){ 
-        await p;
-        console.log("process awaited")
-
-    }
+    if (p) { await p; }
     // await storeManager.processAsyncAllSettled();
     // console.log("processAsyncAllSettled done")
 

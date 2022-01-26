@@ -21,7 +21,7 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
             v.nbrC = 0;
 
             // unconditionally call valueChanged
-            this.stateValue.valueChanged();
+            this.stateValue.valueChanged("Calculator set 0");
             /* endregion case valueChanged */
 
             /* region case valueChangedIfNeeded */
@@ -32,7 +32,7 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
             stateValuePC.setIf("nbrC", 0);
 
             // conditionally call valueChanged
-            stateValuePC.valueChangedIfNeeded();
+            stateValuePC.valueChangedIfNeeded("Calculator set 0");
             */
             /* endregion case valueChangedIfNeeded */
         });
@@ -49,7 +49,7 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
                 const calculatorValuePC = getPropertiesChanged(calculatorValue);
                 const nbrC = calculatorValue.value.nbrA + calculatorValue.value.nbrB;
                 calculatorValuePC.setIf("nbrC", nbrC);
-                calculatorValuePC.valueChangedIfNeeded();
+                calculatorValuePC.valueChangedIfNeeded("Calculator C");
                 // valueChangedIfNeeded calls valueChanged if needed
             }
         });

@@ -1,18 +1,19 @@
 import {
     ConfigurationDSValueStore,
     DSEventHandlerResult,
-    dsLog,
     DSObjectStore,
-    getPropertiesChanged,
     IDSStateValue,
-    catchLog
+    catchLog,
+    deepEquals,
+    dsLog,
+    getPropertiesChanged,
 } from "dependingState";
 
-import { IDSNavigatorValue, match, RouteProps } from "./types";
+import { IDSNavigatorValue, match, NavigatorSetLocationPayload, RouteProps } from "./types";
 import { IDSRouterStore } from "./DSRouterStore";
 import { LocationChangedPayload } from './DSRouterAction';
 import matchPath from './matchPath';
-import { navigatorBuilder, navigatorSetLocation, NavigatorSetLocationPayload } from "./DSNavigatorActions";
+import { navigatorBuilder, navigatorSetLocation } from "./DSNavigatorActions";
 
 export class DSNavigatorStore<
     Value extends IDSNavigatorValue<NavigatorPageName, NavigatorPathArguments>,
@@ -114,12 +115,15 @@ export class DSNavigatorStore<
         if (payload.to === undefined) {
             payload = this.convertTo(payload);
         }
-
+        //payload.page
+        //payload.pathArguments
         const stateValuePC = getPropertiesChanged(this.stateValue);
         stateValuePC.setIf("page", payload.page);
-        stateValuePC.setIf("pathArguments", payload.pathArguments);
-        stateValuePC.setIf("pathName", payload.pathName || "");
-        stateValuePC.setIf("isExact", payload.isExact || false);
+        stateValuePC.setIf("pathArguments", payload.pathArguments, deepEquals);
+        // // TODO thinkof can we get rid of this?
+        // stateValuePC.setIf("to", payload.to, deepEquals);
+        // stateValuePC.setIf("pathPattern", payload.pathPattern || "");
+        // stateValuePC.setIf("isExact", payload.isExact || false);
         stateValuePC.valueChangedIfNeeded("handleSetLocation");
 
         if (payload.to !== undefined) {

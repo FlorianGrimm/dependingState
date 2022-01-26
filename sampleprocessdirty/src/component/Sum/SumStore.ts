@@ -18,19 +18,22 @@ export class SumStore extends DSObjectStore<SumValue, "SumStore"> {
         super.initializeStore();
 
         const appUIStore = (this.storeManager! as IAppStoreManager).appUIStore;
-        appUIStore.listenDirtyRelated(this.storeName, this);
+        appUIStore.listenCleanedUpRelated("add", this);
         
         // enforce dirty for the first time
-        this.isDirty = true;
+        this.setDirty("initializeStore");
     }
     
-    public processDirty(): void {
-        super.processDirty();
+    public processDirty(): boolean {
+        let result = super.processDirty();
         const appUIStore = (this.storeManager! as IAppStoreManager).appUIStore;
         const counterStore = (this.storeManager! as IAppStoreManager).counterStore;
         
         const sumPC = getPropertiesChanged(this.stateValue);
         sumPC.setIf("sumValue", appUIStore.stateValue.value.counter + counterStore.stateValue.value.nbrValue);
-        sumPC.valueChangedIfNeeded();
+        if (sumPC.valueChangedIfNeeded("processDirty")){
+            result = true;
+        }
+        return result;
     }
 }

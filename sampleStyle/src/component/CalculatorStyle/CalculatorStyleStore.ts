@@ -50,12 +50,12 @@ export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "Ca
         this.style3 = new CalculatorStyleValue();
         this.style4 = new CalculatorStyleValue();
         
-        // hint2 this is missing 
-        calculatorStyleBuilder.bindValueStore(this);
+        // hint2 this is missing calculatorStyleBuilder.bindValueStore(this);
     }
     
     public initializeStore(): void {
         super.initializeStore();
+
         this.style1.rootStyle = rootStyle1;
         this.style1.setStore(this);
         this.style2.rootStyle = rootStyle2;
@@ -76,10 +76,10 @@ export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "Ca
             this.style3.rootStyle = {...style3, backgroundColor:style2.backgroundColor};
             this.style4.rootStyle = {...style4, backgroundColor:style3.backgroundColor};
 
-            this.style1.valueChanged();
-            this.style2.valueChanged();
-            this.style3.valueChanged();
-            this.style4.valueChanged();
+            this.style1.valueChanged("style 1");
+            this.style2.valueChanged("style 2");
+            this.style3.valueChanged("style 3");
+            this.style4.valueChanged("style 4");
         });
     }
 }

@@ -5,6 +5,10 @@ import {
 
 const cache: IDSPropertiesChanged<any>[] = [];
 
+export function getPropertiesSet<Value>(keys:(keyof Value)[]):Set<keyof Value>{
+    return new Set<keyof Value>(keys);
+}
+
 export function getPropertiesChanged<
         Value
     >(that: IDSStateValue<Value>): IDSPropertiesChanged<Value> {

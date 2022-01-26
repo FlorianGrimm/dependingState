@@ -4,50 +4,37 @@ import {
     getPropertiesChanged
 } from "dependingState";
 import type { IAppStoreManager } from "~/store/AppStoreManager";
+import { pageALoadData, pageANavigate } from "../PageA/PageAActions";
+import { pageBLoadData, pageBNavigate } from "../PageB/PageBActions";
+import { appUIStoreBuilder, useNavigatorA, useNavigatorB } from "./AppUIActions";
 import { AppUIValue } from "./AppUIValue";
 
 export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
     constructor(value: AppUIValue) {
         super("AppUIStore", value);
+        value.startTime = (new Date()).toISOString();
+        this.setStoreBuilder(appUIStoreBuilder);
     }
 
     public initializeStore(): void {
         super.initializeStore();
-        this.isDirty = true;
-        this.enableEmitDirtyFromValueChanged = true;
 
-        const appStore = (this.storeManager! as IAppStoreManager).appStore;
-        const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
-        appStore.listenDirtyRelated(this.storeName, this);
-
-        navigatorStore.listenDirtyValue("AppUIStore listen to router", (stateValue, properties) => {
-            if (this.isDirty) { return; }
-            if ((properties == undefined) || properties.has("page")) {
-                this.isDirty = true;
-            }
+        useNavigatorA.listenEvent("useNavigatorA", (e)=>{
+            pageANavigate.emitEvent("");
+        });
+        useNavigatorB.listenEvent("useNavigatorB", (e)=>{
+            pageBNavigate.emitEvent("");
         });
 
-        this.stateValue.value.appState = appStore.stateValue;
-        this.stateValue.value.navigatorValue = navigatorStore.stateValue
-    }
+        // const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 
-    public processDirty(): void {
-        if (dsLog.enabled){
-            dsLog.debugACME("app", "AppUIStore", "processDirty", "%");
-        }
-        const appStore = (this.storeManager! as IAppStoreManager).appStore;
-        const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
+        // navigatorStore.listenValueChanged("AppUIStore listen to router", (stateValue, properties) => {
+        //     if (this.isDirty) { return; }
+        //     if ((properties == undefined) || properties.has("page")) {
+        //         this.setDirty("page changed");
+        //     }
+        // });
 
-        const stateValuePC = getPropertiesChanged(this.stateValue);
-
-        if (stateValuePC.setIf("appStateStateVersion", appStore.stateValue.stateVersion)) {
-            stateValuePC.setIf("appState", appStore.stateValue.value);
-        }
-
-        if (stateValuePC.setIf("navigatorValueStateVersion", appStore.stateValue.stateVersion)) {
-            stateValuePC.setIf("navigatorValue", navigatorStore.stateValue);
-        }
-
-        stateValuePC.valueChangedIfNeeded();
+        // this.stateValue.value.navigatorValue = navigatorStore.stateValue
     }
 }

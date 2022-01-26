@@ -43,7 +43,6 @@ export class DSValueStore<
     arrCleanedUpRelated: ({ msg: string, valueStore: IDSValueStoreBase }[]) | undefined;
     arrCleanedUpHandler: ({ msg: string, handler: DSEmitCleanedUpHandler<IDSValueStoreBase> }[]) | undefined;
     setEffectiveEvents: Set<string> | undefined;
-    enableEmitDirtyFromValueChanged: boolean;
     configuration: ConfigurationDSValueStore<Value>;
     storeBuilder: IDSStoreBuilder<StoreName> | undefined;
     isProcessDirtyConfigured: boolean;
@@ -58,7 +57,6 @@ export class DSValueStore<
         this.mapEventHandlers = new Map();
         this._isDirty = false;
         this.stateVersion = 1;
-        this.enableEmitDirtyFromValueChanged = false;
         this.isProcessDirtyConfigured = false;
 
         if (configuration === undefined) {
@@ -71,22 +69,6 @@ export class DSValueStore<
     public get isDirty(): boolean {
         return this._isDirty;
     }
-
-    // public set isDirty(value: boolean) {
-    //     if (this._isDirty == value) {
-    //         //
-    //     } else {
-    //         this._isDirty = value;
-    //         if (this.storeManager !== undefined) {
-    //             this.storeManager.isDirty = true;
-    //         }
-    //         if (value) {
-    //             dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "true");
-    //         } else {
-    //             //dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, "false");
-    //         }
-    //     }
-    // }
 
     /**
      * binds the events/actions from the storeBuilder to this valueStore 
@@ -115,6 +97,18 @@ export class DSValueStore<
      */
     public initializeRegisteredEvents(): void {
         this.isProcessDirtyConfigured = this.hasProcessDirtyConfigured();
+    }
+
+    /**
+     * called after initializeRegisteredEvents
+     */
+    public validateRegisteredEvents(): void {
+        if (this.arrCleanedUpRelated !== undefined) {
+            if (!this.isProcessDirtyConfigured) {
+                const relatedStoreNames = this.arrCleanedUpRelated.map(i => (i.valueStore as IDSAnyValueStoreInternal).storeName).join(", ");
+                throw new Error(`${this.storeName}.processDirty (method or config) is not defined, but listenCleanedUpRelated was called from ${relatedStoreNames}.`);
+            }
+        }
     }
 
     /**
@@ -163,9 +157,11 @@ export class DSValueStore<
         };
         let arrEventHandlers = this.mapEventHandlers.get(event.event);
         if ((arrEventHandlers === undefined) || (arrEventHandlers?.length === 0)) {
-            if ((event.event === "attach") || (event.event === "detach") || (event.event === "value")) {
-            } else {
-                dsLog.warnACME("DS", "DSValueStore", "emitEvent", `${this.storeName}/${event.event}`, "No event registered for listening");
+            if ((this.storeManager !== undefined) && (this.storeManager as IDSStoreManagerInternal).warnUnlistenEvents) {
+                if ((event.event === "attach") || (event.event === "detach") || (event.event === "value")) {
+                } else {
+                    dsLog.warnACME("DS", "DSValueStore", "emitEvent", `${this.storeName}/${event.event}`, "No event registered for listening");
+                }
             }
         } else if (this.storeManager === undefined) {
             dsLog.warnACME("DS", "DSValueStore", "emitEvent", `${this.storeName}/${event.event}`, "this.storeManager is undefined");
@@ -290,19 +286,23 @@ export class DSValueStore<
      * @param properties 
      */
     public emitValueChanged(msg: string, stateValue: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
-        if (dsLog.enabled) {
-            dsLog.infoACME("DS", "DSValueStore", "emitValueChanged", this.storeName);
-        }
-        if (this.arrValueChangedHandler !== undefined) {
-            for (const valueChangedHandler of this.arrValueChangedHandler) {
-                if (dsLog.enabled) {
-                    dsLog.infoACME("DS", "DSValueStore", "emitValueChanged", valueChangedHandler.msg, "/dirtyHandler");
-                }
-                valueChangedHandler.handler(stateValue, properties);
+        const c1 = (this.arrValueChangedHandler !== undefined);
+        const c2 = (this.isProcessDirtyConfigured);
+        if (c1 || c2) {
+            if (dsLog.enabled) {
+                dsLog.infoACME("DS", "DSValueStore", "emitValueChanged", this.storeName);
             }
-        }
-        if (this.isProcessDirtyConfigured) {
-            this.setDirty(msg ?? "emitValueChanged");
+            if (c1) {
+                for (const valueChangedHandler of this.arrValueChangedHandler!) {
+                    if (dsLog.enabled) {
+                        dsLog.infoACME("DS", "DSValueStore", "emitValueChanged", valueChangedHandler.msg, "/dirtyHandler");
+                    }
+                    valueChangedHandler.handler(stateValue, properties);
+                }
+            }
+            if (c2) {
+                this.setDirty(msg ?? "emitValueChanged");
+            }
         }
     }
 
@@ -312,8 +312,6 @@ export class DSValueStore<
      * @param callback the callback that will be called
      */
     public listenValueChanged(msg: string, callback: DSEmitValueChangedHandler<Value>): DSUnlisten {
-        // think about
-        this.enableEmitDirtyFromValueChanged = true;
         if (this.arrValueChangedHandler === undefined) {
             this.arrValueChangedHandler = [{ msg: msg, handler: callback }];
         } else {
@@ -341,11 +339,14 @@ export class DSValueStore<
      * @param msg the message is logged if the store was not dirty
      */
     public setDirty(msg: string): void {
-        this._isDirty = false;
-        if (this.storeManager !== undefined) {
+        if (this._isDirty) { return; }
+        this._isDirty = true;
+        if (this.storeManager === undefined) {
+            dsLog.warnACME("DS", "DSValueStore", "setDirty", this.storeName, "storeManager is not set.");
+        } else {
             this.storeManager.isDirty = true;
+            dsLog.infoACME("DS", "DSValueStore", "setDirty", this.storeName, msg);
         }
-        dsLog.infoACME("DS", "DSValueStore", "isDirty", this.storeName, msg);
     }
 
     /**
@@ -428,7 +429,6 @@ export class DSValueStore<
         }
         const index = this.arrCleanedUpRelated.findIndex((item) => (item.valueStore === relatedValueStore));
         if (index < 0) {
-            this.enableEmitDirtyFromValueChanged = true;
             this.arrCleanedUpRelated = (this.arrCleanedUpRelated || []).concat([{ msg: msg, valueStore: relatedValueStore as IDSAnyValueStore }]);
             return (() => { this.unlistenCleanedUpRelated(relatedValueStore); });
         } else {
@@ -451,7 +451,7 @@ export class DSValueStore<
 
     public emitUIUpdate(uiStateValue: IDSUIStateValue<Value>) {
         if (this.storeManager === undefined) {
-            uiStateValue.triggerUIUpdate();
+            uiStateValue.triggerUIUpdate(this.stateVersion);
         } else {
             this.storeManager.emitUIUpdate(uiStateValue);
         }

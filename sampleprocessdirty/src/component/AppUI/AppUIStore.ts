@@ -17,12 +17,26 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         countDown.listenEvent("countDown",(e)=>{
             this.stateValue.value.counter--;
             this.stateValue.value.clicks++;
-            this.stateValue.valueChanged();
+            this.stateValue.valueChanged("countDown");
         });      
         countUp.listenEvent("countUp",(e)=>{
             this.stateValue.value.counter++;
             this.stateValue.value.clicks++;
-            this.stateValue.valueChanged();
+            this.stateValue.valueChanged("countUp");
         });      
+    }
+
+    public processDirty(): boolean {
+        // needed since listenCleanedUpRelated is used
+        super.processDirty();
+        console.log("dirtry 1",this.stateValue.value.counter);
+        if (this.stateValue.value.counter < -10){
+            this.stateValue.value.counter = 10;
+        }
+        if (10 < this.stateValue.value.counter){
+            this.stateValue.value.counter = -10;
+        }
+        console.log("dirty 2",this.stateValue.value.counter);
+        return true;
     }
 }

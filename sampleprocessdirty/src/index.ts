@@ -5,7 +5,7 @@ import {
     dsLog
 } from 'dependingState';
 
-import AppView from './component/AppUI/AppUIView';
+import AppUIView from './component/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { AppUIValue } from './component/AppUI/AppUIValue';
@@ -42,7 +42,7 @@ function main() {
     appStoreManager.initialize();
 
     const rootElement = React.createElement(
-        AppView,
+        AppUIView,
         appStoreManager.appUIStore.stateValue.getViewProps()
     );
     const appRootElement = window.document.getElementById("appRoot");
@@ -59,9 +59,12 @@ try {
 }
 
 
-// hint 2
+// hint2
 // in
 // SumStore initializeStore 
 // add this 2 lines
 // const counterStore = (this.storeManager! as IAppStoreManager).counterStore;
 // counterStore.listenDirtyRelated(this.storeName, this);
+
+// hint3
+// you have to read the error message.
