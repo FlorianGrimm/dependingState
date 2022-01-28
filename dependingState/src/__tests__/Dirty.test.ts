@@ -1,4 +1,4 @@
-import { DSStateValueSelf } from "../DSStateValue";
+import { DSStateValueSelf } from "../DSStateValueSelf";
 import {
     DSMapStore,
     DSStoreManager,

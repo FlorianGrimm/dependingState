@@ -6,15 +6,17 @@ import type {
     DSUIProps
 } from './types';
 
+type ComponentStateVersionName = { component: React.Component<any>; stateVersionName: string; };
+
 export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
     _ViewProps: undefined | DSUIProps<Value>;
-    component: undefined | (React.Component<Value>) | (React.Component<Value>[]);
+    componentStateVersionName: undefined | (ComponentStateVersionName) | (ComponentStateVersionName[]);
     stateValue: IDSStateValue<Value>;
     viewStateVersion: number;
     triggerScheduled: boolean;
 
     constructor(stateValue: IDSStateValue<Value>) {
-        this.component = undefined;
+        this.componentStateVersionName = undefined;
         this.stateValue = stateValue;
         this.viewStateVersion = 0;
         this.triggerScheduled = false;
@@ -25,35 +27,37 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
             const fnGetRenderProps: (() => Value) = (() => {
                 return this.stateValue.value;
             });
-            const fnWireStateVersion: ((component: React.Component<any>) => void) = ((
-                component: React.Component<any>
+            const fnWireStateVersion: ((component: React.Component<any>, stateVersionName?: string) => number) = ((
+                component: React.Component<any>, stateVersionName?: string
             ) => {
-                if (this.component === undefined) {
-                    this.component = component;
-                } else if (Array.isArray(this.component)) {
-                    this.component.push(component);
+                const csvn = { component: component, stateVersionName: stateVersionName ?? "stateVersion" };
+                if (this.componentStateVersionName === undefined) {
+                    this.componentStateVersionName = csvn;
+                } else if (Array.isArray(this.componentStateVersionName)) {
+                    this.componentStateVersionName.push(csvn);
                 } else {
-                    this.component = [this.component as React.Component<Value>, component];
+                    this.componentStateVersionName = [this.componentStateVersionName as ComponentStateVersionName, csvn];
                 }
+                return this.stateValue.stateVersion;
             });
             const fnUnwireStateVersion: ((component: React.Component<any>) => void) = ((
                 component: React.Component<any>
             ) => {
-                if (this.component === undefined) {
+                if (this.componentStateVersionName === undefined) {
                     // done
-                } else if (Array.isArray(this.component)) {
-                    for (let idx = 0; idx < this.component.length; idx++) {
-                        if (this.component[idx] === component) {
-                            this.component.splice(idx, 1);
-                            if (this.component.length === 1) {
-                                this.component = this.component[0];
+                } else if (Array.isArray(this.componentStateVersionName)) {
+                    for (let idx = 0; idx < this.componentStateVersionName.length; idx++) {
+                        if (this.componentStateVersionName[idx].component === component) {
+                            this.componentStateVersionName.splice(idx, 1);
+                            if (this.componentStateVersionName.length === 1) {
+                                this.componentStateVersionName = this.componentStateVersionName[0];
                             }
                             return;
                         }
                     }
                 } else {
-                    if (this.component === component) {
-                        this.component = undefined;
+                    if (this.componentStateVersionName.component === component) {
+                        this.componentStateVersionName = undefined;
                     }
                 }
             });
@@ -81,7 +85,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
         return this._ViewProps!;
     }
 
-    triggerUIUpdate(stateVersion:number): void {
+    triggerUIUpdate(stateVersion: number): void {
         this.triggerScheduled = false;
         // const stateVersion = this.stateValue.stateVersion;
         // if (this.component === undefined) {
@@ -90,33 +94,33 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
         //     if (stateVersion === this.viewStateVersion) {
         //         //
         //         dsLog.info(`DSUIStateValue skip update same stateVersion: ${stateVersion}`)
-                
+
         //     } else {
         this.viewStateVersion = stateVersion;
-        if (this.component === undefined) {
+        if (this.componentStateVersionName === undefined) {
             //
-        } else if (Array.isArray(this.component)) {
-            for (const component of this.component) {
+        } else if (Array.isArray(this.componentStateVersionName)) {
+            for (const component of this.componentStateVersionName) {
                 component.setState({ stateVersion: stateVersion });
-                if (dsLog.enabled){
-                    dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg( component));
+                if (dsLog.enabled) {
+                    dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(component));
                 }
             }
         } else {
-            this.component.setState({ stateVersion: stateVersion });
+            this.componentStateVersionName.setState({ stateVersion: stateVersion });
 
-            if (dsLog.enabled){
-                dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg( this.component));
+            if (dsLog.enabled) {
+                dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(this.componentStateVersionName));
             }
         }
         //     }
         // }
     }
-    toString():string{
-        if (typeof (this.stateValue.value as any).toString === "function"){
+    toString(): string {
+        if (typeof (this.stateValue.value as any).toString === "function") {
             return (this.stateValue.value as any).toString();
         }
-        if (typeof (this.stateValue as any).toString === "function"){
+        if (typeof (this.stateValue as any).toString === "function") {
             return this.stateValue.toString();
         }
         return `${this.stateValue}`;

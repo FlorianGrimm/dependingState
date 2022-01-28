@@ -13,6 +13,7 @@ export * from './DSEntityStore';
 export * from './DSObjectStore';
 export * from './DSArrayStore';
 export * from './DSStateValue';
+export * from './DSStateValueSelf';
 export * from './DSUIStateValue';
 export * from './DSStoreBuilder';
 export * from './DSLog';

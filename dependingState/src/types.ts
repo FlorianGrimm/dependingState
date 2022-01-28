@@ -471,8 +471,13 @@ export type DSUIViewStateBase = {
 
 export type DSUIProps<Value = any> = {
     getRenderProps: () => Value;
-    wireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
-    unwireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(component: React.Component<Props, State>): void;
+    wireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(
+            component: React.Component<Props, State>, 
+            stateVersionName?:string
+        ): number;
+    unwireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(
+            component: React.Component<Props, State>
+        ): void;
     getStateVersion(): number;
 } & {
     key?: string | number;

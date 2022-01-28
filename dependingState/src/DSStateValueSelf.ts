@@ -7,36 +7,19 @@ import { DSUIStateValue } from "./DSUIStateValue";
 import { dsLog } from "./DSLog";
 import { DSEventEntityVSValue } from ".";
 
-export class DSStateValue<Value> implements IDSStateValue<Value>{
-    private _value: Value;
-    private _stateVersion: number;
-
+export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements IDSStateValue<Value>{
     store: IDSValueStoreWithValue<Value> | undefined;
+    stateVersion: number;
     uiStateValue: DSUIStateValue<Value> | undefined;
 
-    constructor(value: Value) {
-        this._value = value;
+    constructor() {
         this.store = undefined;
-        this._stateVersion = 1;
+        this.stateVersion = 1;
         this.uiStateValue = undefined;
     }
 
-    public get stateVersion(): number {
-        return this._stateVersion;
-    }
-
-    public set stateVersion(value: number) {
-        this._stateVersion = value;
-        //dsLog.infoACME("DS", "DSStateValue", "stateVersion", this._value);
-    }
-
     public get value(): Value {
-        return this._value;
-    }
-
-    public set value(v: Value) {
-        this._value = v;
-        this.valueChanged("value", undefined);
+        return this as unknown as Value;
     }
 
     public valueChanged(msg: string, properties?: Set<keyof Value> | undefined) {
@@ -47,7 +30,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         }
         if (this.uiStateValue !== undefined) {
             if (this.store === undefined) {
-                dsLog.debugACME("DS", "DSStateValue", "valueChanged", "store is undefined");
+                dsLog.debugACME("DS", "DSStateValueSelf", "valueChanged", "store is undefined");
                 this.uiStateValue.triggerUIUpdate(this.stateVersion);
             } else {
                 this.store.emitUIUpdate(this.uiStateValue);
@@ -89,7 +72,6 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
             }
         }
     }
-
     public triggerUIUpdate(stateVersion:number): void {
         if (this.uiStateValue === undefined) {
             // ignore
@@ -113,8 +95,4 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
             this.uiStateValue.triggerScheduled = value;
         }
     }
-}
-
-export function stateValue<Value>(value: Value) {
-    return new DSStateValue<Value>(value);
 }
