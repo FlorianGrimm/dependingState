@@ -23,7 +23,8 @@ export const arrPathKey: NavigatorPathKey[] = [
     "pageC",
 ];
 
-export const routes: NavigatorRoutes = {
+//export const routes: NavigatorRoutes = {
+export const defRoutes = {
     home: {
         path: mapPath.home,
         exact: true

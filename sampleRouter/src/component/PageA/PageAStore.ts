@@ -29,7 +29,7 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
         const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 
         pageANavigate.listenEvent("handle pageANavigate", (e) => {
-            getAppStoreManager().navigatorStore.navigateToPageA("");
+            getAppStoreManager().navigatorStore.navigateToPageA({ a: 1, b: 11 });
             pageALoadData.emitEvent("");
         });
 
@@ -37,6 +37,7 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
             this.stateValue.value.isLoading = true;
             this.stateValue.valueChanged("loading...", propertiesSetisLoading);
 
+            /*
             const p = new Promise<void>((resolve) => {
                 setTimeout(() => {
                     this.stateValue.value.isLoading = false;
@@ -45,6 +46,11 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
                 }, 2000);
             });
             return p;
+            */
+            setTimeout(() => {
+                this.stateValue.value.isLoading = false;
+                this.stateValue.valueChanged("loadingDone", propertiesSetisLoading);
+            }, 250);
         });
 
         navigatorStore.listenEventValue("handle pageChanged", (e) => {

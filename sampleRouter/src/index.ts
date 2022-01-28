@@ -42,6 +42,7 @@ function main() {
     dsLog.attach(appStoreManager);    
     appStoreManager.enableTiming=true;
     appStoreManager.initialize();
+    appStoreManager.warnEventsOutOfProcess=false;
 
     const rootElement = React.createElement(
         AppUIView,

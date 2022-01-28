@@ -599,7 +599,7 @@ export function createHashHistory(
 
     function getIndexAndLocation(): [number, Location] {
         let { pathname = '/', search = '', hash = '' } = parsePath(
-            window.location.hash.substr(1)
+            window.location.hash.substring(1)
         );
         let state = globalHistory.state || {};
         return [
@@ -1059,7 +1059,8 @@ function createEvents<F extends Function>(): Events<F> {
 function createKey() {
     return Math.random()
         .toString(36)
-        .substr(2, 8);
+        .substring(2, 10)
+        ;
 }
 
 /**
@@ -1086,14 +1087,14 @@ export function parsePath(path: string) {
     if (path) {
         let hashIndex = path.indexOf('#');
         if (hashIndex >= 0) {
-            partialPath.hash = path.substr(hashIndex);
-            path = path.substr(0, hashIndex);
+            partialPath.hash = path.substring(hashIndex);
+            path = path.substring(0, hashIndex);
         }
 
         let searchIndex = path.indexOf('?');
         if (searchIndex >= 0) {
-            partialPath.search = path.substr(searchIndex);
-            path = path.substr(0, searchIndex);
+            partialPath.search = path.substring(searchIndex);
+            path = path.substring(0, searchIndex);
         }
 
         if (path) {

@@ -93,8 +93,6 @@ export interface IDSValueStoreBase {
     getNextStateVersion(stateVersion: number): number;
 }
 
-export type ThenPromise = (p: Promise<any | void>) => Promise<any | void> | void;
-
 export interface IDSValueStore<
     Key,
     Value = any,
@@ -119,7 +117,6 @@ export interface IDSValueStore<
      * emit the event by enqueue it within the DSStoreManager that will be handled in process() (that should already running)
      * @param eventType the event
      * @param payload  the payload
-     * @param thenPromise ignore for now
      */
     emitEvent<
         Event extends DSEvent<Payload, EventType, StoreName>,
@@ -128,7 +125,6 @@ export interface IDSValueStore<
         >(
             eventType: Event['event'],
             payload: Event['payload'],
-            thenPromise?: ThenPromise | undefined
         ): DSEventHandlerResult;
 
     /**
@@ -396,7 +392,6 @@ export type DSEvent<
         storeName: StoreName;
         event: EventType;
         payload: Payload;
-        thenPromise?: ThenPromise | undefined
     };
 
 export type DSPayloadEntitySV<
@@ -482,3 +477,9 @@ export type DSUIProps<Value = any> = {
 } & {
     key?: string | number;
 };
+
+export type DSLogFlag = (
+    "emitValueChanged"
+    |"valueChangedIfNeeded"
+    |"b"
+);

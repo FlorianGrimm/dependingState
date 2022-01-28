@@ -16,7 +16,7 @@ export type NavigatorSetLocationPayload<NavigatorPage = string, NavigatorPathArg
     to?: HistoryTo;
     eventToProcess?: DSEvent<any, any, string> | undefined;
 };
-export type IDSNavigatorValue<NavigatorPageName = string, NavigatorPathArguments = {}> = {
+export type IDSNavigatorValue<NavigatorPageName = string, NavigatorPathArguments = PathArgumentsAny> = {
     page: NavigatorPageName;
     pathArguments: NavigatorPathArguments;
     // pathPattern: string,
@@ -56,12 +56,6 @@ export type LocationParameter = {
     noListener?: boolean | undefined;
 }
 
-// export interface RouterRootState {
-//     router: RouterState;
-// }
-
-
-
 export interface RouteProps<
     Path extends string = string
     > {
@@ -72,28 +66,9 @@ export interface RouteProps<
     strict?: boolean;
 }
 
-// import type { LOCATION_CHANGE } from './reduxRouterAction';
-
-// export interface LocationChangeAction {
-//     type: typeof LOCATION_CHANGE;
-//     payload: LocationChangePayload;
-// }
-
-// export interface LocationChangePayload {
-//     location: RouterLocation | Location;
-//     action: HistoryAction | string;
-//     page?: Pages | undefined;
-// }
-
 import type { matchPath } from './matchPath';
+
 export type PathParam = Parameters<typeof matchPath>[1];
-
-// export type HandleLocationChangedFunc = (
-//     update: Update<LocationState>,
-//     store: Store<RouterRootState, any>
-// ) => HandleLocationChangedResult;
-
-// export type HandleLocationChangedResult = ((ReduxAction | AsyncThunkAction<unknown, unknown, any> | undefined)[] | undefined);
 
 export interface match<Params extends { [K in keyof Params]?: string } = {}> {
     params: Params;
@@ -102,11 +77,15 @@ export interface match<Params extends { [K in keyof Params]?: string } = {}> {
     url: string;
 }
 
-// export type ReduxRouterServiceArguments = {
-//     history: History<LocationState>;
-// //     //store: Store<RouterRootState, any>;
-//      onLocationChanged?: HandleLocationChangedFunc;
-//      stateCompareFunction?: /*IsEqualCustomizer*/ any;
-// //     noInitialPop?: boolean;
-// //     noTimeTravelDebugging?: boolean;
-// }
+export type PathArgumentsString = {
+    [key in string]: string
+}
+
+export type PathArgumentsAny = {
+    [key in string]: any | undefined
+}
+
+export type ConvertPageParametersResult<NavigatorPageName extends string = string, PathArguments extends PathArgumentsAny = PathArgumentsAny> = { 
+    pageName: NavigatorPageName;
+    pathArguments: PathArguments ;
+}

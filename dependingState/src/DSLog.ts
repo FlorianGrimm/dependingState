@@ -1,5 +1,5 @@
 import type { Component } from "react";
-import type { IDSStoreManager } from "./types";
+import type { DSLogFlag, IDSStoreManager } from "./types";
 import type { DSStoreManager } from "./DSStoreManager";
 
 function noop() {
@@ -11,7 +11,7 @@ function warnIfCalled(...data: any[]) {
 }
 
 //
-export class DSLogBase {
+export class DSLogBase<Flag extends string = string> {
     // assert(condition?: boolean, ...data: any[]): void;
     // clear(): void;
     // count(label?: string): void;
@@ -43,6 +43,7 @@ export class DSLogBase {
     mode: "disabled" | "enabled" | "WarnIfCalled";
     enableTiming: boolean;
     storeManager: IDSStoreManager | undefined;
+    flags: Set<Flag>;
 
     constructor(
         public name: string
@@ -62,6 +63,7 @@ export class DSLogBase {
         this.error = noop;
 
         this.trace = noop;
+        this.flags = new Set();
     }
     public initialize(mode?: "disabled" | "enabled" | "WarnIfCalled" | "applyFromLocalStorage") {
         // for now
@@ -193,6 +195,17 @@ export class DSLogBase {
         return this;
     }
 
+    public isEnabled(flag: Flag): boolean {
+        if (this.enabled) {
+            if (this.flags.size === 0) {
+                return true;
+            } else {
+                return this.flags.has(flag);
+            }
+        }
+        return false;
+    }
+
 }
 
 export function defaultConvertExtraArg(currentExtraArg: any): string {
@@ -259,7 +272,7 @@ function templateAMCE(
     }
 }
 
-export class DSLogACME extends DSLogBase {
+export class DSLogACME<Flag extends string = string> extends DSLogBase<Flag> {
     convertArg: (currentArg: any) => string;
     amceEnabled: boolean;
     watchoutApp: string | undefined;
@@ -426,15 +439,15 @@ export class DSLogACME extends DSLogBase {
 }
 
 
-export class DSLog extends DSLogACME {
+export class DSLog<Flag extends string = string> extends DSLogACME<Flag> {
     constructor(name: string) {
         super(name || "dsLog");
     }
     setSelfInGlobal() {
-        if (typeof window !== "undefined"){
+        if (typeof window !== "undefined") {
             (window as any).dsLog = this;
         }
     }
 }
 
-export const dsLog = new DSLog("dsLog");
+export const dsLog = new DSLog<DSLogFlag>("dsLog");

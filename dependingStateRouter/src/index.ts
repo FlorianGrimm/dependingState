@@ -34,3 +34,5 @@ export * from './DSRouterValue';
 export * from './DSRouterStore';
 export * from './DSNavigatorActions';
 export * from './DSNavigatorStore';
+export * from './DSNavigatorWithRoutesAction';
+export * from './DSNavigatorWithRoutesStore';

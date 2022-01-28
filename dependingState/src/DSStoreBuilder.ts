@@ -8,7 +8,6 @@ import type {
     DSEvent,
     IDSStoreManagerInternal,
     IDSValueStoreBase,
-    ThenPromise,
     IDSAnyValueStoreInternal
 } from "./types";
 
@@ -110,16 +109,14 @@ export class DSStoreAction<
     /**
      * emit the event
      * @param payload the payload
-     * @param thenPromise ignore it for now
      */
     emitEvent(
-        payload: Payload,
-        thenPromise?: ThenPromise | undefined
+        payload: Payload
     ): DSEventHandlerResult {
         if (this.valueStore === undefined) {
             throw new Error(`DS DSStoreAction.emitEvent valueStore is not set ${this.storeName} - Did you call theStore's-Builder.bindValueStore(this) in the constructor?`);
         } else {
-            this.valueStore.emitEvent(this.event, payload, thenPromise);
+            this.valueStore.emitEvent(this.event, payload);
         }
     }
 
@@ -127,12 +124,10 @@ export class DSStoreAction<
     * emit the event - if needed process will be called
     * @param msg 
     * @param payload the payload
-    * @param thenPromise ignore it for now
     */
     emitEventAndProcess(
         msg: string,
-        payload: Payload,
-        thenPromise?: ThenPromise | undefined
+        payload: Payload
     ): DSEventHandlerResult {
         const valueStore = this.valueStore;
         const storeManager = this.valueStore?.storeManager;
@@ -142,11 +137,11 @@ export class DSStoreAction<
             if ((storeManager as IDSStoreManagerInternal).isProcessing === 0) {
                 if ((this.valueStore as IDSAnyValueStoreInternal).hasEventHandlersFor(this.event)) {
                     storeManager.process(msg, () => {
-                        valueStore.emitEvent(this.event, payload, thenPromise);
+                        valueStore.emitEvent(this.event, payload);
                     });
                 }
             } else {
-                valueStore.emitEvent(this.event, payload, thenPromise);
+                valueStore.emitEvent(this.event, payload);
             }
         }
     }

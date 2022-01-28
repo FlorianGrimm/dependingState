@@ -1,3 +1,4 @@
+import { dsLog } from ".";
 import {
     IDSPropertiesChanged,
     IDSStateValue
@@ -68,6 +69,9 @@ export class DSPropertiesChanged<
         } else {
             const instance = this.instance;
             this.instance = null! as any;
+            if (dsLog.isEnabled("valueChangedIfNeeded")){
+                dsLog.infoACME("DS", "DSPropertiesChanged", "valueChangedIfNeeded", msg);
+            }
             instance.valueChanged(msg, this.properties);
             return true;
         }

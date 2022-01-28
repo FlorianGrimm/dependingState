@@ -3,7 +3,6 @@ import type {
     DSEventHandler,
     DSEventHandlerResult,
     DSUnlisten,
-    DSEventName,
     IDSValueStore,
     IDSStateValue,
     IDSStoreManager,
@@ -13,7 +12,6 @@ import type {
     IDSAnyValueStore,
     IDSAnyValueStoreInternal,
     IDSValueStoreBase,
-    ThenPromise,
     DSEmitValueChangedHandler,
     DSEmitCleanedUpHandler,
     IDSValueStoreInternals,
@@ -146,14 +144,12 @@ export class DSValueStore<
         Event extends DSEvent<any, string, StoreName>
     >(
         eventType: Event['event'],
-        payload: Event['payload'],
-        thenPromise?: ThenPromise | undefined
+        payload: Event['payload']
     ): DSEventHandlerResult {
         const event: DSEvent<Event['payload'], Event['event'], Event['storeName']> = {
             storeName: this.storeName,
             event: eventType,
-            payload: payload,
-            thenPromise: thenPromise
+            payload: payload
         };
         let arrEventHandlers = this.mapEventHandlers.get(event.event);
         if ((arrEventHandlers === undefined) || (arrEventHandlers?.length === 0)) {
@@ -286,13 +282,11 @@ export class DSValueStore<
      * @param properties 
      */
     public emitValueChanged(msg: string, stateValue: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
-        const c1 = (this.arrValueChangedHandler !== undefined);
-        const c2 = (this.isProcessDirtyConfigured);
-        if (c1 || c2) {
-            if (dsLog.enabled) {
+        if ((this.arrValueChangedHandler !== undefined) || (this.isProcessDirtyConfigured)) {
+            if (dsLog.isEnabled("emitValueChanged")) {
                 dsLog.infoACME("DS", "DSValueStore", "emitValueChanged", this.storeName);
             }
-            if (c1) {
+            if ((this.arrValueChangedHandler !== undefined)) {
                 for (const valueChangedHandler of this.arrValueChangedHandler!) {
                     if (dsLog.enabled) {
                         dsLog.infoACME("DS", "DSValueStore", "emitValueChanged", valueChangedHandler.msg, "/dirtyHandler");
@@ -300,7 +294,7 @@ export class DSValueStore<
                     valueChangedHandler.handler(stateValue, properties);
                 }
             }
-            if (c2) {
+            if (this.isProcessDirtyConfigured) {
                 this.setDirty(msg ?? "emitValueChanged");
             }
         }
