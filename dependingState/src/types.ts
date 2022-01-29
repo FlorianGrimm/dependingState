@@ -48,7 +48,7 @@ export interface IDSStoreManagerInternal extends IDSStoreManager {
     storeManagerState: number;
     isProcessing: number;
     isupdateRegisteredEventsDone: boolean;
-    warnUnlistenEvents:boolean;
+    warnUnlistenEvents: boolean;
     warnEventsOutOfProcess: boolean;
 }
 
@@ -125,7 +125,7 @@ export interface IDSValueStore<
         >(
             eventType: Event['event'],
             payload: Event['payload'],
-        ): DSEventHandlerResult;
+    ): DSEventHandlerResult;
 
     /**
      * register a callback for events that will be enqueued with emitEvent and invoked from process().
@@ -240,7 +240,7 @@ export interface IDSValueStoreInternals<Value> {
     /**
      * called after initializeRegisteredEvents
      */
-    validateRegisteredEvents(): void ;
+    validateRegisteredEvents(): void;
 
     /**
      * called after initializeStore
@@ -341,7 +341,7 @@ export interface IDSStateValue<Value> {
 
     getViewProps(): DSUIProps<Value>;
     emitUIUpdate(): void;
-    triggerUIUpdate(stateVersion:number): void;
+    triggerUIUpdate(stateVersion: number): void;
     triggerScheduled: boolean;
 }
 
@@ -368,7 +368,7 @@ export interface IDSPropertiesChanged<
 
 export interface IDSUIStateValue<Value = any> {
     getViewProps(): DSUIProps<Value>;
-    triggerUIUpdate(stateVersion:number): void;
+    triggerUIUpdate(stateVersion: number): void;
     triggerScheduled: boolean;
 }
 
@@ -472,19 +472,34 @@ export type DSUIViewStateBase = {
 export type DSUIProps<Value = any> = {
     getRenderProps: () => Value;
     wireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(
-            component: React.Component<Props, State>, 
-            stateVersionName?:string
-        ): number;
+        component: React.Component<Props, State>,
+        stateVersionName?: string|undefined
+    ): number;
     unwireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(
-            component: React.Component<Props, State>
-        ): void;
+        component: React.Component<Props, State>
+    ): void;
     getStateVersion(): number;
 } & {
     key?: string | number;
 };
 
+/*
+type Xxx1<y extends string>={
+    [key in y]:number;
+}
+type Xxx<y extends string|undefined>={
+    [key in (y extends string ? y : "stateVersion")]:number;
+}
+const abc1:Xxx<"aaa">={
+    aaa:1
+};
+const abc2:Xxx<undefined>={
+    stateVersion:1
+};
+*/
+
 export type DSLogFlag = (
     "emitValueChanged"
-    |"valueChangedIfNeeded"
-    |"b"
+    | "triggerUIUpdate"
+    | "valueChangedIfNeeded"
 );

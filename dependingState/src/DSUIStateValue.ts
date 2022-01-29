@@ -10,13 +10,13 @@ type ComponentStateVersionName = { component: React.Component<any>; stateVersion
 
 export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
     _ViewProps: undefined | DSUIProps<Value>;
-    componentStateVersionName: undefined | (ComponentStateVersionName) | (ComponentStateVersionName[]);
+    arrComponentStateVersionName: undefined | (ComponentStateVersionName) | (ComponentStateVersionName[]);
     stateValue: IDSStateValue<Value>;
     viewStateVersion: number;
     triggerScheduled: boolean;
 
     constructor(stateValue: IDSStateValue<Value>) {
-        this.componentStateVersionName = undefined;
+        this.arrComponentStateVersionName = undefined;
         this.stateValue = stateValue;
         this.viewStateVersion = 0;
         this.triggerScheduled = false;
@@ -31,33 +31,33 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
                 component: React.Component<any>, stateVersionName?: string
             ) => {
                 const csvn = { component: component, stateVersionName: stateVersionName ?? "stateVersion" };
-                if (this.componentStateVersionName === undefined) {
-                    this.componentStateVersionName = csvn;
-                } else if (Array.isArray(this.componentStateVersionName)) {
-                    this.componentStateVersionName.push(csvn);
+                if (this.arrComponentStateVersionName === undefined) {
+                    this.arrComponentStateVersionName = csvn;
+                } else if (Array.isArray(this.arrComponentStateVersionName)) {
+                    this.arrComponentStateVersionName.push(csvn);
                 } else {
-                    this.componentStateVersionName = [this.componentStateVersionName as ComponentStateVersionName, csvn];
+                    this.arrComponentStateVersionName = [this.arrComponentStateVersionName as ComponentStateVersionName, csvn];
                 }
                 return this.stateValue.stateVersion;
             });
             const fnUnwireStateVersion: ((component: React.Component<any>) => void) = ((
                 component: React.Component<any>
             ) => {
-                if (this.componentStateVersionName === undefined) {
+                if (this.arrComponentStateVersionName === undefined) {
                     // done
-                } else if (Array.isArray(this.componentStateVersionName)) {
-                    for (let idx = 0; idx < this.componentStateVersionName.length; idx++) {
-                        if (this.componentStateVersionName[idx].component === component) {
-                            this.componentStateVersionName.splice(idx, 1);
-                            if (this.componentStateVersionName.length === 1) {
-                                this.componentStateVersionName = this.componentStateVersionName[0];
+                } else if (Array.isArray(this.arrComponentStateVersionName)) {
+                    for (let idx = 0; idx < this.arrComponentStateVersionName.length; idx++) {
+                        if (this.arrComponentStateVersionName[idx].component === component) {
+                            this.arrComponentStateVersionName.splice(idx, 1);
+                            if (this.arrComponentStateVersionName.length === 1) {
+                                this.arrComponentStateVersionName = this.arrComponentStateVersionName[0];
                             }
                             return;
                         }
                     }
                 } else {
-                    if (this.componentStateVersionName.component === component) {
-                        this.componentStateVersionName = undefined;
+                    if (this.arrComponentStateVersionName.component === component) {
+                        this.arrComponentStateVersionName = undefined;
                     }
                 }
             });
@@ -85,6 +85,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
         return this._ViewProps!;
     }
 
+    
     triggerUIUpdate(stateVersion: number): void {
         this.triggerScheduled = false;
         // const stateVersion = this.stateValue.stateVersion;
@@ -97,25 +98,59 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
 
         //     } else {
         this.viewStateVersion = stateVersion;
-        if (this.componentStateVersionName === undefined) {
+        const enabled = (dsLog.enabled && dsLog.isEnabled("triggerUIUpdate"));
+        if (this.arrComponentStateVersionName === undefined) {
             //
-        } else if (Array.isArray(this.componentStateVersionName)) {
-            for (const component of this.componentStateVersionName) {
-                component.setState({ stateVersion: stateVersion });
-                if (dsLog.enabled) {
-                    dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(component));
+        } else if (Array.isArray(this.arrComponentStateVersionName)) {
+            for (const componentStateVersionName of this.arrComponentStateVersionName) {
+                componentStateVersionName.component.setState({ [componentStateVersionName.stateVersionName]: stateVersion });
+                if (enabled) {
+                    dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(componentStateVersionName));
                 }
             }
         } else {
-            this.componentStateVersionName.setState({ stateVersion: stateVersion });
-
-            if (dsLog.enabled) {
-                dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(this.componentStateVersionName));
+            this.arrComponentStateVersionName.component.setState({ [this.arrComponentStateVersionName.stateVersionName]: stateVersion });
+            if (enabled) {
+                dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(this.arrComponentStateVersionName));
             }
         }
         //     }
         // }
     }
+
+    /*
+        triggerUIUpdate(stateVersion: number): void {
+            this.triggerScheduled = false;
+            // const stateVersion = this.stateValue.stateVersion;
+            // if (this.component === undefined) {
+            //     //
+            // } else {
+            //     if (stateVersion === this.viewStateVersion) {
+            //         //
+            //         dsLog.info(`DSUIStateValue skip update same stateVersion: ${stateVersion}`)
+
+            //     } else {
+            this.viewStateVersion = stateVersion;
+            if (this.componentStateVersionName === undefined) {
+                //
+            } else if (Array.isArray(this.componentStateVersionName)) {
+                for (const component of this.componentStateVersionName) {
+                    component.setState({ stateVersion: stateVersion });
+                    if (dsLog.enabled) {
+                        dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(component));
+                    }
+                }
+            } else {
+                this.componentStateVersionName.setState({ stateVersion: stateVersion });
+
+                if (dsLog.enabled) {
+                    dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(this.componentStateVersionName));
+                }
+            }
+            //     }
+            // }
+        }
+    */
     toString(): string {
         if (typeof (this.stateValue.value as any).toString === "function") {
             return (this.stateValue.value as any).toString();

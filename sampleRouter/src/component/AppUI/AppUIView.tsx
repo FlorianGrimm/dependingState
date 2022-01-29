@@ -1,7 +1,9 @@
 import {
     DSUIProps,
-    DSUIViewStateBase
+    DSUIViewStateBase,
+    bindUIComponent
 } from "dependingState";
+
 import React from "react";
 import { AppUIValue } from "./AppUIValue";
 import { routerPush } from "dependingStateRouter";
@@ -24,15 +26,21 @@ const navigationStyles:React.CSSProperties={
 export default class AppUIView extends React.Component<AppUIViewProps, AppUIViewState>{
     constructor(props: AppUIViewProps) {
         super(props);
-        this.state = {
-            stateVersion: this.props.getStateVersion()
-        };
+        this.state = 
+            bindUIComponent(this, props)
+                .add("stateVersion1", getAppStoreManager().navigatorStore.stateValue.getViewProps())
+                .bindHandler("handleClickPageA")
+                .bindHandler("handleClickPageB")
+                .bindHandler("handleClickNavigatorB")
+                .bindHandler("handleClickNavigatorB")
+                .setComponentWillUnmount()
+                .getState();       
         this.props.wireStateVersion(this);
         getAppStoreManager().navigatorStore.stateValue.getViewProps().wireStateVersion<any>(this);
-        this.handleClickPageA = this.handleClickPageA.bind(this);
-        this.handleClickPageB = this.handleClickPageB.bind(this);
-        this.handleClickNavigatorA = this.handleClickNavigatorA.bind(this);
-        this.handleClickNavigatorB = this.handleClickNavigatorB.bind(this);
+        // this.handleClickPageA = this.handleClickPageA.bind(this);
+        // this.handleClickPageB = this.handleClickPageB.bind(this);
+        // this.handleClickNavigatorA = this.handleClickNavigatorA.bind(this);
+        // this.handleClickNavigatorB = this.handleClickNavigatorB.bind(this);
     }
 
     componentWillUnmount() {
