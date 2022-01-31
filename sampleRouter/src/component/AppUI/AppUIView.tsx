@@ -29,18 +29,10 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
         this.state = 
             bindUIComponent(this, props)
                 .add("stateVersion1", getAppStoreManager().navigatorStore.stateValue.getViewProps())
-                .bindHandler("handleClickPageA")
-                .bindHandler("handleClickPageB")
-                .bindHandler("handleClickNavigatorB")
-                .bindHandler("handleClickNavigatorB")
+                .bindHandlerAuto()
                 .setComponentWillUnmount()
                 .getState();       
-        this.props.wireStateVersion(this);
         getAppStoreManager().navigatorStore.stateValue.getViewProps().wireStateVersion<any>(this);
-        // this.handleClickPageA = this.handleClickPageA.bind(this);
-        // this.handleClickPageB = this.handleClickPageB.bind(this);
-        // this.handleClickNavigatorA = this.handleClickNavigatorA.bind(this);
-        // this.handleClickNavigatorB = this.handleClickNavigatorB.bind(this);
     }
 
     componentWillUnmount() {
