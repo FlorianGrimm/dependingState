@@ -29,7 +29,7 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
         this.state = 
             bindUIComponent(this, props)
                 .add("stateVersion1", getAppStoreManager().navigatorStore.stateValue.getViewProps())
-                .bindHandlerAuto()
+                .bindHandleAll()
                 .setComponentWillUnmount()
                 .getState();       
         getAppStoreManager().navigatorStore.stateValue.getViewProps().wireStateVersion<any>(this);

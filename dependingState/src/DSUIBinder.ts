@@ -14,9 +14,9 @@ export type DSUIBinderType<Key extends string, Component> = {
         Value = ReturnType<P['getRenderProps']>,
         >(stateVersionName: NextKey, props: P): DSUIBinderType<Key | NextKey, Component>;
 
-    bindHandlerAuto(): DSUIBinderType<Key, Component>;
+    bindHandleAll(): DSUIBinderType<Key, Component>;
 
-    bindHandler<K extends keyof Component>(fnName: K | (K[])): DSUIBinderType<Key, Component>;
+    bindHandle<K extends keyof Component>(fnName: K | (K[])): DSUIBinderType<Key, Component>;
 
     setComponentWillUnmount(): DSUIBinderType<Key, Component>;
 
@@ -64,7 +64,7 @@ export class DSUIBinder<
         return this;
     }
 
-    bindHandlerAuto(): this {
+    bindHandleAll(): this {
         for (const key in this.component) {
             if (key.startsWith("handle")) {
                 if (Object.prototype.hasOwnProperty.call(this.component, key)) {
@@ -78,7 +78,7 @@ export class DSUIBinder<
         return this;
     }
 
-    bindHandler<K extends keyof Component>(fnName: K | (K[])): this {
+    bindHandle<K extends keyof Component>(fnName: K | (K[])): this {
         if (Array.isArray(fnName)) {
             for (const key in fnName) {
                 if (Object.prototype.hasOwnProperty.call(this.component, key)) {
