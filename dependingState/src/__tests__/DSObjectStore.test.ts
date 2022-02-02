@@ -152,7 +152,7 @@ test('DSObjectStore_process_promise', async () => {
                     valueAB.value.cnt += dsEvent.payload.entity.value.a * 10 + 1;
                     valueAB.valueChanged("testa");
                     resolve(undefined);
-                }, 200);
+                }, 20);
             });
             return result;
         });
@@ -163,7 +163,7 @@ test('DSObjectStore_process_promise', async () => {
                     valueAB.value.cnt += dsEvent.payload.entity.value.b * 100 + 1;
                     valueAB.valueChanged("testb");
                     resolve(undefined);
-                }, 50);
+                }, 5);
             });
             return result;
         });
@@ -173,15 +173,14 @@ test('DSObjectStore_process_promise', async () => {
     }
     );
 
-    const p = storeManager.process("test", () => {
+    storeManager.process("test", () => {
         valueA.value = { a: 1 };
         valueB.value = { b: 2 };
     });
-    if (p) { await p; }
-    // await storeManager.processAsyncAllSettled();
-    // console.log("processAsyncAllSettled done")
-
+    await storeManager.processAsyncAllSettled();
+    
     expect(valueAB.value.a).toBe(1);
     expect(valueAB.value.b).toBe(2);
     expect(valueAB.value.cnt).toBe(212);
 });
+1
