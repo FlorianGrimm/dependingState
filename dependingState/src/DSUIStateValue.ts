@@ -3,14 +3,14 @@ import { dsLog } from '.';
 import type {
     IDSUIStateValue,
     IDSStateValue,
-    DSUIProps
+    DSUIProps,
+    DSComponentStateVersionName
 } from './types';
 
-type ComponentStateVersionName = { component: React.Component<any>; stateVersionName: string; };
 
 export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
     _ViewProps: undefined | DSUIProps<Value>;
-    arrComponentStateVersionName: undefined | (ComponentStateVersionName) | (ComponentStateVersionName[]);
+    arrComponentStateVersionName: undefined | (DSComponentStateVersionName) | (DSComponentStateVersionName[]);
     stateValue: IDSStateValue<Value>;
     viewStateVersion: number;
     triggerScheduled: boolean;
@@ -36,7 +36,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
                 } else if (Array.isArray(this.arrComponentStateVersionName)) {
                     this.arrComponentStateVersionName.push(csvn);
                 } else {
-                    this.arrComponentStateVersionName = [this.arrComponentStateVersionName as ComponentStateVersionName, csvn];
+                    this.arrComponentStateVersionName = [this.arrComponentStateVersionName as DSComponentStateVersionName, csvn];
                 }
                 return this.stateValue.stateVersion;
             });
@@ -101,6 +101,9 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
         const enabled = (dsLog.enabled && dsLog.isEnabled("triggerUIUpdate"));
         if (this.arrComponentStateVersionName === undefined) {
             //
+            if (enabled) {
+                dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", "no component");
+            }
         } else if (Array.isArray(this.arrComponentStateVersionName)) {
             for (const componentStateVersionName of this.arrComponentStateVersionName) {
                 componentStateVersionName.component.setState({ [componentStateVersionName.stateVersionName]: stateVersion });

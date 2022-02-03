@@ -2,6 +2,7 @@ import type {
     DSEvent,
     DSEventHandler,
     DSEventHandlerResult,
+    DSUIProps,
     DSUnlisten,
     IDSValueStore,
     IDSStateValue,
@@ -15,6 +16,8 @@ import type {
     DSEmitValueChangedHandler,
     DSEmitCleanedUpHandler,
     IDSValueStoreInternals,
+    DSUIViewStateBase,
+    DSComponentStateVersionName
 } from './types'
 
 //IDSStoreManagerInternal 
@@ -35,7 +38,6 @@ export class DSValueStore<
     storeName: StoreName;
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
-    listenToAnyStore: boolean;
     mapEventHandlers: Map<string, { msg: string, handler: DSEventHandler<any, string, string> }[]>;
     arrValueChangedHandler: ({ msg: string, handler: DSEmitValueChangedHandler<Value> }[]) | undefined;
     arrCleanedUpRelated: ({ msg: string, valueStore: IDSValueStoreBase }[]) | undefined;
@@ -44,6 +46,9 @@ export class DSValueStore<
     configuration: ConfigurationDSValueStore<Value>;
     storeBuilder: IDSStoreBuilder<StoreName> | undefined;
     isProcessDirtyConfigured: boolean;
+    arrComponentStateVersionName: undefined | (DSComponentStateVersionName) | (DSComponentStateVersionName[]);
+    triggerScheduled: boolean;
+    viewStateVersion: number;
 
     constructor(
         storeName: StoreName,
@@ -51,11 +56,12 @@ export class DSValueStore<
     ) {
         this.storeName = storeName;
         this.storeManager = undefined;
-        this.listenToAnyStore = false;
         this.mapEventHandlers = new Map();
         this._isDirty = false;
         this.stateVersion = 1;
         this.isProcessDirtyConfigured = false;
+        this.triggerScheduled = false;
+        this.viewStateVersion = 0;
 
         if (configuration === undefined) {
             this.configuration = {};
@@ -447,7 +453,98 @@ export class DSValueStore<
         if (this.storeManager === undefined) {
             uiStateValue.triggerUIUpdate(this.stateVersion);
         } else {
+            if ((this._ViewProps !== undefined) && !this.triggerUIUpdate) {
+                this.storeManager.emitUIUpdate(this);
+            }
             this.storeManager.emitUIUpdate(uiStateValue);
         }
+    }
+
+
+    public triggerUIUpdate(stateVersion: number): void {
+        this.triggerScheduled = false;
+        // const stateVersion = this.stateValue.stateVersion;
+        // if (this.component === undefined) {
+        //     //
+        // } else {
+        //     if (stateVersion === this.viewStateVersion) {
+        //         //
+        //         dsLog.info(`DSUIStateValue skip update same stateVersion: ${stateVersion}`)
+
+        //     } else {
+        this.viewStateVersion = stateVersion;
+        const enabled = (dsLog.enabled && dsLog.isEnabled("triggerUIUpdate"));
+        if (this.arrComponentStateVersionName === undefined) {
+            //
+        } else if (Array.isArray(this.arrComponentStateVersionName)) {
+            for (const componentStateVersionName of this.arrComponentStateVersionName) {
+                componentStateVersionName.component.setState({ [componentStateVersionName.stateVersionName]: stateVersion });
+                if (enabled) {
+                    dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(componentStateVersionName));
+                }
+            }
+        } else {
+            this.arrComponentStateVersionName.component.setState({ [this.arrComponentStateVersionName.stateVersionName]: stateVersion });
+            if (enabled) {
+                dsLog.infoACME("DS", "DSUIStateValue", "triggerUIUpdate", dsLog.convertArg(this.arrComponentStateVersionName));
+            }
+        }
+        //     }
+        // }
+    }
+
+
+    _ViewProps: undefined | DSUIProps<this>;
+    public getViewProps(): DSUIProps<this> {
+        if (this._ViewProps === undefined) {
+            const fnGetRenderProps: (() => this) = (() => {
+                return this;
+            });
+            const fnWireStateVersion: ((component: React.Component<any>, stateVersionName?: string) => number) = ((
+                component: React.Component<any>, stateVersionName?: string
+            ) => {
+                const csvn = { component: component, stateVersionName: stateVersionName ?? "stateVersion" };
+                if (this.arrComponentStateVersionName === undefined) {
+                    this.arrComponentStateVersionName = csvn;
+                } else if (Array.isArray(this.arrComponentStateVersionName)) {
+                    this.arrComponentStateVersionName.push(csvn);
+                } else {
+                    this.arrComponentStateVersionName = [this.arrComponentStateVersionName as DSComponentStateVersionName, csvn];
+                }
+                return this.stateVersion;
+            });
+            const fnUnwireStateVersion: ((component: React.Component<any>) => void) = ((
+                component: React.Component<any>
+            ) => {
+                if (this.arrComponentStateVersionName === undefined) {
+                    // done
+                } else if (Array.isArray(this.arrComponentStateVersionName)) {
+                    for (let idx = 0; idx < this.arrComponentStateVersionName.length; idx++) {
+                        if (this.arrComponentStateVersionName[idx].component === component) {
+                            this.arrComponentStateVersionName.splice(idx, 1);
+                            if (this.arrComponentStateVersionName.length === 1) {
+                                this.arrComponentStateVersionName = this.arrComponentStateVersionName[0];
+                            }
+                            return;
+                        }
+                    }
+                } else {
+                    if (this.arrComponentStateVersionName.component === component) {
+                        this.arrComponentStateVersionName = undefined;
+                    }
+                }
+            });
+            const fnGetStateVersion: (() => number) = (() => {
+                return this.stateVersion;
+            });
+            //
+            this._ViewProps = {
+                getRenderProps: fnGetRenderProps,
+                wireStateVersion: fnWireStateVersion,
+                unwireStateVersion: fnUnwireStateVersion,
+                getStateVersion: fnGetStateVersion,
+            };
+        }
+        return this._ViewProps!;
     }
 }

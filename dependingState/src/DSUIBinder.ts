@@ -44,9 +44,8 @@ export class DSUIBinder<
         this.state = {
             stateVersion: props.getStateVersion()
         };
-        this.arrUnwireStateVersion = [
-            props.unwireStateVersion
-        ];
+        this.arrUnwireStateVersion = [];
+        this.add("stateVersion", props);
     }
 
     add<
@@ -59,19 +58,27 @@ export class DSUIBinder<
         ): this {
         if (this.state === undefined) { throw new Error("add must be called before getState."); }
         if (this.arrUnwireStateVersion === undefined) { throw new Error("add must be called before setComponentWillUnmount or getUnbinder."); }
-        this.state![stateVersionName] = nextProps.getStateVersion();
+        //this.state![stateVersionName] = nextProps.getStateVersion();
+        this.state![stateVersionName] =nextProps.wireStateVersion(this.component as any, stateVersionName)
         this.arrUnwireStateVersion.push(nextProps.unwireStateVersion);
         return this;
     }
 
     bindHandleAll(): this {
-        for (const key in this.component) {
+        const p= Object.getPrototypeOf(this.component)
+        for (const key of Object.getOwnPropertyNames(p)) {
             if (key.startsWith("handle")) {
-                if (Object.prototype.hasOwnProperty.call(this.component, key)) {
-                    const fn = (this.component as any)[key];
+                // console.log("bindHandleAll", key);
+                if (Object.prototype.hasOwnProperty.call(p, key)) {
+                    const fn = (p as any)[key];
                     if (typeof fn === "function") {
+                        // console.log("bindHandleAll", key);
                         (this.component as any)[key] = fn.bind(this.component);
+                    } else {
+                        // console.log("bindHandleAll not", key);
                     }
+                } else {
+                    // console.log("bindHandleAll not", key);
                 }
             }
         }

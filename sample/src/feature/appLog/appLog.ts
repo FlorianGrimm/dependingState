@@ -1,3 +1,4 @@
-import { DSLogApp } from "dependingState";
+import { DSLog, dsLog, DSLogFlag } from "dependingState";
 
-export const appLog = new DSLogApp("dsLogApp");
+export type AppLogFlag = DSLogFlag;
+export const appLog = dsLog as DSLog<AppLogFlag>;

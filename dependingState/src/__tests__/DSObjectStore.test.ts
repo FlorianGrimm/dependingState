@@ -17,7 +17,6 @@ type VSAB = {
     b: number;
     cnt: number;
 }
-
 test('DSObjectStore_process_implicit', async () => {
     let actHit = false;
     let actA = 1;

@@ -2,31 +2,32 @@ import { dsIsArrayEqual, DSObjectStore, getPropertiesChanged } from "dependingSt
 import { AppViewProjectsUIStateValue } from "./AppUIProjectsValue";
 import type { IAppStoreManager } from "../../store/AppStoreManager";
 
-export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, "appViewProjectsUIStore"> {
+export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIStateValue, "AppViewProjectsUIStore"> {
     constructor(value: AppViewProjectsUIStateValue) {
-        super("appViewProjectsUIStore", value);
+        super("AppViewProjectsUIStore", value);
     }
 
     public initializeStore(): void {
         super.initializeStore();
-        
+
         const compAUIStore = (this.storeManager! as IAppStoreManager).compAStore;
         //compAUIStore.listenDirtyRelated(this.storeName, this);
         compAUIStore.listenEventAttach(this.storeName, (e) => {
-            this.isDirty = true;
+            this.setDirty("listenEventAttach");
         });
         compAUIStore.listenEventDetach(this.storeName, (e) => {
-            this.isDirty = true;
+            this.setDirty("listenEventDetach");
         });
         compAUIStore.listenEventValue(this.storeName, (e) => {
             const properties = e.payload.properties;
             if (properties === undefined || properties.has("ProjectName")) {
-                this.isDirty = true;
+                this.setDirty("listenEventValue");
             }
         });
     }
 
-    public processDirty(): void {
+    public processDirty(): boolean {
+        let result = super.processDirty();
         // const oldCompAUIStates = this.stateValue.value.compAUIStates;
         const compAStore = (this.storeManager! as IAppStoreManager).compAStore;
         const compAUIStates = (Array.from(compAStore.entities.values())
@@ -36,6 +37,7 @@ export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIState
         compAUIStatesPC.setIf("compAVSs", compAUIStates, (l, r) => {
             return dsIsArrayEqual(l, r, (o, n) => o.value.ProjectId === n.value.ProjectId);
         });
-        compAUIStatesPC.valueChangedIfNeeded();
+        if (compAUIStatesPC.valueChangedIfNeeded("AppViewProjectsUIStore.processDirty")) { result = true; }
+        return result;
     }
 }

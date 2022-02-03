@@ -1,4 +1,5 @@
 import {
+    bindUIComponent,
     DSObjectStore,
     DSUIProps,
     DSUIViewStateBase
@@ -19,15 +20,14 @@ type AppViewState = {
 export default class AppUIView extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
         super(props);
-        this.state = {
-            stateVersion: this.props.getStateVersion()
-        };
-        this.props.wireStateVersion(this);
-        this.handleClickAdd = this.handleClickAdd.bind(this);
-    }
-
-    componentWillUnmount() {
-        this.props.unwireStateVersion(this);
+        this.state =
+            bindUIComponent(this,props)
+                .add("stateVersion1", getAppStoreManager().appStore.stateValue.getViewProps())
+                .add("stateVersion2", getAppStoreManager().appViewProjectsUIStore.stateValue.getViewProps())
+                .bindHandle("handleClickAdd")
+                .setComponentWillUnmount()
+                .getState()
+                ;
     }
 
     handleClickAdd() {
@@ -48,8 +48,8 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
 
     render(): React.ReactNode {
         const viewProps = this.props.getRenderProps();
-        const language = (viewProps.appState?.language) || "";
-        const appViewProjectsUIStateValue = viewProps.appViewProjectsUIStateValue;
+        const language = (getAppStoreManager().appStore.stateValue.value.language) || "";
+        const appViewProjectsUIStateValue = getAppStoreManager().appViewProjectsUIStore.stateValue;
 
         return (<div>
             App

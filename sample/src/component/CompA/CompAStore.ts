@@ -21,11 +21,11 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
             const compAValue = new CompAValue(project)
             this.attach(project.ProjectId, compAValue);
             compAValue.nbrC = compAValue.nbrA + compAValue.nbrB;
-            this.isDirty = true;
+            this.setDirty("listenEventAttach");
         });
         projectStore.listenEventDetach(this.storeName, (e) => {
             this.detach(e.payload.key);
-            this.isDirty = true;
+            this.setDirty("listenEventDetach");
         });
         projectStore.listenEventValue(this.storeName, (e) => {
             const properties = e.payload.properties;
@@ -35,20 +35,20 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
                 if (compAUIState) {
                     const compAUIStatePC = getPropertiesChanged(compAUIState.value);
                     compAUIStatePC.setIf("ProjectName", e.payload.entity!.value.ProjectName);
-                    compAUIStatePC.valueChangedIfNeeded();
+                    compAUIStatePC.valueChangedIfNeeded("ProjectName changed");
                 } else {
                     dsLog.warn(`compAUIState wiht ${key} not found.`)
                 }
             }
         });
-        //<DSEvent<Project>>
-        changeProjectName.listenEvent("handle ola", (e) => {
+        
+        changeProjectName.listenEvent("handle changeProjectName", (e) => {
             var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
             const prj = projectStore.get(e.payload.ProjectId);
             if (prj) {
                 const prjPC = getPropertiesChanged(prj);
                 prjPC.setIf("ProjectName", (new Date()).toISOString());
-                prjPC.valueChangedIfNeeded();
+                prjPC.valueChangedIfNeeded("handle changeProjectName");
             }
         });
         this.listenEventValue("a+b=c", (e) => {
@@ -57,7 +57,7 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
                 const compAValue = e.payload.entity!;
                 const compAValuePC = getPropertiesChanged(compAValue);
                 compAValuePC.setIf("nbrC", compAValue.value.nbrA + compAValue.value.nbrB);
-                compAValuePC.valueChangedIfNeeded();
+                compAValuePC.valueChangedIfNeeded("a+b=c");
             }
         });
         /*
@@ -72,9 +72,13 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
         */
     }
 
-    public processDirty(): void {
-        this.emitDirty();
+    public processDirty(): boolean {
+        let result = super.processDirty();
+        return true;
     }
+    // public processDirty(): void {
+    //     this.emitDirty();
+    // }
     // public processDirty(): void {
     //     const compAUIStates = (Array.from(this.entities.values())
     //         .sort((a, b) => a.ProjectName.localeCompare(b.ProjectName))

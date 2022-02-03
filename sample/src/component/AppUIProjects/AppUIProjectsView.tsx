@@ -1,6 +1,7 @@
 import React from "react";
 
 import { 
+    bindUIComponent,
     dsLog,
     DSUIProps, 
     DSUIViewStateBase 
@@ -25,14 +26,9 @@ type AppViewProjectsState = {
 export default class AppViewProjects extends React.Component<AppViewProjectsProps, AppViewProjectsState>{
     constructor(props: AppViewProjectsProps) {
         super(props);
-        this.state = {
-            stateVersion: this.props.getStateVersion()
-        };
-        this.props.wireStateVersion(this);
-    }
-
-    componentWillUnmount() {
-        this.props.unwireStateVersion(this);
+        this.state = bindUIComponent(this, props)
+            .setComponentWillUnmount()
+            .getState();
     }
 
     render(): React.ReactNode {

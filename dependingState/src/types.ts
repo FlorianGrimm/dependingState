@@ -80,7 +80,6 @@ export interface IDSStoreAction<
 export interface IDSValueStoreBase {
     storeManager: IDSStoreManager | undefined;
     stateVersion: number;
-    listenToAnyStore: boolean;
     get isDirty(): boolean;
 
     /**
@@ -340,9 +339,10 @@ export interface IDSStateValue<Value> {
     setStore(store: IDSValueStoreWithValue<Value>): boolean;
 
     getViewProps(): DSUIProps<Value>;
+
+    triggerScheduled: boolean;
     emitUIUpdate(): void;
     triggerUIUpdate(stateVersion: number): void;
-    triggerScheduled: boolean;
 }
 
 export type IDSValueStoreWithValue<Value> = IDSValueStore<any, Value, string>
@@ -468,6 +468,8 @@ export type DSUIViewState<T = any> = T & DSUIViewStateBase;
 export type DSUIViewStateBase = {
     stateVersion: number;
 };
+
+export type DSComponentStateVersionName = { component: React.Component<any>; stateVersionName: string; };
 
 export type DSUIProps<Value = any> = {
     getRenderProps: () => Value;

@@ -46,7 +46,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         this.enableTiming = false;
         this.isDirty = true;
         this.warnUnlistenEvents = false;
-        this.warnEventsOutOfProcess = true;
+        this.warnEventsOutOfProcess = false;
     }
 
     /**

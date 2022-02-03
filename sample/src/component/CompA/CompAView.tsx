@@ -1,7 +1,7 @@
 import React from "react";
 import NumberInput from "../NumberInput/NumberInput";
 
-import { DSUIProps, DSUIViewStateBase, getPropertiesChanged } from "dependingState";
+import { DSUIProps, DSUIViewStateBase, getPropertiesChanged,bindUIComponent } from "dependingState";
 
 import { changeProjectName } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
@@ -17,33 +17,31 @@ const inputStyle :React.CSSProperties={
 export default class CompAView extends React.Component<CompAViewProps, CompAViewState>{
     constructor(props: CompAViewProps) {
         super(props);
-        this.state = {
-            stateVersion: this.props.getStateVersion()
-        };
-        this.props.wireStateVersion(this);
-        this.handleClickChangeProjectName = this.handleClickChangeProjectName.bind(this);
-        this.handleSetA = this.handleSetA.bind(this);
-        this.handleSetB = this.handleSetB.bind(this);
-    }
-
-    componentWillUnmount() {
-        this.props.unwireStateVersion(this);
+        this.state=
+            bindUIComponent(this, props)
+                .bindHandleAll()
+                .setComponentWillUnmount()
+                .getState();
+        // this.state = {
+        //     stateVersion: this.props.getStateVersion()
+        // };
+        // this.props.wireStateVersion(this);
+        // this.handleClickChangeProjectName = this.handleClickChangeProjectName.bind(this);
+        // this.handleSetA = this.handleSetA.bind(this);
+        // this.handleSetB = this.handleSetB.bind(this);
+        console.log("CompAView", this.props);
     }
 
     handleClickChangeProjectName() {
-        console.group("changeProjectName");
-        try {
-            changeProjectName.emitEvent(this.props.getRenderProps());
-        } finally {
-            console.groupEnd();
-        }
+        changeProjectName.emitEvent(this.props.getRenderProps());
     }
+
     handleSetA(n: number) {
         getAppStoreManager().process("handleSetA", () => {
             const renderProps = this.props.getRenderProps();
             const renderPropsPC = getPropertiesChanged(renderProps);
             renderPropsPC.setIf("nbrA", n);
-            renderPropsPC.valueChangedIfNeeded();
+            renderPropsPC.valueChangedIfNeeded("handleSetA");
         });
     }
     handleSetB(n: number) {
@@ -51,7 +49,7 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
             const renderProps = this.props.getRenderProps();
             const renderPropsPC = getPropertiesChanged(renderProps);
             renderPropsPC.setIf("nbrB", n);
-            renderPropsPC.valueChangedIfNeeded();
+            renderPropsPC.valueChangedIfNeeded("handleSetB");
         });
     }
     render(): React.ReactNode {
