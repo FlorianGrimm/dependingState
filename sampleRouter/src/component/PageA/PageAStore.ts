@@ -29,34 +29,34 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
         const navigatorStore = (this.storeManager! as IAppStoreManager).navigatorStore;
 
         pageANavigate.listenEvent("handle pageANavigate", (e) => {
-            getAppStoreManager().navigatorStore.navigateToPageA({ a: 1, b: 11 });
-            pageALoadData.emitEvent("");
+            console.log("navigate pageA");
+            // getAppStoreManager().navigatorStore.navigateToPageB((e.payload !== undefined)?e.payload:{a:1, b:11});
+            // pageALoadData.emitEvent(undefined);
+            if (e.payload !== undefined){
+                const pc = getPropertiesChanged(this.stateValue);
+                pc.setIf("nbrA", e.payload.a);
+                pc.setIf("nbrB", e.payload.b);
+                pc.valueChangedIfNeeded("pageANavigate parameter");
+            }
         });
 
         pageALoadData.listenEvent("handle pageALoadData", (e) => {
             this.stateValue.value.isLoading = true;
             this.stateValue.valueChanged("loading...", propertiesSetisLoading);
 
-            /*
-            const p = new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    this.stateValue.value.isLoading = false;
-                    this.stateValue.valueChanged("loadingDone", propertiesSetisLoading);
-                    resolve();
-                }, 2000);
-            });
-            return p;
-            */
             setTimeout(() => {
                 this.stateValue.value.isLoading = false;
                 this.stateValue.valueChanged("loadingDone", propertiesSetisLoading);
-            }, 250);
+            }, 500);
         });
 
         navigatorStore.listenEventValue("handle pageChanged", (e) => {
             if (hasChangedProperty<NavigatorValue>(e.payload.properties, "page")) {
-                if (this.pageChanged.setValue(e.payload.entity.value.page)) {
-                    pageALoadData.emitEvent("any");
+                const page=e.payload.entity.value.page;
+                if (this.pageChanged.setValue(page)) {
+                    if (page==="pageA"){
+                        pageALoadData.emitEvent(undefined);
+                    }
                 }
             }
         });

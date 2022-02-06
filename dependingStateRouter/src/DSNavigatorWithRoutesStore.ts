@@ -33,6 +33,7 @@ export class DSNavigatorWithRoutesStore<
     pageNames: NavigatorPageName[];
     pageRouteNotFound: NavigatorPageName;
     routes: RoutesDef;
+
     constructor(
         pageNames: NavigatorPageName[],
         pageRouteNotFound: NavigatorPageName,

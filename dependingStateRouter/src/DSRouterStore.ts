@@ -110,7 +110,6 @@ export class DSRouterStore<
             }
             this.history.replace(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
-        //routerLocationChanged.listenEvent
     }
     
     public initializeBoot(): void {

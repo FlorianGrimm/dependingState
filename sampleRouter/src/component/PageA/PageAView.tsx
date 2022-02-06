@@ -62,7 +62,7 @@ export default class PageAView extends React.Component<PageAViewProps, PageAView
                     PageA - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
                 </div>
                 <h2>PageA</h2>
-                loading 2secs
+                loading 1/2 secs
             </div>);
         }
         return (<div>

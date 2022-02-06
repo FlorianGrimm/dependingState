@@ -1,77 +1,39 @@
 import { IDSNavigatorValue, RouteDefinition } from "dependingStateRouter";
 
-export const mapPath = {
-    home: "/",
-    pageA: "/pageA",
-    pageB: ["/pageB", "/pageB/:id"],
-    pageC: ["/pageC", "/pageD"]
-};
-
-export type NavigatorPaths = typeof mapPath;
-
-export type NavigatorPaths2 = {
-    home: string;
-    pageA: string;
-    pageB: string[];
-    pageC: string[];
-};
-
-export const arrPathKey: NavigatorPathKey[] = [
-    "home",
-    "pageA",
-    "pageB",
-    "pageC",
-];
-
-//export const routes: NavigatorRoutes = {
-export const defRoutes = {
-    home: {
-        path: mapPath.home,
-        exact: true
-    },
-    pageA: {
-        path: mapPath.pageA
-    },
-    pageB: {
-        path: mapPath.pageB
-    },
-    pageC: {
-        path: mapPath.pageC
-    },
-};
-
-
-export type NavigatorPathKey = (keyof NavigatorPaths);
-export type NavigatorPageName = NavigatorPathKey | "pageError";
-
-export type NavigatorPages = {
-    [K in NavigatorPathKey]: NavigatorPageName;
-};
-export type NavigatorRoutes = {
-    [K in NavigatorPathKey]: RouteDefinition;
-};
-
-export type NavigatorPatterns = {
-    [K in NavigatorPathKey]: string;
-};
+export type RoutesDef = typeof defRoutes;
+export type NavigatorPageName = keyof RoutesDef;
 
 export type NavigatorPathArguments = {};
 export type NavigatorValue = IDSNavigatorValue<NavigatorPageName, NavigatorPathArguments>;
 
+export const defPageNames: (keyof typeof defRoutes)[] = [
+    "home",
+    "pageA",
+    "pageB",
+    "pageC",
+    "pageError"
+];
 
-
-
-// export const mapPatterns = {
-//     home: mapPath.home,
-//     pageA: mapPath.pageA,
-//     pageB: mapPath.pageB[0],
-//     pageC: mapPath.pageC[0],
-// };
-
-
-// this.mapPage2Path = {
-//     "home": "home",
-//     "pageA": "pageA",
-//     "pageB": "pageB",
-//     "pageC": "pageB",
-// }
+export const defRoutes = {
+    home: <RouteDefinition>{
+        path: "/",
+        exact: true,
+        //to:"/"
+    },
+    pageA: {
+        path: ["/pageA", "/pageA/:a/:b"],
+    },
+    pageB: {
+        path: ["/pageB", "/pageB/:a/:b"],
+        createRef: [
+            () => "/pageB",
+            (a: number, b: number) => `/pageB/${a}/${b}`
+        ]
+    },
+    pageC: {
+        path: ["/pageC1", "/pageC2"]
+    },
+    pageError: {
+        path: "/pageError"
+    },
+};

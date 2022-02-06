@@ -2,6 +2,7 @@
 
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 const isProduction = process.env.NODE_ENV == "production";
 
@@ -21,6 +22,12 @@ const config = {
     filename: '[name].js',
     path: path.resolve(__dirname, "dist"),
   },
+  performance: {
+    hints: false,
+    maxEntrypointSize: 1000000,
+    maxAssetSize: 1000000
+  },
+  
   // optimization: {
   //   runtimeChunk: 'single',
   //   splitChunks: {
@@ -57,6 +64,17 @@ const config = {
         },
       },
     },
+    /*
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions:{
+          compress: false,
+          mangle: false
+        }
+      }),
+    ],
+    */
   },
 
   devServer: {

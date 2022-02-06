@@ -33,7 +33,6 @@ export default class NavigatorView extends React.Component<NavigatorViewProps, N
     render(): React.ReactNode {
         const renderProps = this.props.getRenderProps();
         // 
-        //let x:React.Component
         let placeholderPage:any|undefined;
         switch (renderProps.page){
             case "home":

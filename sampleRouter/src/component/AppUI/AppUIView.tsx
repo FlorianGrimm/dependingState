@@ -9,7 +9,7 @@ import { AppUIValue } from "./AppUIValue";
 import { routerPush } from "dependingStateRouter";
 import NavigatorView from "../Navigator/NavigatorView";
 import { getAppStoreManager } from "~/singletonAppStoreManager";
-import { useNavigatorA, useNavigatorB } from "./AppUIActions";
+import { navigateToHome,navigateToPageA,navigateToPageB } from "../Navigator/NavigatorActions";
 
 type AppUIViewProps = {
     //stateRoot: TStateRootAppStates;
@@ -32,24 +32,22 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
                 .bindHandleAll()
                 .setComponentWillUnmount()
                 .getState();       
-        getAppStoreManager().navigatorStore.stateValue.getViewProps().wireStateVersion<any>(this);
     }
 
-    componentWillUnmount() {
-        this.props.unwireStateVersion(this);
-        getAppStoreManager().navigatorStore.stateValue.getViewProps().unwireStateVersion<any>(this);
-    }
     handleClickPageA() {
         routerPush.emitEventAndProcess("to/PageA", { to: "/PageA" });
     }
     handleClickPageB() {
         routerPush.emitEventAndProcess("to/PageB", { to: "/PageB" });
     }
-    handleClickNavigatorA() {
-        useNavigatorA.emitEventAndProcess("handleClickNavigatorA", "");
+    handleClickNavigateHome() {
+        navigateToHome.emitEventAndProcess("click", undefined);
     }
-    handleClickNavigatorB() {
-        useNavigatorB.emitEventAndProcess("handleClickNavigatorB", "");
+    handleClickNavigateA() {
+        navigateToPageA.emitEventAndProcess("click", undefined);
+    }
+    handleClickNavigateB() {
+        navigateToPageB.emitEventAndProcess("click", undefined);
     }
 
     render(): React.ReactNode {
@@ -79,9 +77,9 @@ export default class AppUIView extends React.Component<AppUIViewProps, AppUIView
 
             <div style={navigationStyles}>
                 navigator TODO:
-                <button onClick={this.handleClickNavigatorA}>ActionA</button>
+                <button onClick={this.handleClickNavigateA}>ActionA</button>
                 :
-                <button onClick={this.handleClickNavigatorB}>ActionB</button>
+                <button onClick={this.handleClickNavigateB}>ActionB</button>
             </div>
 
             <div>
