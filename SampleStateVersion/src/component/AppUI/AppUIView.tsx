@@ -41,7 +41,7 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
             const vs = this.props.getRenderProps();
             const pc = getPropertiesChanged(vs);
             pc.setIf("name", e.target.value);
-            pc.valueChangedIfNeeded();
+            pc.valueChangedIfNeeded("handleChangeName");
         });
     }
 

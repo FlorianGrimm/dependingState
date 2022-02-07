@@ -23,18 +23,18 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
 
         this.listenEventValue("value has changed", (e)=>{
             if (hasChangedProperty(e.payload.properties, "name")){
-                this.isDirty=true;
-                this.emitDirty
+                this.setDirty("name");
             }            
         });
     }
 
-    public processDirty(): void {
-        super.processDirty();
+    public processDirty(): boolean {
+        let result =  super.processDirty();
         const value=this.stateValue.value;
         value.greeting = `Hello ${value.name}`;
         // TODO
         console.log(value.greeting);
         this.emitUIUpdate(this.stateValue);
+        return result;
     }
 }
