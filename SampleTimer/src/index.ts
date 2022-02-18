@@ -7,11 +7,11 @@ import {
 
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
-import { AppUIValue } from './component/AppUI/AppUIValue';
-import { AppUIStore } from './component/AppUI/AppUIStore';
-import { appUIView } from './component/AppUI/AppUIView';
-import { timerStopGo } from './component/AppUI/AppUIActions';
-import { TimerStore } from './component/Timer/TimerStore';
+import { AppUIValue } from './components/AppUI/AppUIValue';
+import { AppUIStore } from './components/AppUI/AppUIStore';
+import { appUIView } from './components/AppUI/AppUIView';
+import { timerStopGo } from './components/AppUI/AppUIActions';
+import { TimerStore } from './components/Timer/TimerStore';
 
 function main() {
      // initialize log

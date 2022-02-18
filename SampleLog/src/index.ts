@@ -5,11 +5,11 @@ import {
     dsLog, DSStateValue,
 } from 'dependingState';
 
-import AppUIView from './component/AppUI/AppUIView';
+import AppUIView from './components/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
-import { AppUIValue } from './component/AppUI/AppUIValue';
-import { AppUIStore } from './component/AppUI/AppUIStore';
+import { AppUIValue } from './components/AppUI/AppUIValue';
+import { AppUIStore } from './components/AppUI/AppUIStore';
 
 function main() {
     // initialize log

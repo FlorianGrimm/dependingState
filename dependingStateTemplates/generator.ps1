@@ -23,6 +23,15 @@ function Get-ComponentTemplates {
     }
 }
 
+function replaceText {
+    param(
+        [string] $content,
+        [string] $upName,
+        [string] $lcName
+    )
+    $content = $content.Replace("__Name__", $upName).Replace("__name__", $lcName).Replace("__upName__", $upName).Replace("__lcname__", $lcName)
+    return $content
+}
 
 function New-DSProject{
     [CmdletBinding()]
@@ -42,9 +51,9 @@ function New-DSProject{
     [string] $upName = $Name.Substring(0,1).ToUpper() + $Name.Substring(1)
     [string] $lcName = $Name.Substring(0,1).ToLower() + $Name.Substring(1)
 
-    <#
     Write-Host "upName        : $upName;"
     Write-Host "lcName        : $lcName;"
+    <#
     #>
         
     if ([string]::IsNullOrEmpty($Location)){
@@ -88,11 +97,12 @@ function New-DSProject{
         $TemplateFiles | Foreach-Object {
             [string]$FullTemplatePath = $_.FullName
             [string]$RelativeTemplatePath = $FullTemplatePath.Substring($TemplateFolder.Length+1)
-            [string]$RelativeTargetPath = $RelativeTemplatePath.Replace("__Name__", $upName).Replace("__name__", $lcName)
+            [string]$RelativeTargetPath = replaceText -content $RelativeTemplatePath -upName $upName -lcName $lcName
             
             [string]$FullTargetPath =  [System.IO.Path]::Combine($TargetFolder, $RelativeTargetPath)
             [string] $content = [System.IO.File]::ReadAllText($_.FullName)
-            $content = $content.Replace("__Name__", $upName).Replace("__name__", $lcName)
+            $content = replaceText -content $content -upName $upName -lcName $lcName
+
             [string] $FullTargetFolder = [System.IO.Path]::GetDirectoryName($FullTargetPath)
             if (-not ([System.IO.Directory]::Exists($FullTargetFolder))){
                 [System.IO.Directory]::CreateDirectory($FullTargetFolder) | Out-Null
@@ -107,7 +117,7 @@ function New-DSProject{
     }
 }
 
-function New-DSComponent{
+function New-DSComponent {
     [CmdletBinding()]
     param(
         [Parameter(Position = 0, Mandatory)]
@@ -130,9 +140,9 @@ function New-DSComponent{
     [string] $upName = $Name.Substring(0,1).ToUpper() + $Name.Substring(1)
     [string] $lcName = $Name.Substring(0,1).ToLower() + $Name.Substring(1)
 
-    <#
     Write-Host "upName        : $upName;"
     Write-Host "lcName        : $lcName;"
+    <#
     #>
         
     if ([string]::IsNullOrEmpty($Location)){
@@ -159,7 +169,8 @@ function New-DSComponent{
     $TemplateFiles | Foreach-Object {
         [string] $FullTemplatePath = $_.FullName
         [string] $RelativeTemplatePath = $FullTemplatePath.Substring($TemplateFolder.Length+1)
-        [string] $RelativeTargetPath = $RelativeTemplatePath.Replace("__Name__", $upName).Replace("__name__", $lcName)
+        [string] $RelativeTargetPath = replaceText -content $RelativeTemplatePath -upName $upName -lcName $lcName
+
         [string] $FullTargetPath =  [System.IO.Path]::Combine($TargetFolder, $RelativeTargetPath)
         [string] $FullTargetFolder = [System.IO.Path]::GetDirectoryName($FullTargetPath)
         if ([System.IO.Directory]::Exists($FullTargetFolder)){ 
@@ -181,7 +192,8 @@ function New-DSComponent{
             
             [string]$FullTargetPath =  [System.IO.Path]::Combine($TargetFolder, $RelativeTargetPath)
             [string] $content = [System.IO.File]::ReadAllText($_.FullName)
-            $content = $content.Replace("__Name__", $upName).Replace("__name__", $lcName)
+            $content = replaceText -content $content -upName $upName -lcName $lcName
+
             [string] $FullTargetFolder = [System.IO.Path]::GetDirectoryName($FullTargetPath)
             if (-not ([System.IO.Directory]::Exists($FullTargetFolder))){
                 [System.IO.Directory]::CreateDirectory($FullTargetFolder) | Out-Null

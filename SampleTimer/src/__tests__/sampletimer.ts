@@ -1,8 +1,8 @@
 import { dsLog } from "dependingState";
-import { timerStopGo } from "~/component/AppUI/AppUIActions";
-import { AppUIStore } from "~/component/AppUI/AppUIStore";
-import { AppUIValue } from "~/component/AppUI/AppUIValue";
-import { TimerStore } from "~/component/Timer/TimerStore";
+import { timerStopGo } from "~/components/AppUI/AppUIActions";
+import { AppUIStore } from "~/components/AppUI/AppUIStore";
+import { AppUIValue } from "~/components/AppUI/AppUIValue";
+import { TimerStore } from "~/components/Timer/TimerStore";
 import { setAppStoreManager } from "~/singletonAppStoreManager";
 import { AppStoreManager } from "~/store/AppStoreManager";
 

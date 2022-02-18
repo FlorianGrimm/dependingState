@@ -5,16 +5,16 @@ import {
     dsLog, DSStateValue,
 } from 'dependingState';
 
-import AppUIView from './component/AppUI/AppUIView';
+import AppUIView from './components/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
-import { PageAStore } from './component/PageA/PageAStore';
-import { AppUIValue } from './component/AppUI/AppUIValue';
-import { AppUIStore } from './component/AppUI/AppUIStore';
-import { PageBStore } from './component/PageB/PageBStore';
+import { PageAStore } from './components/PageA/PageAStore';
+import { AppUIValue } from './components/AppUI/AppUIValue';
+import { AppUIStore } from './components/AppUI/AppUIStore';
+import { PageBStore } from './components/PageB/PageBStore';
 import { createBrowserHistory, DSRouterStore, DSRouterValue, getDSRouterValueInitial } from 'dependingStateRouter';
-import { NavigatorStore } from './component/Navigator/NavigatorStore';
-import { NavigatorValue } from './component/Navigator/NavigatorValue';
+import { NavigatorStore } from './components/Navigator/NavigatorStore';
+import { NavigatorValue } from './components/Navigator/NavigatorValue';
 
 function main() {
     // initialize log

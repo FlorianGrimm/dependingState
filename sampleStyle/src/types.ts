@@ -3,9 +3,9 @@ export type nix = unknown;
 //     DSValueStore
 //  } from "dependingState";
 
-// import type { AppViewStateValue } from "./component/App/AppView";
-// import type { CalculatorUIState } from "./component/Calculator/Calculator";
-// import type { CompBUIState } from "./component/CompB/CompB";
+// import type { AppViewStateValue } from "./components/App/AppView";
+// import type { CalculatorUIState } from "./components/Calculator/Calculator";
+// import type { CompBUIState } from "./components/CompB/CompB";
 
 // export type TAppStates = {
 //     uiRoot: StateVersion<AppUIState>,

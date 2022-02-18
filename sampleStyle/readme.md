@@ -139,8 +139,8 @@ import {
 } from "dependingState";
 
 import type { AppStore } from "./AppState";
-import type { AppUIStore } from "~/component/AppUI/AppUIStore";
-import type { MyStore } from "src/component/My/MyStore";
+import type { AppUIStore } from "~/components/AppUI/AppUIStore";
+import type { MyStore } from "src/components/My/MyStore";
 
 export interface IAppStoreManager extends IDSStoreManager {
     appStore: AppStore;

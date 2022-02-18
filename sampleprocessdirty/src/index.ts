@@ -5,15 +5,15 @@ import {
     dsLog
 } from 'dependingState';
 
-import AppUIView from './component/AppUI/AppUIView';
+import AppUIView from './components/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
-import { AppUIValue } from './component/AppUI/AppUIValue';
-import { AppUIStore } from './component/AppUI/AppUIStore';
-import { CounterStore } from './component/Counter/CounterStore';
-import { CounterValue } from './component/Counter/CounterValue';
-import { SumValue } from './component/Sum/SumValue';
-import { SumStore } from './component/Sum/SumStore';
+import { AppUIValue } from './components/AppUI/AppUIValue';
+import { AppUIStore } from './components/AppUI/AppUIStore';
+import { CounterStore } from './components/Counter/CounterStore';
+import { CounterValue } from './components/Counter/CounterValue';
+import { SumValue } from './components/Sum/SumValue';
+import { SumStore } from './components/Sum/SumStore';
 
 function main() {
     // initialize log

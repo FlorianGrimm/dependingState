@@ -5,14 +5,14 @@ import {
     dsLog
 } from 'dependingState';
 
-import AppView from './component/AppUI/AppUIView';
+import AppView from './components/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
-import { CalculatorStore } from './component/Calculator/CalculatorStore';
-import { AppUIValue } from './component/AppUI/AppUIValue';
-import { AppUIStore } from './component/AppUI/AppUIStore';
+import { CalculatorStore } from './components/Calculator/CalculatorStore';
+import { AppUIValue } from './components/AppUI/AppUIValue';
+import { AppUIStore } from './components/AppUI/AppUIStore';
 import { AppState, AppStore } from './store/AppState';
-import { CalculatorStyleStore } from './component/CalculatorStyle/CalculatorStyleStore';
+import { CalculatorStyleStore } from './components/CalculatorStyle/CalculatorStyleStore';
 
 function main() {
     // for debugging Browser F12 Console window.dsLog

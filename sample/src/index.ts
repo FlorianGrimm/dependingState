@@ -5,17 +5,17 @@ import {
     dsLog
 } from 'dependingState';
 
-import AppUIView from './component/AppUI/AppUIView';
+import AppUIView from './components/AppUI/AppUIView';
 import { AppStoreManager } from './store/AppStoreManager';
 import { ProjectStore } from './store/ProjectStore';
 import { setAppStoreManager } from './singletonAppStoreManager';
-import { CompAStore } from './component/CompA/CompAStore';
-import { AppViewProjectsUIStateValue } from './component/AppUIProjects/AppUIProjectsValue';
-import { AppViewProjectsUIStore } from './component/AppUIProjects/AppUIProjectsStore';
+import { CompAStore } from './components/CompA/CompAStore';
+import { AppViewProjectsUIStateValue } from './components/AppUIProjects/AppUIProjectsValue';
+import { AppViewProjectsUIStore } from './components/AppUIProjects/AppUIProjectsStore';
 import { AppState, AppStore } from './store/AppState';
 import { appLog } from './feature/appLog/appLog';
-import { AppUIStore } from './component/AppUI/AppUIStore';
-import { AppUIValue } from './component/AppUI/AppUIValue';
+import { AppUIStore } from './components/AppUI/AppUIStore';
+import { AppUIValue } from './components/AppUI/AppUIValue';
 
 function main() {
     dsLog.initialize("enabled");
