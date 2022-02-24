@@ -1,6 +1,6 @@
 import { DSEntityStore, DSEvent, dsLog, getPropertiesChanged } from "dependingState";
 import { Project } from "../../types";
-import { IAppStoreManager } from "../../store/AppStoreManager";
+import { IAppStoreManager } from "../../services/AppStoreManager";
 import { compAUIStoreBuilder, changeProjectName } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
 

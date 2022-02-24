@@ -2,7 +2,7 @@ import {
     DSObjectStore,
 } from "dependingState";
 
-// import type { IAppStoreManager } from "~/store/AppStoreManager";
+// import type { IAppStoreManager } from "~/services/AppStoreManager";
 import { appUIStoreBuilder, loadData } from "./AppUIActions";
 import { AppUIValue } from "./AppUIValue";
 import { getAppStoreManager } from "~/singletonAppStoreManager";

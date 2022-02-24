@@ -6,7 +6,7 @@ import {
 } from 'dependingState';
 
 import AppUIView from './components/AppUI/AppUIView';
-import { AppStoreManager } from './store/AppStoreManager';
+import { AppStoreManager } from './services/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { AppUIValue } from './components/AppUI/AppUIValue';
 import { AppUIStore } from './components/AppUI/AppUIStore';

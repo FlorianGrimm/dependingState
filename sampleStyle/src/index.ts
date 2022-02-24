@@ -6,12 +6,12 @@ import {
 } from 'dependingState';
 
 import AppView from './components/AppUI/AppUIView';
-import { AppStoreManager } from './store/AppStoreManager';
+import { AppStoreManager } from './services/AppStoreManager';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { CalculatorStore } from './components/Calculator/CalculatorStore';
 import { AppUIValue } from './components/AppUI/AppUIValue';
 import { AppUIStore } from './components/AppUI/AppUIStore';
-import { AppState, AppStore } from './store/AppState';
+import { AppState, AppStore } from './services/AppState';
 import { CalculatorStyleStore } from './components/CalculatorStyle/CalculatorStyleStore';
 
 function main() {

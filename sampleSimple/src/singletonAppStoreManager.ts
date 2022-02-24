@@ -1,5 +1,5 @@
 import type { DSEventHandlerResult } from "dependingState";
-import type { AppStoreManager } from "./store/AppStoreManager";
+import type { AppStoreManager } from "./services/AppStoreManager";
 
 var appStoreManager: AppStoreManager;
 

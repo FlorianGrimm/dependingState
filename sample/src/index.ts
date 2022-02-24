@@ -6,13 +6,13 @@ import {
 } from 'dependingState';
 
 import AppUIView from './components/AppUI/AppUIView';
-import { AppStoreManager } from './store/AppStoreManager';
-import { ProjectStore } from './store/ProjectStore';
+import { AppStoreManager } from './services/AppStoreManager';
+import { ProjectStore } from './services/ProjectStore';
 import { setAppStoreManager } from './singletonAppStoreManager';
 import { CompAStore } from './components/CompA/CompAStore';
 import { AppViewProjectsUIStateValue } from './components/AppUIProjects/AppUIProjectsValue';
 import { AppViewProjectsUIStore } from './components/AppUIProjects/AppUIProjectsStore';
-import { AppState, AppStore } from './store/AppState';
+import { AppState, AppStore } from './services/AppState';
 import { appLog } from './feature/appLog/appLog';
 import { AppUIStore } from './components/AppUI/AppUIStore';
 import { AppUIValue } from './components/AppUI/AppUIValue';

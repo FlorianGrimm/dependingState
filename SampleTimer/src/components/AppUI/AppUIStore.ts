@@ -7,7 +7,7 @@ import {
 
 //import { getAppStoreManager } from "~/singletonAppStoreManager";
 
-import type { IAppStoreManager } from "~/store/AppStoreManager";
+import type { IAppStoreManager } from "~/services/AppStoreManager";
 import { TimerValue } from "~/components/Timer/TimerValue";
 
 import { appUIStoreBuilder, timerStopGo } from "./AppUIActions";

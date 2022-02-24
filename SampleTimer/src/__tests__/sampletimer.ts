@@ -4,7 +4,7 @@ import { AppUIStore } from "~/components/AppUI/AppUIStore";
 import { AppUIValue } from "~/components/AppUI/AppUIValue";
 import { TimerStore } from "~/components/Timer/TimerStore";
 import { setAppStoreManager } from "~/singletonAppStoreManager";
-import { AppStoreManager } from "~/store/AppStoreManager";
+import { AppStoreManager } from "~/services/AppStoreManager";
 
 test("stop and go", () => {
     dsLog.initialize("disabled");

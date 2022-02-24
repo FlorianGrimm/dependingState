@@ -7,7 +7,7 @@ import {
 } from "dependingState";
 import { navigatorSetLocation } from "dependingStateRouter";
 import { getAppStoreManager } from "~/singletonAppStoreManager";
-import { IAppStoreManager } from "../../store/AppStoreManager";
+import { IAppStoreManager } from "../../services/AppStoreManager";
 import { NavigatorValue } from "../Navigator/NavigatorValue";
 import {
     pageAStoreBuilder,

@@ -3,7 +3,7 @@
 import {
     DSObjectStore, getPropertiesChanged,
 } from "dependingState";
-import type { IAppStoreManager } from "~/store/AppStoreManager";
+import type { IAppStoreManager } from "~/services/AppStoreManager";
 import { sumStoreBuilder } from "./SumActions";
 import { SumValue } from "./SumValue";
 

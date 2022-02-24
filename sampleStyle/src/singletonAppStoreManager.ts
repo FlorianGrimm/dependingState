@@ -1,4 +1,4 @@
-import { AppStoreManager } from "./store/AppStoreManager";
+import { AppStoreManager } from "./services/AppStoreManager";
 
 var appStoreManager: AppStoreManager;
 

@@ -28,8 +28,9 @@ call "%~dp0\SampleStateVersion\build.bat"
 call "%~dp0\sampleStyle\build.bat"
 @IF ERRORLEVEL 1 goto :Failed
 
-goto :EOF
 @echo OK
+cd "%~dp0"
+goto :EOF
 
 :Failed
 @echo Failed
