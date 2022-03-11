@@ -14,20 +14,17 @@ import { timerStopGo } from './components/AppUI/AppUIActions';
 import { TimerStore } from './components/Timer/TimerStore';
 
 function main() {
-     // initialize log
-     dsLog.initialize();
+    // initialize log
+    dsLog.initialize("enabled");
 
-     // remove this if going productive
-     dsLog.setEnabled();
- 
-     if (dsLog.enabled){
-         dsLog.info("SampleTimer main()");
-     }
- 
-     // create all stores
+    if (dsLog.enabled) {
+        dsLog.info("SampleTimer main()");
+    }
+
+    // create all stores
     const appUIStore = new AppUIStore(new AppUIValue());
     const timerStore = new TimerStore();
-    
+
     // create appStoreManager
     const appStoreManager = new AppStoreManager(
         appUIStore,

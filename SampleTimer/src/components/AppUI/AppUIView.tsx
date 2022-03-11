@@ -1,5 +1,6 @@
 // hint2 file found
 import {
+    bindUIComponent,
     DSUIProps,
     DSUIViewStateBase
 } from "dependingState";
@@ -27,16 +28,7 @@ export function appUIView(props: AppViewProps): React.CElement<AppViewProps, App
 export default class AppUIView extends React.Component<AppViewProps, AppViewState>{
     constructor(props: AppViewProps) {
         super(props);
-        this.state = {
-            stateVersion: this.props.getStateVersion()
-        };
-        this.props.wireStateVersion(this);
-        this.handleClickStop = this.handleClickStop.bind(this);
-        this.handleClickGo = this.handleClickGo.bind(this);
-    }
-
-    componentWillUnmount() {
-        this.props.unwireStateVersion(this);
+        this.state = bindUIComponent(this, props).bindHandleAll().setComponentWillUnmount().getState();
     }
 
     handleClickGo() {
