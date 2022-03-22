@@ -59,13 +59,13 @@ export class DSUIBinder<
         if (this.state === undefined) { throw new Error(`add must be called before getState. ${this.component.constructor.name}.`); }
         if (this.arrUnwireStateVersion === undefined) { throw new Error(`add must be called before setComponentWillUnmount or getUnbinder.${this.component.constructor.name}.`); }
         //this.state![stateVersionName] = nextProps.getStateVersion();
-        this.state![stateVersionName] =nextProps.wireStateVersion(this.component as any, stateVersionName)
+        this.state![stateVersionName] = nextProps.wireStateVersion(this.component as any, stateVersionName)
         this.arrUnwireStateVersion.push(nextProps.unwireStateVersion);
         return this;
     }
 
     bindHandleAll(): this {
-        const p= Object.getPrototypeOf(this.component)
+        const p = Object.getPrototypeOf(this.component)
         for (const key of Object.getOwnPropertyNames(p)) {
             if (key.startsWith("handle")) {
                 // console.log("bindHandleAll", key);
@@ -106,7 +106,7 @@ export class DSUIBinder<
 
     setComponentWillUnmount(): this {
         if (this.state === undefined) { throw new Error(`setComponentWillUnmount must be called before getState. ${this.component.constructor.name}.`); }
-        
+
         if (this.arrUnwireStateVersion === undefined) { throw new Error(`setComponentWillUnmount or getUnbinder can be called only once.${this.component.constructor.name}.`); }
         const arrUnwireStateVersion = this.arrUnwireStateVersion;
         this.arrUnwireStateVersion = undefined;
@@ -123,11 +123,11 @@ export class DSUIBinder<
         const prevComponentWillUnmount = this.component.componentWillUnmount;
         return componentWillUnmountTemplate.bind(undefined, this.component, prevComponentWillUnmount, arrUnwireStateVersion);
     }
-    
+
     getState<
-    Key extends ("stateVersion" | string) = "stateVersion"
+        Key extends ("stateVersion" | string) = "stateVersion"
     >(): DSUIViewStateVersion<Key> {
-        console.log("setComponentWillUnmount",this.component)
+        // console.log("setComponentWillUnmount", this.component)
         if (this.state === undefined) { throw new Error(`getState cannot be called twice. ${this.component.constructor.name}.`); }
         if (this.arrUnwireStateVersion !== undefined) { throw new Error(`setComponentWillUnmount or getUnbinder must be called before getState.${this.component.constructor.name}.`); }
         const result = this.state;
@@ -146,7 +146,7 @@ export function bindUIComponent<
     component: Component,
     props: P
 ): DSUIBinderType<"stateVersion", Component> {
-    return  new DSUIBinder<Component, P, Value, S>(component, props);
+    return new DSUIBinder<Component, P, Value, S>(component, props);
 }
 
 function componentWillUnmountTemplate(

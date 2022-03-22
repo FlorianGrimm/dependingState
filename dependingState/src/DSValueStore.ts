@@ -16,16 +16,17 @@ import type {
     DSEmitValueChangedHandler,
     DSEmitCleanedUpHandler,
     IDSValueStoreInternals,
-    DSUIViewStateBase,
-    DSComponentStateVersionName
+    DSComponentStateVersionName,
+    IDSStoreAction,
+    IDSStoreManagerInternal
 } from './types'
 
-//IDSStoreManagerInternal 
 
 import {
     dsLog
 } from './DSLog';
-import { DSEventEntityVSValue, IDSStoreManagerInternal } from '.';
+
+import { DSStoreBuilder } from './DSStoreBuilder';
 
 // State Value extends IDSStateValue<Value> = (Value extends IDSStateValue<Value> ? Value : IDSStateValue<Value>),
 
@@ -75,7 +76,7 @@ export class DSValueStore<
     }
 
     /**
-     * binds the events/actions from the storeBuilder to this valueStore 
+     * binds the events/actions from the storeBuilder to this valueStore
      * @param storeBuilder the storeBuilder to bind
      */
     public setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void {
@@ -234,7 +235,7 @@ export class DSValueStore<
 
     /**
      * internal
-     * @param event 
+     * @param event
      */
     public processEvent<
         Payload = any,
@@ -284,8 +285,8 @@ export class DSValueStore<
     /**
      * should be called after a value change - or willbe called from DSPropertiesChanged.valueChangedIfNeeded().
      * calls all callbacks - registed with listenDirtyValue - which can call setDirty if a relevant property was changed.
-     * @param stateValue 
-     * @param properties 
+     * @param stateValue
+     * @param properties
      */
     public emitValueChanged(msg: string, stateValue: IDSStateValue<Value>, properties?: Set<keyof Value>): void {
         if ((this.arrValueChangedHandler !== undefined) || (this.isProcessDirtyConfigured)) {
@@ -392,8 +393,8 @@ export class DSValueStore<
 
     /**
      * register a callback that is (directly) invoked by emitDirty
-     * @param msg 
-     * @param callback 
+     * @param msg
+     * @param callback
      */
     public listenCleanedUp(msg: string, callback: DSEmitCleanedUpHandler<Value>): DSUnlisten {
         const cleanedUpHandler = { msg: msg, handler: callback as any };
@@ -407,7 +408,7 @@ export class DSValueStore<
 
     /**
      * unregister a callback
-     * @param callback 
+     * @param callback
      */
     public unlistenCleanedUp(callback: DSEmitCleanedUpHandler<Value>): void {
         if (this.arrCleanedUpHandler !== undefined) {
@@ -420,8 +421,8 @@ export class DSValueStore<
 
     /**
       * if this store gets cleanedup (processDirty returns true) the relatedValueStore gets dirty.
-      * @param msg 
-      * @param relatedValueStore 
+      * @param msg
+      * @param relatedValueStore
       */
     public listenCleanedUpRelated(msg: string, relatedValueStore: IDSValueStoreBase): DSUnlisten {
         if (this.arrCleanedUpRelated === undefined) {
@@ -438,7 +439,7 @@ export class DSValueStore<
 
     /**
      * unregister the relatedValueStore
-     * @param relatedValueStore 
+     * @param relatedValueStore
      */
     public unlistenCleanedUpRelated(relatedValueStore: IDSValueStoreBase): void {
         if (this.arrCleanedUpRelated !== undefined) {
@@ -546,5 +547,46 @@ export class DSValueStore<
             };
         }
         return this._ViewProps!;
+    }
+
+
+    /*
+    public createAction<
+        Payload,
+        EventType extends string = string
+    >(
+        event: EventType
+    ): DSStoreAction<Payload, EventType, StoreName> {
+    */
+        public bindEvent<
+        Payload,
+        EventType extends string = string
+        //StoreName extends string = string
+    >(
+        action: IDSStoreAction<Payload, EventType, StoreName>
+    ) :this {
+        const handlerName = `handle${action.event}`;
+        if (typeof (this as any)[handlerName] === "function"){
+            this.listenEvent(action.event, action.event, (this as any)[handlerName].bind(this));
+        } else {
+            throw new Error(`${this.storeName} for event ${action.event} cannot find handler${action.event}.`);
+        }
+
+        return this;
+    }
+
+    bindEventAll<StoreName extends string = string>(storeBuilder: DSStoreBuilder<StoreName>) {
+        /*
+        const prototype = Object.getPrototypeOf(this);
+        const propertyNames = Object.getOwnPropertyNames(prototype).filter(n=>n.startsWith("handle"));
+        */
+        for (const [event, action] of storeBuilder.actions) {
+            const handlerName = `handle${action.event}`;
+            if (typeof (this as any)[handlerName] === "function"){
+                this.listenEvent(action.event, action.event, (this as any)[handlerName].bind(this));
+            } else {
+                throw new Error(`${this.storeName} for event ${action.event} cannot find handler${action.event}.`);
+            }
+        }
     }
 }

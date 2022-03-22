@@ -11,7 +11,7 @@ export class AppViewProjectsUIStore extends DSObjectStore<AppViewProjectsUIState
         super.initializeStore();
 
         const compAUIStore = (this.storeManager! as IAppStoreManager).compAStore;
-        //compAUIStore.listenDirtyRelated(this.storeName, this);
+        //compAUIStore.listenCleanedUpRelated(this.storeName, this);
         compAUIStore.listenEventAttach(this.storeName, (e) => {
             this.setDirty("listenEventAttach");
         });

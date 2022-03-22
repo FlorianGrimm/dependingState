@@ -5,10 +5,12 @@ import {
     DSUnlisten,
     IDSObjectStore,
     IDSStateValue,
+    IDSStoreAction,
     IDSValueStore
 } from "./types";
 
 import { DSValueStore } from "./DSValueStore";
+import { DSStoreAction, DSStoreBuilder } from "./DSStoreBuilder";
 
 export class DSObjectStore<
     Value,
@@ -33,4 +35,7 @@ export class DSObjectStore<
     public listenEventValue(msg: string, callback: DSEventEntityVSValueHandler<Value, StoreName>): DSUnlisten {
         return this.listenEvent(msg, "value", callback as any);
     }
+
+
+
 }

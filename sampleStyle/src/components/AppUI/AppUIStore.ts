@@ -29,7 +29,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
 
         // value.calculatorStateVersion = calculatorStore.stateValue.stateVersion;
 
-        // calculatorStore.listenDirtyRelated(this.storeName, this);
+        // calculatorStore.listenCleanedUpRelated(this.storeName, this);
         // calculatorStore.listenEventValue(`${this.storeName} sets dirty`, (e) => {
         //     const properties = e.payload.properties;
         //     if ((properties === undefined)

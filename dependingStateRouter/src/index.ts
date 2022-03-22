@@ -1,6 +1,13 @@
 export {
     Action as HistoryAction,
     UpdateMode,
+    createBrowserHistory,
+    createHashHistory,
+    createMemoryHistory,
+    createPath,
+    parsePath
+} from './history'
+export type {
     Pathname,
     Search,
     Hash,
@@ -19,15 +26,11 @@ export {
     HashHistory,
     MemoryHistory,
     BrowserHistoryOptions,
-    createBrowserHistory,
     HashHistoryOptions,
-    createHashHistory,
     InitialEntry,
     MemoryHistoryOptions,
-    createMemoryHistory,
-    createPath,
-    parsePath
 } from './history'
+
 export * from './types';
 export * from './DSRouterAction';
 export * from './DSRouterValue';

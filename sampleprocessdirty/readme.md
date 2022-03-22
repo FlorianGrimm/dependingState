@@ -45,12 +45,12 @@ a) Option store.listenDirty<br>
     });
 ```
 
-b) Option store.listenDirtyRelated<br>
-    in the target store in initializeStore call listenDirtyRelated so each time a value in sourceStore has changed this(store) gets dirty.<br>
+b) Option store.listenCleanedUpRelated<br>
+    in the target store in initializeStore call listenCleanedUpRelated so each time a value in sourceStore has changed this(store) gets dirty.<br>
     You don't have the possiblity to add an condition.<br>
 
 ```typescript
-        sourceStore.listenDirtyRelated(this.storeName, this);
+        sourceStore.listenCleanedUpRelated(this.storeName, this);
 
 ```
 

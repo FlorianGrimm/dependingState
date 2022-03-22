@@ -1,50 +1,40 @@
+import type {
+    ConfigurationDSEntityValueStore
+} from "dependingState";
+
 import {
     DSEntityStore
 } from "dependingState";
+
 import type { IAppStoreManager } from "~/services/AppStoreManager";
+
 import { __Name__Value } from "./__Name__Value";
+import { __name__StoreBuilder } from "./__Name__Actions";
 
-
-export class __Name__Store extends DSEntityStore<__Name__Value, "__Name__Store"> {
-    appStateStateVersion: number;
-    appViewProjectsUIStoreStateVersion: number;
-
-    constructor(value: __Name__Value) {
-        super("__Name__Store", value);
-        this.appStateStateVersion = 0;
-        this.appViewProjectsUIStoreStateVersion = 0;
+function getKey__Name__Value(item: __Name__Value): string {
+    return item.id;
+}
+export class __Name__Store extends DSEntityStore<string, __Name__Value, "__Name__Store"> {
+    constructor(
+        configuration?: ConfigurationDSEntityValueStore<string, __Name__Value>
+    ) {
+        configuration = {
+            getKey: getKey__Name__Value,
+            //emitAttachDetachSetDirty: true,
+            ...(configuration || {}) };        
+        super("__Name__Store", configuration);
     }
 
     public initializeStore(): void {
         super.initializeStore();
 
-        const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
-        appState.listenDirtyRelated(this.storeName, this);
+        this.bindEventAll(__name__StoreBuilder);
 
-        this.stateValue.value.appState = appState.stateValue.value;
-        this.isDirty = true;
-    }
+        // const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
+        // appState.listenCleanedUpRelated(this.storeName, this);
 
-    public processDirty(): boolean {
-        let result = super.processDirty();
-        const appState = (this.storeManager! as unknown as IAppStoreManager).appStore;
-        const appViewProjectsUIStore = (this.storeManager! as unknown as IAppStoreManager).appViewProjectsUIStore;
-        let changed = false;
-        if (this.appStateStateVersion !== appState.stateVersion) {
-            this.appStateStateVersion = appState.stateVersion;
-            this.stateValue.value.appState = appState.stateValue.value;
-            changed = true;
-        }
-
-        if (this.appViewProjectsUIStoreStateVersion !== appViewProjectsUIStore.stateVersion) {
-            this.appViewProjectsUIStoreStateVersion = appViewProjectsUIStore.stateVersion;
-            this.stateValue.value.appViewProjectsUIStateValue = appViewProjectsUIStore.stateValue.value;
-            changed = true;
-        }
-        if (changed) {
-            this.stateValue.valueChanged();
-        }
-        return result;
+        // this.stateValue.value.appState = appState.stateValue.value;
+        // this.isDirty = true;
     }
 
     // public processDirty(): boolean {

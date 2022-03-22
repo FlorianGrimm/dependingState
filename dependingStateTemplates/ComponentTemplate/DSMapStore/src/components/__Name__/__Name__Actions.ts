@@ -10,7 +10,7 @@ export const countUp = __name__StoreBuilder.createAction<undefined>("countUp");
 /*
 copy this to index.ts - main() - // create all stores
 
-const __name__Store = new __Name__Store(new __Name__Value());
+const __name__Store = new __Name__Store();
 __name__Store,
 
 copy this to AppStoreManager.ts

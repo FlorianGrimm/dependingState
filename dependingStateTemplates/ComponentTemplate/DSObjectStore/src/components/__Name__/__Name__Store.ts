@@ -15,15 +15,17 @@ export class __Name__Store extends DSObjectStore<__Name__Value, "__Name__Store">
 
     public initializeStore(): void {
         super.initializeStore();
+
+        // this.bindEventAll(__name__StoreBuilder);
         
-        //const xxxStore = (this.storeManager! as IAppStoreManager).xxxStore;
-        //xxxStore.listenDirtyRelated(this.storeName, this);      
+        // const appStoreManager = (this.storeManager! as IAppStoreManager);
+        // appStoreManager.appStore.lookupTableStore.listenCleanedUpRelated(this.storeName, this);
 
-        countDown.listenEvent("TODO", (e)=>{
-        });
+        // countDown.listenEvent("TODO", (e)=>{
+        // });
 
-        countUp.listenEvent("TODO", (e)=>{
-        });
+        // countUp.listenEvent("TODO", (e)=>{
+        // });
     }
 
     // public processDirty(): boolean {

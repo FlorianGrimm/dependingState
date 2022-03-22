@@ -4,13 +4,13 @@ import { storeBuilder } from "dependingState";
 import type { __Name__Store } from "./__Name__Store";
 
 export const __name__StoreBuilder = storeBuilder<__Name__Store['storeName']>("__Name__Store");
-export const countDown = __name__StoreBuilder.createAction<undefined>("countDown");
-export const countUp = __name__StoreBuilder.createAction<undefined>("countUp");
+// export const countDown = __name__StoreBuilder.createAction<undefined, "countDown">("countDown");
+// export const countUp = __name__StoreBuilder.createAction<undefined, "countUp">("countUp");
 
 /*
 copy this to index.ts - main() - // create all stores
 
-const __name__Store = new __Name__Store(new __Name__Value());
+const __name__Store = new __Name__Store();
 __name__Store,
 
 copy this to AppStoreManager.ts

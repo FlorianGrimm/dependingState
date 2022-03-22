@@ -7,7 +7,7 @@ export type ArrayElement<T> = T extends (infer U)[] ? U : never;
 export interface IDSStoreManager {
     /**
      * gets the (global) next stateVersion. within procsess() this value will be increased.
-     * @param stateVersion 
+     * @param stateVersion
      */
     getNextStateVersion(stateVersion: number): number;
 
@@ -68,6 +68,8 @@ export interface IDSStoreAction<
     EventType extends string = string,
     StoreName extends string = string
     > {
+    event: EventType;
+
     bindValueStore(valueStore: IDSValueStoreBase): void;
 
     listenEvent<
@@ -84,7 +86,7 @@ export interface IDSValueStoreBase {
 
     /**
      * call form storeManager.initialize()
-     * @param storeManager 
+     * @param storeManager
      */
     initializeStore(storeManager: IDSStoreManager): void;
     initializeBoot(): void;
@@ -102,7 +104,7 @@ export interface IDSValueStore<
     get isDirty(): boolean;
 
     /**
-     * binds the events/actions from the storeBuilder to this valueStore 
+     * binds the events/actions from the storeBuilder to this valueStore
      * @param storeBuilder the storeBuilder to bind
      */
     setStoreBuilder(storeBuilder: IDSStoreBuilder<StoreName>): void;
@@ -187,33 +189,33 @@ export interface IDSValueStore<
 
     /**
      * if this store gets cleanedup (processDirty returns true) the relatedValueStore gets dirty.
-     * @param msg 
-     * @param relatedValueStore 
+     * @param msg
+     * @param relatedValueStore
      */
     listenCleanedUpRelated(msg: string, relatedValueStore: IDSValueStoreBase): DSUnlisten;
 
     /**
      * unregister the relatedValueStore
-     * @param relatedValueStore 
+     * @param relatedValueStore
      */
     unlistenCleanedUpRelated(relatedValueStore: IDSValueStoreBase): void;
 
     /**
      * register a callback that is (directly) invoked by emitDirty
-     * @param msg 
-     * @param callback 
+     * @param msg
+     * @param callback
      */
     listenCleanedUp(msg: string, callback: DSEmitCleanedUpHandler<Value>): DSUnlisten;
 
     /**
      * unregister a callback
-     * @param callback 
+     * @param callback
      */
     unlistenCleanedUp(callback: DSEmitCleanedUpHandler<Value>): void;
 
     /**
      * enqueue the uiStateValue to be updated (within DSStoreManager.process - that should already running)
-     * @param uiStateValue 
+     * @param uiStateValue
      */
     emitUIUpdate(uiStateValue: IDSUIStateValue<Value>): void;
 }
@@ -254,7 +256,7 @@ export interface IDSValueStoreInternals<Value> {
 
     /**
      * internal
-     * @param event 
+     * @param event
      */
     processEvent<
         Payload = any,
@@ -319,6 +321,8 @@ export type ConfigurationDSMapValueStore<
     Value = any
     > = ConfigurationDSValueStore<Value> & {
         create?: ((value: Value) => IDSStateValue<Value>);
+        emitAttachDetachEvent?:boolean;
+        emitAttachDetachSetDirty?:boolean;
         // processDirtyEntity?: (dirtyEntity: IDSStateValue<Value>, properties?: Set<keyof Value>) => boolean;
     }
 
@@ -327,7 +331,9 @@ export type ConfigurationDSEntityValueStore<
     Value = any,
     > = ConfigurationDSValueStore<Value> & {
         create?: (value: Value) => IDSStateValue<Value>;
-        getKey: (value: Value) => Key;
+        getKey?: (value: Value) => Key;
+        emitAttachDetachEvent?:boolean;
+        emitAttachDetachSetDirty?:boolean;
     }
 
 export interface IDSStateValue<Value> {

@@ -64,7 +64,7 @@ try {
 // SumStore initializeStore 
 // add this 2 lines
 // const counterStore = (this.storeManager! as IAppStoreManager).counterStore;
-// counterStore.listenDirtyRelated(this.storeName, this);
+// counterStore.listenCleanedUpRelated(this.storeName, this);
 
 // hint3
 // you have to read the error message.
