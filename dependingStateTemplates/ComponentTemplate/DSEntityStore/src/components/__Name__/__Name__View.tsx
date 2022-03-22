@@ -22,7 +22,7 @@ type __Name__ViewState = {
  * create a new __Name__View
  * @param props stateValue.getViewProps()
  */
-export function __name__View(props:__Name__ViewProps): React.ReactNode{
+export function __name__View(props: __Name__ViewProps): React.ReactNode {
     return React.createElement(__Name__View, props)
 }
 
@@ -36,14 +36,14 @@ export default class __Name__View extends React.Component<__Name__ViewProps, __N
     }
 
     handleAddClick() {
-        getAppStoreManager().process("handleAddClick", ()=>{});
+        getAppStoreManager().process("handleAddClick", () => { });
         countUp.emitEvent(undefined);
     }
 
     render(): React.ReactNode {
         const storeManager = getAppStoreManager();
         const projectStore = storeManager.projectStore;
-        storeManager.process("handleAddClickAdd",() => {
+        storeManager.process("handleAddClickAdd", () => {
             //dsLog.group("handleAddClick - Adding");
             for (let i = 0; i < 1000; i++) {
                 const n = projectStore.entities.size + 1;
@@ -64,7 +64,7 @@ export default class __Name__View extends React.Component<__Name__ViewProps, __N
             <div>
                 <button onClick={this.handleAddClickAdd}>add</button>
             </div>
-            { /* otherUIStateValue && React.createElement(OtherView, otherUIStateValue.getViewProps()) */ }
+            { /* otherUIStateValue && React.createElement(OtherView, otherUIStateValue.getViewProps()) */}
         </div>);
     }
 }

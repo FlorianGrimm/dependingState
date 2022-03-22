@@ -25,8 +25,8 @@ export class DSRouterValue extends DSStateValueSelf<DSRouterValue> implements ID
         super();
     }
 }
-export function getDSRouterValueInitial(){
+export function getDSRouterValueInitial() {
     const { action, location, updateMode } = getRouterValueInitial()
-    const result = new DSRouterValue(action, location, updateMode );
+    const result = new DSRouterValue(action, location, updateMode);
     return result;
 }

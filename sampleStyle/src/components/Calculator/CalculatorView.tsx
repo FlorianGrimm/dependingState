@@ -7,10 +7,10 @@ import { getAppStoreManager } from "../../singletonAppStoreManager";
 import { clearInput } from "./CalculatorActions";
 
 type CalculatorViewProps =
-{
-    calculator: DSUIProps<CalculatorValue>;
-    style: DSUIProps<CalculatorStyleValue>;
-}
+    {
+        calculator: DSUIProps<CalculatorValue>;
+        style: DSUIProps<CalculatorStyleValue>;
+    }
 
 type CalculatorViewState = {
 } & DSUIViewStateBase;
@@ -27,7 +27,7 @@ export default class CalculatorView extends React.Component<CalculatorViewProps,
     constructor(props: CalculatorViewProps) {
         super(props);
         this.state = {
-            stateVersion: Math.max(props.calculator.getStateVersion(),props.style.getStateVersion())
+            stateVersion: Math.max(props.calculator.getStateVersion(), props.style.getStateVersion())
         };
         this.props.calculator.wireStateVersion<any>(this);
         this.props.style.wireStateVersion<any>(this);

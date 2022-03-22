@@ -2,7 +2,7 @@ import { DSObjectStore, getPropertiesChanged, hasChangedProperty } from "dependi
 import { calculatorStoreBuilder, clearInput } from "./CalculatorActions";
 import { CalculatorValue } from "./CalculatorValue";
 
-export class CalculatorStore extends DSObjectStore< CalculatorValue, "CalculatorStore">{
+export class CalculatorStore extends DSObjectStore<CalculatorValue, "CalculatorStore">{
     constructor() {
         super("CalculatorStore", new CalculatorValue());
         this.setStoreBuilder(calculatorStoreBuilder);
@@ -15,7 +15,7 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
 
             /* region case valueChanged */
             // set all props to 0
-            const v=this.stateValue.value
+            const v = this.stateValue.value
             v.nbrA = 0;
             v.nbrB = 0;
             v.nbrC = 0;
@@ -37,10 +37,10 @@ export class CalculatorStore extends DSObjectStore< CalculatorValue, "Calculator
             /* endregion case valueChangedIfNeeded */
         });
         this.listenEventValue("a+b=c", (e) => {
-            const { properties, entity:calculatorValue } = e.payload;
+            const { properties, entity: calculatorValue } = e.payload;
             // since DSObjectStore is used calculatorValue and this.stateValue is the same.
             // but if DSArrayStore or DSEntityStore is used this is not true (since they use an array or map).
-            
+
             //if (properties === undefined || properties.has("nbrA") || properties.has("nbrB"))
             // this is the same as
             // if (hasChangedProperty(properties, "nbrA", "nbrB")) 

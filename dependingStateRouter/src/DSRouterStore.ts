@@ -111,7 +111,7 @@ export class DSRouterStore<
             this.history.replace(location.to, location.state as unknown as (LocationState | undefined), location.updateMode ?? UpdateMode.FromCode, false);
         });
     }
-    
+
     public initializeBoot(): void {
         this.subscribe();
     }

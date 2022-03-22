@@ -23,7 +23,7 @@ function main() {
         dsLog.info("main()");
     }
     dsLog.flags.add("triggerUIUpdate");
-    
+
     const projectStore = new ProjectStore();
     const compAStore = new CompAStore();
     const appStore = new AppStore(new AppState());

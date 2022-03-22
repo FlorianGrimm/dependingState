@@ -16,13 +16,13 @@ export class CounterStore extends DSObjectStore<CounterValue, "CounterStore"> {
     public initializeStore(): void {
         super.initializeStore();
 
-        countDown.listenEvent("countDown", (e)=>{
+        countDown.listenEvent("countDown", (e) => {
             this.stateValue.value.nbrValue--;
             this.stateValue.valueChanged("countDown");
 
         });
 
-        countUp.listenEvent("countUp", (e)=>{
+        countUp.listenEvent("countUp", (e) => {
             this.stateValue.value.nbrValue++;
             this.stateValue.valueChanged("countUp");
         });

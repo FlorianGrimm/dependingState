@@ -42,7 +42,7 @@ export default class PageBView extends React.Component<PageBViewProps, PageBView
         return (<div>
             <h2>PageB</h2>
             myPropa:<input value={renderProps.myPropA} onChange={this.handleOnChange}></input>
-            <button onClick={this.handleClick}>doSomething</button><br/>
+            <button onClick={this.handleClick}>doSomething</button><br />
             myPropB:{renderProps.myPropB}
         </div>);
     }

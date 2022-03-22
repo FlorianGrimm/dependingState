@@ -23,7 +23,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
         */
         const value = this.stateValue.value;
         const calculatorStore = (this.storeManager! as IAppStoreManager).calculatorStore;
-        
+
         value.calculator = calculatorStore.stateValue.value;
         // is calculator mutable? and never replaced -> not needed
 

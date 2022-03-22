@@ -2,9 +2,9 @@ import type {
     State as HistoryState,
 } from './history';
 
-import type { 
-    IDSRouterValue, 
-    LocationParameter 
+import type {
+    IDSRouterValue,
+    LocationParameter
 } from './types';
 
 import {

@@ -38,7 +38,7 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
     }
 
     handleClickinfo() {
-        if (dsLog.enabled){
+        if (dsLog.enabled) {
             dsLog.info("handleClick", { hello: "world" });
         }
     }
@@ -51,13 +51,13 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
         const renderProps = this.props.getRenderProps();
 
         return (<div>
-            <div style={{padding:10}}>
+            <div style={{ padding: 10 }}>
                 AppUI - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}
             </div>
-            <div style={{padding:10}}>
+            <div style={{ padding: 10 }}>
                 <button onClick={this.handleClickinfo}>clickinfo</button>
             </div>
-            <div style={{padding:10}}>
+            <div style={{ padding: 10 }}>
                 <button onClick={this.handleClickinfo2}>clickinfo2</button>
             </div>
             <div>

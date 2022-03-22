@@ -19,26 +19,26 @@ function main() {
     // remove this if going productive
     dsLog.setEnabled();
 
-    if (dsLog.enabled){
+    if (dsLog.enabled) {
         dsLog.info("main()");
     }
 
     // create all stores
-    const appUIStore=new AppUIStore(new AppUIValue());
+    const appUIStore = new AppUIStore(new AppUIValue());
 
     // create appStoreManager
     const appStoreManager = new AppStoreManager(
         appUIStore
-        );
+    );
     setAppStoreManager(appStoreManager);
     dsLog.attach(appStoreManager);
     appStoreManager.initialize();
 
     // start React
     const rootElement = React.createElement(
-            AppView,
-            appStoreManager.appUIStore.stateValue.getViewProps()
-        );
+        AppView,
+        appStoreManager.appUIStore.stateValue.getViewProps()
+    );
     const appRootElement = window.document.getElementById("appRoot");
     if (appRootElement) {
         ReactDom.render(rootElement, appRootElement);

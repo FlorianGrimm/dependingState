@@ -32,7 +32,7 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
             console.log("navigate pageA");
             // getAppStoreManager().navigatorStore.navigateToPageB((e.payload !== undefined)?e.payload:{a:1, b:11});
             // pageALoadData.emitEvent(undefined);
-            if (e.payload !== undefined){
+            if (e.payload !== undefined) {
                 const pc = getPropertiesChanged(this.stateValue);
                 pc.setIf("nbrA", e.payload.a);
                 pc.setIf("nbrB", e.payload.b);
@@ -52,9 +52,9 @@ export class PageAStore extends DSObjectStore<PageAValue, "PageAStore">{
 
         navigatorStore.listenEventValue("handle pageChanged", (e) => {
             if (hasChangedProperty<NavigatorValue>(e.payload.properties, "page")) {
-                const page=e.payload.entity.value.page;
+                const page = e.payload.entity.value.page;
                 if (this.pageChanged.setValue(page)) {
-                    if (page==="pageA"){
+                    if (page === "pageA") {
                         pageALoadData.emitEvent(undefined);
                     }
                 }

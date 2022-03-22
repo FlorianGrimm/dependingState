@@ -8,8 +8,8 @@ type NumberInputProps = {
 
 type NumberInputState = {
     idNumberInput: number;
-    orginalN:number;
-    nextN: number|undefined;
+    orginalN: number;
+    nextN: number | undefined;
     t: string;
 } //& DSUIViewStateBase
     ;
@@ -21,26 +21,26 @@ export default class NumberInput extends React.Component<NumberInputProps, Numbe
         super(props);
         const idNumberInput = ++countNumberInput;
         this.intervalHandle = 0;
-        this.watchDog=0;
-        const state:NumberInputState={
+        this.watchDog = 0;
+        const state: NumberInputState = {
             idNumberInput: idNumberInput,
-            orginalN:undefined!,
+            orginalN: undefined!,
             nextN: undefined,
             t: undefined!
         };
-        this.state = {...state, ...NumberInput.getDerivedStateFromProps(props, state)! } ;
+        this.state = { ...state, ...NumberInput.getDerivedStateFromProps(props, state)! };
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
-        this.handleTicks = this.handleTicks.bind(this);        
+        this.handleTicks = this.handleTicks.bind(this);
     }
-    static getDerivedStateFromProps(props:NumberInputProps, state:NumberInputState):null|Partial<NumberInputState>{
-        if (props.n === state.orginalN){
+    static getDerivedStateFromProps(props: NumberInputProps, state: NumberInputState): null | Partial<NumberInputState> {
+        if (props.n === state.orginalN) {
             return null;
-        } else{
+        } else {
             return {
-                orginalN:props.n,
+                orginalN: props.n,
                 t: props.n.toString(),
-                nextN:undefined
+                nextN: undefined
             };
         }
     }
@@ -51,7 +51,7 @@ export default class NumberInput extends React.Component<NumberInputProps, Numbe
             window.clearInterval(this.intervalHandle);
             this.intervalHandle = 0;
             const nextN = this.state.nextN;
-            if (nextN!==undefined){
+            if (nextN !== undefined) {
                 this.props.setValue(nextN);
             }
         }
@@ -61,7 +61,7 @@ export default class NumberInput extends React.Component<NumberInputProps, Numbe
         const n = (t === "") ? 0 : parseInt(t, 10);
         const isValid = !Number.isNaN(n);
         if (isValid) {
-            this.setState({ nextN:n, t });
+            this.setState({ nextN: n, t });
         } else {
             this.setState({ t });
         }
@@ -85,7 +85,7 @@ export default class NumberInput extends React.Component<NumberInputProps, Numbe
         const isValid = !Number.isNaN(n);
 
         if (isValid) {
-            this.setState({ nextN:n, t });
+            this.setState({ nextN: n, t });
         } else {
             this.setState({ t });
         }

@@ -1,7 +1,7 @@
 import React from "react";
 import NumberInput from "../NumberInput/NumberInput";
 
-import { DSUIProps, DSUIViewStateBase, getPropertiesChanged,bindUIComponent } from "dependingState";
+import { DSUIProps, DSUIViewStateBase, getPropertiesChanged, bindUIComponent } from "dependingState";
 
 import { changeProjectName } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
@@ -11,13 +11,13 @@ type CompAViewProps = DSUIProps<CompAValue>;
 
 type CompAViewState = {
 } & DSUIViewStateBase;
-const inputStyle :React.CSSProperties={
+const inputStyle: React.CSSProperties = {
     width: 30,
 };
 export default class CompAView extends React.Component<CompAViewProps, CompAViewState>{
     constructor(props: CompAViewProps) {
         super(props);
-        this.state=
+        this.state =
             bindUIComponent(this, props)
                 .bindHandleAll()
                 .setComponentWillUnmount()
@@ -56,7 +56,7 @@ export default class CompAView extends React.Component<CompAViewProps, CompAView
         const viewProps = this.props.getRenderProps();
         return (<div>
             CompA - StateVersion: {this.props.getStateVersion()} - dt:{(new Date()).toISOString()}<br />
-            ProjectName:{viewProps.ProjectName} <button onClick={this.handleClickChangeProjectName}>Change ProjectName</button> <br />            
+            ProjectName:{viewProps.ProjectName} <button onClick={this.handleClickChangeProjectName}>Change ProjectName</button> <br />
             A:<NumberInput n={viewProps.nbrA} setValue={this.handleSetA} inputStyle={inputStyle} /> +
             B:<NumberInput n={viewProps.nbrB} setValue={this.handleSetB} inputStyle={inputStyle} /> =
             c:{viewProps.nbrC}

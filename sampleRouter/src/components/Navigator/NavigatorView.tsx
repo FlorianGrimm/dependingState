@@ -33,21 +33,21 @@ export default class NavigatorView extends React.Component<NavigatorViewProps, N
     render(): React.ReactNode {
         const renderProps = this.props.getRenderProps();
         // 
-        let placeholderPage:any|undefined;
-        switch (renderProps.page){
+        let placeholderPage: any | undefined;
+        switch (renderProps.page) {
             case "home":
-                placeholderPage="Home sweet home";
+                placeholderPage = "Home sweet home";
                 break;
             case "pageA":
-                placeholderPage=React.createElement(PageAView, getAppStoreManager().pageAStore.stateValue.getViewProps());
+                placeholderPage = React.createElement(PageAView, getAppStoreManager().pageAStore.stateValue.getViewProps());
                 break;
             case "pageB":
-                placeholderPage=React.createElement(PageBView, getAppStoreManager().pageBStore.stateValue.getViewProps());
+                placeholderPage = React.createElement(PageBView, getAppStoreManager().pageBStore.stateValue.getViewProps());
                 break;
             case "pageError":
-                placeholderPage="Error"
+                placeholderPage = "Error"
             default:
-                placeholderPage="Unknown Page";
+                placeholderPage = "Unknown Page";
                 break;
         }
         return (<div>
@@ -58,7 +58,7 @@ export default class NavigatorView extends React.Component<NavigatorViewProps, N
                 show page here
             </div>
             <div>
-                { placeholderPage }
+                {placeholderPage}
             </div>
 
         </div>);

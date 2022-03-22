@@ -17,7 +17,7 @@ type AppViewState = {
  * create a new AppUIView
  * @param props stateValue.getViewProps()
  */
-export function appUIView(props:AppViewProps): React.CElement<AppViewProps, AppUIView>{
+export function appUIView(props: AppViewProps): React.CElement<AppViewProps, AppUIView> {
     return React.createElement(AppUIView, props)
 }
 export default class AppUIView extends React.Component<AppViewProps, AppViewState>{
@@ -48,7 +48,7 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
             <div>
                 <button onClick={this.handleClick}>doSomething</button>
             </div>
-            
+
         </div>);
     }
 }

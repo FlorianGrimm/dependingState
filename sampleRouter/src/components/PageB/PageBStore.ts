@@ -12,7 +12,7 @@ export class PageBStore extends DSObjectStore<PageBValue, "PageBStore">{
     }
 
     public initializeStore(): void {
-        pageBNavigate.listenEvent("navigate", (e)=>{
+        pageBNavigate.listenEvent("navigate", (e) => {
             console.log("navigate pageB");
             // getAppStoreManager().navigatorStore.navigateToPageB((e.payload !== undefined)?e.payload:{a:2, b:2});
             // pageBLoadData.emitEvent(undefined);

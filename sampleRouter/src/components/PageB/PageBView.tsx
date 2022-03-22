@@ -8,10 +8,10 @@ export type PageBViewProps = DSUIProps<PageBValue>;
 
 export type PageBViewState = {
 } & DSUIViewStateBase;
-const inputStyle :React.CSSProperties={
+const inputStyle: React.CSSProperties = {
     width: 30,
 };
-export function pageBView(props:PageBViewProps){
+export function pageBView(props: PageBViewProps) {
     return React.createElement(PageBView, props);
 }
 export default class PageBView extends React.Component<PageBViewProps, PageBViewState>{

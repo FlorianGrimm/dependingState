@@ -1,5 +1,5 @@
 export type nix = unknown;
-// import type { 
+// import type {
 //     DSValueStore
 //  } from "dependingState";
 
@@ -11,11 +11,9 @@ export type nix = unknown;
 //     uiRoot: StateVersion<AppUIState>,
 //     a: CalculatorUIState,
 //     b: CompBUIState,
-    
-//     // a: StateVersion<TAppState1A>,
+     // a: StateVersion<TAppState1A>,
 //     // b: StateVersion<TAppState1B>,
-    
-// }
+ }
 
 // export type TStateRootAppStates = IStateRoot<TAppStates>;
 

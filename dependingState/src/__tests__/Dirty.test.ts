@@ -16,10 +16,10 @@ class Project {
 }
 
 class ProjectStore extends DSEntityStore<string, Project>{
-    processDirtyCount:number
+    processDirtyCount: number
     constructor(storeName: string) {
         super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
-        this.processDirtyCount=0;
+        this.processDirtyCount = 0;
     }
 
     public static create(project: Project): DSStateValue<Project> {
@@ -38,10 +38,10 @@ class ProjectStore extends DSEntityStore<string, Project>{
 
 
 class ProjectStoreNoProcessDirty extends DSEntityStore<string, Project>{
-    processDirtyCount:number
+    processDirtyCount: number
     constructor(storeName: string) {
         super(storeName, { create: ProjectStore.create, getKey: ProjectStore.getKey });
-        this.processDirtyCount=0;
+        this.processDirtyCount = 0;
     }
 
     public static create(project: Project): DSStateValue<Project> {
@@ -77,7 +77,7 @@ class DSStoreManagerDirty extends DSStoreManager {
     }
 }
 
-test('processDirty is overwriten', ()=>{
+test('processDirty is overwriten', () => {
     dsLog.initialize("disabled");
     const projectStore = new ProjectStore("project");
     const projectStoreNoProcessDirty = new ProjectStoreNoProcessDirty("ProjectStoreNoProcessDirty")
@@ -91,7 +91,7 @@ test('Dirty', async () => {
     const projectStore = new ProjectStore("project");
     const projectUIStore = new DSMapStore<string, ProjectUI>("projectUI");
     const storeManager = new DSStoreManagerDirty(projectStore, projectUIStore);
-    storeManager.initialize(()=>{
+    storeManager.initialize(() => {
         projectStore.listenEventAttach("test", (projectValue) => {
             const project = projectValue.payload.entity.value;
             projectUIStore.attach(project.ProjectId, new ProjectUI(project))
@@ -104,7 +104,7 @@ test('Dirty', async () => {
             }
         });
     });
-    
+
     // init
     projectStore.set(new Project("1", "one"));
     expect(projectStore.get("1")!.value.ProjectName).toBe("one");

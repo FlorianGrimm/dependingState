@@ -17,10 +17,10 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
 
     public initializeStore(): void {
         super.initializeStore();
-        
-        loadData.listenEvent("TODO", (e)=>{
-        });        
-    
+
+        loadData.listenEvent("TODO", (e) => {
+        });
+
         const navigatorStore = getAppStoreManager().navigatorStore;
         navigatorStore.listenDirtyValue("AppUIStore listen to router", (stateValue, properties) => {
             if (hasChangedProperty(properties, "page")) {
@@ -28,7 +28,7 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
             }
         });
         // this.isDirty=true;
-    }    
+    }
 
     // public processDirty(): boolean {
     //     let result=super.processDirty();

@@ -558,15 +558,15 @@ export class DSValueStore<
         event: EventType
     ): DSStoreAction<Payload, EventType, StoreName> {
     */
-        public bindEvent<
+    public bindEvent<
         Payload,
         EventType extends string = string
-        //StoreName extends string = string
+    //StoreName extends string = string
     >(
         action: IDSStoreAction<Payload, EventType, StoreName>
-    ) :this {
+    ): this {
         const handlerName = `handle${action.event}`;
-        if (typeof (this as any)[handlerName] === "function"){
+        if (typeof (this as any)[handlerName] === "function") {
             this.listenEvent(action.event, action.event, (this as any)[handlerName].bind(this));
         } else {
             throw new Error(`${this.storeName} for event ${action.event} cannot find handler${action.event}.`);
@@ -582,7 +582,7 @@ export class DSValueStore<
         */
         for (const [event, action] of storeBuilder.actions) {
             const handlerName = `handle${action.event}`;
-            if (typeof (this as any)[handlerName] === "function"){
+            if (typeof (this as any)[handlerName] === "function") {
                 this.listenEvent(action.event, action.event, (this as any)[handlerName].bind(this));
             } else {
                 throw new Error(`${this.storeName} for event ${action.event} cannot find handler${action.event}.`);

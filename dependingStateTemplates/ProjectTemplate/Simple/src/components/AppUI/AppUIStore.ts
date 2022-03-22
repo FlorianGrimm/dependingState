@@ -17,9 +17,9 @@ export class AppUIStore extends DSObjectStore<AppUIValue, "AppUIStore"> {
 
     public initializeStore(): void {
         super.initializeStore();
-        
-        loadData.listenEvent("TODO", (e)=>{
-        });        
+
+        loadData.listenEvent("TODO", (e) => {
+        });
     }
 
     // public processDirty(): boolean {

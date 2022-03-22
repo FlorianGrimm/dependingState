@@ -6,12 +6,12 @@ import {
 import type { AppUIStore } from "~/components/AppUI/AppUIStore";
 
 export interface IAppStoreManager extends IDSStoreManager {
-    appUIStore:AppUIStore;
+    appUIStore: AppUIStore;
 }
 
 export class AppStoreManager extends DSStoreManager implements IAppStoreManager {
     constructor(
-        public appUIStore:AppUIStore,
+        public appUIStore: AppUIStore,
     ) {
         super();
         this.attach(appUIStore);

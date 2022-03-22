@@ -40,7 +40,7 @@ export class __Name__Store extends DSMapStore<string, __Name__Value, "__Name__St
     //         this.stateValue.value.appState   = appState.stateValue.value;
     //         changed=true;
     //     }
-     
+
     //     if (this.appViewProjectsUIStoreStateVersion !== appViewProjectsUIStore.stateVersion) {
     //         this.appViewProjectsUIStoreStateVersion = appViewProjectsUIStore.stateVersion;
     //         this.stateValue.value.appViewProjectsUIStateValue = appViewProjectsUIStore.stateValue.value;

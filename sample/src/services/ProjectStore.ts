@@ -1,21 +1,21 @@
-import { DSEntityStore,DSStateValue } from "dependingState";
+import { DSEntityStore, DSStateValue } from "dependingState";
 import { Project } from "src/types";
 
-function create(project:Project){
+function create(project: Project) {
     return new DSStateValue(project);
 }
-function getKey(project:Project){
+function getKey(project: Project) {
     return project.ProjectId;
 }
 
 export class ProjectStore extends DSEntityStore<string, Project, "projectStore">{
     constructor() {
-        super("projectStore", {create, getKey});
+        super("projectStore", { create, getKey });
     }
 
-    hugo(){
-        const prj=this.get("1");
-        if (prj){
+    hugo() {
+        const prj = this.get("1");
+        if (prj) {
             console.log(prj.value.ProjectName);
         }
     }

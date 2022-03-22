@@ -24,7 +24,7 @@ test('DSArrayStore_process_implicit', async () => {
     storeManager.attach(valueStoreA);
     let unlisten = () => { };
     storeManager.initialize(() => {
-        unlisten =valueStoreA.listenEventValue("test", (dsEvent) => {
+        unlisten = valueStoreA.listenEventValue("test", (dsEvent) => {
             actHit = true;
             actA = dsEvent.payload.entity!.value.a;
         });
@@ -100,7 +100,7 @@ test('DSArrayStore_listen', async () => {
     const valueStoreB = new DSArrayStore<VSB>("b");
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
-    storeManager.initialize(()=>{
+    storeManager.initialize(() => {
         valueStoreA.listenEventValue("testa", (dsEvent) => {
             valueAB.value.a = dsEvent.payload.entity!.value.a;
             valueAB.value.cnt++;
@@ -110,7 +110,7 @@ test('DSArrayStore_listen', async () => {
             valueAB.value.b = dsEvent.payload.entity!.value.b;
             valueAB.value.cnt++;
             valueAB.valueChanged("testb");
-        });    
+        });
     });
 
     const valueA = valueStoreA.create({ a: 0 });
@@ -131,7 +131,7 @@ test('DSArrayStore_process_promise', async () => {
     const valueStoreB = new DSArrayStore<VSB>("b");
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
-    storeManager.initialize(()=>{
+    storeManager.initialize(() => {
         valueStoreA.listenEventValue("testa", (dsEvent) => {
             valueAB.value.a = dsEvent.payload.entity!.value.a;
             valueAB.value.cnt = valueAB.value.cnt * 10 + 1;
@@ -173,7 +173,7 @@ test('DSArrayStore_array', async () => {
     const valueStoreB = new DSArrayStore<VSB>("b");
     const valueStoreAB = new DSArrayStore<VSAB>("ab");
     storeManager.attach(valueStoreA).attach(valueStoreB).attach(valueStoreAB);
-    storeManager.initialize(()=>{
+    storeManager.initialize(() => {
         valueStoreA.listenEventAttach("test", (dsEvent) => {
             const idxB = valueStoreB.entities.findIndex((b) => b.value.b === dsEvent.payload.entity.value.a);
             if (idxB < 0) {
@@ -183,7 +183,7 @@ test('DSArrayStore_array', async () => {
                 throw "unexpected array 179"
             }
         });
-        
+
         valueStoreA.listenEventValue("test", (dsEvent) => {
             debugger;
             throw "unexpected array 184"

@@ -77,12 +77,12 @@ export default class NumberInput extends React.Component<NumberInputProps, Numbe
             window.clearInterval(this.intervalHandle);
             this.intervalHandle = 0;
         }
-        if (isValid){
+        if (isValid) {
             this.props.setValue(n);
         }
     }
     render(): React.ReactNode {
-        return (<input style={{...this.props.inputStyle}} value={this.state.t} onChange={this.handleChange} onBlur={this.handleBlur} />);
+        return (<input style={{ ...this.props.inputStyle }} value={this.state.t} onChange={this.handleChange} onBlur={this.handleBlur} />);
     }
 
 }

@@ -12,5 +12,4 @@ export function dsIsArrayEqual<T>(
         }
     }
     return true;
-
 }

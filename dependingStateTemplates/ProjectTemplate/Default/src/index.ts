@@ -17,17 +17,17 @@ import { NavigatorStore } from './components/Navigator/NavigatorStore';
 import { NavigatorValue } from './components/Navigator/NavigatorValue';
 
 function main() {
-     // initialize log
-     dsLog.initialize();
+    // initialize log
+    dsLog.initialize();
 
-     // remove this if going productive
-     dsLog.setEnabled();
- 
-     if (dsLog.enabled){
-         dsLog.info("__Name__ main()");
-     }
- 
-     // create all stores
+    // remove this if going productive
+    dsLog.setEnabled();
+
+    if (dsLog.enabled) {
+        dsLog.info("__Name__ main()");
+    }
+
+    // create all stores
     const routerStore = new DSRouterStore<DSRouterValue>(createBrowserHistory(), getDSRouterValueInitial());
     const navigatorStore = new NavigatorStore(new DSStateValue<NavigatorValue>({ page: "home", pathName: "", pathArguments: {}, isExact: false }));
     navigatorStore.setRouter(routerStore);

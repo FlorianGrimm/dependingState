@@ -12,17 +12,17 @@ import { AppUIValue } from './components/AppUI/AppUIValue';
 import { AppUIStore } from './components/AppUI/AppUIStore';
 
 function main() {
-     // initialize log
-     dsLog.initialize();
+    // initialize log
+    dsLog.initialize();
 
-     // remove this if going productive
-     dsLog.setEnabled();
- 
-     if (dsLog.enabled){
-         dsLog.info("__Name__ main()");
-     }
- 
-     // create all stores
+    // remove this if going productive
+    dsLog.setEnabled();
+
+    if (dsLog.enabled) {
+        dsLog.info("__Name__ main()");
+    }
+
+    // create all stores
     const appUIStore = new AppUIStore(new AppUIValue());
 
     // create appStoreManager

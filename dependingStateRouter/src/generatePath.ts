@@ -1,4 +1,4 @@
-import { 
+import {
     PathFunction,
     compile
 } from "path-to-regexp";
@@ -8,7 +8,7 @@ let cache: { [path: string]: PathFunction } = {};
 const cacheLimit = 100;
 let cacheCount = 0;
 
-function compilePath(path: string):PathFunction {
+function compilePath(path: string): PathFunction {
     if (cache[path]) {
         return cache[path];
     }

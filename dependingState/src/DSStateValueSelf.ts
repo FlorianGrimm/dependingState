@@ -72,7 +72,7 @@ export class DSStateValueSelf<Value extends DSStateValueSelf<Value>> implements 
             }
         }
     }
-    public triggerUIUpdate(stateVersion:number): void {
+    public triggerUIUpdate(stateVersion: number): void {
         if (this.uiStateValue === undefined) {
             // ignore
         } else {

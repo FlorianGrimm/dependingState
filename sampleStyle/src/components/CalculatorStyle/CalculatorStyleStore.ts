@@ -41,18 +41,18 @@ export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "Ca
     style2: CalculatorStyleValue;
     style3: CalculatorStyleValue;
     style4: CalculatorStyleValue;
-    
+
     constructor() {
         super("CalculatorStyleStore");
-        
+
         this.style1 = new CalculatorStyleValue();
         this.style2 = new CalculatorStyleValue();
         this.style3 = new CalculatorStyleValue();
         this.style4 = new CalculatorStyleValue();
-        
+
         // hint2 this is missing calculatorStyleBuilder.bindValueStore(this);
     }
-    
+
     public initializeStore(): void {
         super.initializeStore();
 
@@ -65,16 +65,16 @@ export class CalculatorStyleStore extends DSLooseStore<CalculatorStyleValue, "Ca
         this.style4.rootStyle = rootStyle4;
         this.style4.setStore(this);
 
-        rotateColors.listenEvent("handle rotateColors", (e)=>{
+        rotateColors.listenEvent("handle rotateColors", (e) => {
             const style1 = this.style1.rootStyle;
             const style2 = this.style2.rootStyle;
             const style3 = this.style3.rootStyle;
             const style4 = this.style4.rootStyle;
 
-            this.style1.rootStyle = {...style1, backgroundColor:style4.backgroundColor};
-            this.style2.rootStyle = {...style2, backgroundColor:style1.backgroundColor};
-            this.style3.rootStyle = {...style3, backgroundColor:style2.backgroundColor};
-            this.style4.rootStyle = {...style4, backgroundColor:style3.backgroundColor};
+            this.style1.rootStyle = { ...style1, backgroundColor: style4.backgroundColor };
+            this.style2.rootStyle = { ...style2, backgroundColor: style1.backgroundColor };
+            this.style3.rootStyle = { ...style3, backgroundColor: style2.backgroundColor };
+            this.style4.rootStyle = { ...style4, backgroundColor: style3.backgroundColor };
 
             this.style1.valueChanged("style 1");
             this.style2.valueChanged("style 2");

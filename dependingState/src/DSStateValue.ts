@@ -90,7 +90,7 @@ export class DSStateValue<Value> implements IDSStateValue<Value>{
         }
     }
 
-    public triggerUIUpdate(stateVersion:number): void {
+    public triggerUIUpdate(stateVersion: number): void {
         if (this.uiStateValue === undefined) {
             // ignore
         } else {

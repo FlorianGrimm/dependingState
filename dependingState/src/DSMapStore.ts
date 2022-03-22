@@ -75,30 +75,30 @@ export class DSMapStore<
             const oldValue = this.entities.get(key);
             if (oldValue === undefined) {
                 this.entities.set(key, stateValue);
-                const {emitAttachDetachEvent, emitAttachDetachSetDirty}=(this.configuration as ConfigurationDSMapValueStore<Value>);
-                if (emitAttachDetachEvent){
-                  this.emitEvent<DSEventEntityVSAttach<Value, Key, never, StoreName>>("attach", { entity: stateValue, key: key });
+                const { emitAttachDetachEvent, emitAttachDetachSetDirty } = (this.configuration as ConfigurationDSMapValueStore<Value>);
+                if (emitAttachDetachEvent) {
+                    this.emitEvent<DSEventEntityVSAttach<Value, Key, never, StoreName>>("attach", { entity: stateValue, key: key });
                 }
-                if (emitAttachDetachSetDirty){
-                  this.setDirty("attach");
+                if (emitAttachDetachSetDirty) {
+                    this.setDirty("attach");
                 }
             } else if (oldValue === stateValue) {
                 // do nothing
             } else {
                 oldValue.store = undefined;
-                const {emitAttachDetachEvent, emitAttachDetachSetDirty}=(this.configuration as ConfigurationDSMapValueStore<Value>);
-                if (emitAttachDetachEvent){
-                  this.emitEvent<DSEventEntitySVDetach<Value, Key, never, StoreName>>("detach", { entity: oldValue, key: key });
+                const { emitAttachDetachEvent, emitAttachDetachSetDirty } = (this.configuration as ConfigurationDSMapValueStore<Value>);
+                if (emitAttachDetachEvent) {
+                    this.emitEvent<DSEventEntitySVDetach<Value, Key, never, StoreName>>("detach", { entity: oldValue, key: key });
                 }
-                if (emitAttachDetachSetDirty){
-                  this.setDirty("detach");
+                if (emitAttachDetachSetDirty) {
+                    this.setDirty("detach");
                 }
                 this.entities.set(key, stateValue);
-                if (emitAttachDetachEvent){
-                  this.emitEvent<DSEventEntityVSAttach<Value, Key, never, StoreName>>("attach", { entity: stateValue, key: key });
+                if (emitAttachDetachEvent) {
+                    this.emitEvent<DSEventEntityVSAttach<Value, Key, never, StoreName>>("attach", { entity: stateValue, key: key });
                 }
-                if (emitAttachDetachSetDirty){
-                  this.setDirty("attach");
+                if (emitAttachDetachSetDirty) {
+                    this.setDirty("attach");
                 }
             }
             return oldValue;
@@ -113,12 +113,12 @@ export class DSMapStore<
             // do nothing
         } else {
             oldValue.store = undefined;
-            const {emitAttachDetachEvent, emitAttachDetachSetDirty}=(this.configuration as ConfigurationDSMapValueStore<Value>);
-            if (emitAttachDetachEvent){
-              this.emitEvent<DSEventEntitySVDetach<Value, Key, never, StoreName>>("detach", { entity: oldValue, key: key });
+            const { emitAttachDetachEvent, emitAttachDetachSetDirty } = (this.configuration as ConfigurationDSMapValueStore<Value>);
+            if (emitAttachDetachEvent) {
+                this.emitEvent<DSEventEntitySVDetach<Value, Key, never, StoreName>>("detach", { entity: oldValue, key: key });
             }
-            if(emitAttachDetachSetDirty){
-              this.setDirty("detach");
+            if (emitAttachDetachSetDirty) {
+                this.setDirty("detach");
             }
         }
     }

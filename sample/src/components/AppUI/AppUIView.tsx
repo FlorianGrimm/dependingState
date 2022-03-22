@@ -21,19 +21,19 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
     constructor(props: AppViewProps) {
         super(props);
         this.state =
-            bindUIComponent(this,props)
+            bindUIComponent(this, props)
                 .add("stateVersion1", getAppStoreManager().appStore.stateValue.getViewProps())
                 .add("stateVersion2", getAppStoreManager().appViewProjectsUIStore.stateValue.getViewProps())
                 .bindHandle("handleClickAdd")
                 .setComponentWillUnmount()
                 .getState()
-                ;
+            ;
     }
 
     handleClickAdd() {
         const storeManager = getAppStoreManager();
         const projectStore = storeManager.projectStore;
-        storeManager.process("handleClickAdd",() => {
+        storeManager.process("handleClickAdd", () => {
             //dsLog.group("handleClick - Adding");
             for (let i = 0; i < 1000; i++) {
                 const n = projectStore.entities.size + 1;
@@ -59,7 +59,7 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
             <div>
                 <button onClick={this.handleClickAdd}>add</button>
             </div>
-            { appViewProjectsUIStateValue && React.createElement(AppViewProjects, appViewProjectsUIStateValue.getViewProps())}
+            {appViewProjectsUIStateValue && React.createElement(AppViewProjects, appViewProjectsUIStateValue.getViewProps())}
         </div>);
     }
 }

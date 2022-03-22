@@ -210,7 +210,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
             uiStateValue.triggerScheduled = true;
             this.arrUIStateValue.push(uiStateValue);
             if (this.isProcessing === 0) {
-                if (this.warnEventsOutOfProcess){
+                if (this.warnEventsOutOfProcess) {
                     dsLog.warnACME("DS", "DSStoreManager", "emitUIUpdate", "%", "called out of process")
                 }
                 this.process("emitUIUpdate");
@@ -300,13 +300,13 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
 
     public process(msg?: string, fn?: () => DSEventHandlerResult): DSEventHandlerResult {
         let dt: number = 0;
-        const enableTiming = this.enableTiming && dsLog.enabled ;//&& (this.isProcessing === 0);
+        const enableTiming = this.enableTiming && dsLog.enabled;//&& (this.isProcessing === 0);
         if (enableTiming) {
             dt = (window.performance) ? performance.now() : Date.now();
         }
         this.updateRegisteredEvents();
         this.isProcessing++;
-        if (dsLog.enabled) {            
+        if (dsLog.enabled) {
             dsLog.group(`DS DSStoreManager process ${(msg || "")} (${this.isProcessing})`);
         }
         try {
@@ -316,7 +316,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                 if (pFn && typeof pFn.then === "function") {
                     for (let watchdog = 0; (watchdog == 0) || ((this.events.length > 0) && (watchdog < 100)); watchdog++) {
                         this.processOneLoop();
-                    }                  
+                    }
                     this.addRemoveLastPromise(pFn);
                     return pFn;
                 }
@@ -399,7 +399,7 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
         } else {
             const arrEventHandlers = valueStoreInternal.mapEventHandlers.get(event.event);
             if ((arrEventHandlers !== undefined) && (arrEventHandlers.length > 0)) {
-                this.shouldIncrementStateVersion=true;
+                this.shouldIncrementStateVersion = true;
                 try {
                     for (const eventHandler of arrEventHandlers) {
                         dsLog.infoACME("DS", "DSStoreManager", "processOneEvent", eventHandler.msg);
@@ -430,8 +430,8 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
                     }
                     const processDirtyResult = valueStore.processDirty();
                     valueStore.postProcessDirty(processDirtyResult);
-                    if (processDirtyResult){
-                        this.shouldIncrementStateVersion=true;
+                    if (processDirtyResult) {
+                        this.shouldIncrementStateVersion = true;
                     }
                 } else {
                     // TODO swtich for log
@@ -449,12 +449,12 @@ export class DSStoreManager implements IDSStoreManager, IDSStoreManagerInternal 
     }
 
     public processUIUpdates(): void {
-        
+
         if (this.arrUIStateValue.length > 0) {
             if (dsLog.enabled) {
                 dsLog.infoACME("DS", "DSStoreManager", "processUIUpdates", `${this.arrUIStateValue.length}`);
             }
-            this.shouldIncrementStateVersion=true;
+            this.shouldIncrementStateVersion = true;
 
             const arrUIStateValue = this.arrUIStateValue;
             this.arrUIStateValue = [];

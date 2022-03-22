@@ -561,7 +561,7 @@ export function createBrowserHistory(
                 window.addEventListener(BeforeUnloadEventType, promptBeforeUnload);
             }
 
-            return function () {
+            return function() {
                 unblock();
 
                 // Remove the beforeunload listener so the document may
@@ -825,7 +825,7 @@ export function createHashHistory(
                 window.addEventListener(BeforeUnloadEventType, promptBeforeUnload);
             }
 
-            return function () {
+            return function() {
                 unblock();
 
                 // Remove the beforeunload listener so the document may
@@ -971,7 +971,7 @@ export function createMemoryHistory(
         }
     }
 
-    function go(delta: number,updateMode?: UpdateMode | undefined) {
+    function go(delta: number, updateMode?: UpdateMode | undefined) {
         let nextIndex = clamp(index + delta, 0, entries.length - 1);
         let nextAction = Action.Pop;
         let nextLocation = entries[nextIndex];
@@ -1046,7 +1046,7 @@ function createEvents<F extends Function>(): Events<F> {
         },
         push(fn: F) {
             handlers.push(fn);
-            return function () {
+            return function() {
                 handlers = handlers.filter(handler => handler !== fn);
             };
         },

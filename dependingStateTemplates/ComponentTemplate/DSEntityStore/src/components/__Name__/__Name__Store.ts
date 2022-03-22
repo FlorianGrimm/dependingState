@@ -21,7 +21,8 @@ export class __Name__Store extends DSEntityStore<string, __Name__Value, "__Name_
         configuration = {
             getKey: getKey__Name__Value,
             //emitAttachDetachSetDirty: true,
-            ...(configuration || {}) };        
+            ...(configuration || {})
+        };
         super("__Name__Store", configuration);
     }
 

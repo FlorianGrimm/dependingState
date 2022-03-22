@@ -48,7 +48,7 @@ export default class CounterView extends React.Component<AppViewProps, AppViewSt
         countDown.emitEventAndProcess("handle", undefined);
     }
     handleClickUp() {
-        countUp.emitEventAndProcess("handle",undefined);
+        countUp.emitEventAndProcess("handle", undefined);
     }
 
     render(): React.ReactNode {

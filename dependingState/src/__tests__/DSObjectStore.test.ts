@@ -177,7 +177,7 @@ test('DSObjectStore_process_promise', async () => {
         valueB.value = { b: 2 };
     });
     await storeManager.processAsyncAllSettled();
-    
+
     expect(valueAB.value.a).toBe(1);
     expect(valueAB.value.b).toBe(2);
     expect(valueAB.value.cnt).toBe(212);

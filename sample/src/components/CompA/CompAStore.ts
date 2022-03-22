@@ -4,7 +4,7 @@ import { IAppStoreManager } from "../../services/AppStoreManager";
 import { compAUIStoreBuilder, changeProjectName } from "./CompAActions";
 import { CompAValue } from "./CompAValue";
 
-export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">{
+export class CompAStore extends DSEntityStore<string, CompAValue, "CompAStore">{
     constructor() {
         super("CompAStore", {
             create: (item: CompAValue) => item,
@@ -41,7 +41,7 @@ export class CompAStore extends DSEntityStore<string,  CompAValue, "CompAStore">
                 }
             }
         });
-        
+
         changeProjectName.listenEvent("handle changeProjectName", (e) => {
             var projectStore = (this.storeManager! as IAppStoreManager).projectStore;
             const prj = projectStore.get(e.payload.ProjectId);

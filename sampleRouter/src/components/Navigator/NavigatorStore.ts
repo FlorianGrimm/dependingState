@@ -20,7 +20,7 @@ import {
     // PathArgumentsAny,
 } from "dependingStateRouter";
 
-import { 
+import {
     appNavigatorSetLocation,
     navigateToHome,
     navigateToPageA,
@@ -82,27 +82,27 @@ export class NavigatorStore extends DSNavigatorWithRoutesStore<
     public initializeStore(): void {
         super.initializeStore();
         //
-        navigateToHome.listenEvent("navigateToHome", (e)=>{
+        navigateToHome.listenEvent("navigateToHome", (e) => {
             appNavigatorSetLocation.emitEvent({ page: "home", to: "/", pathArguments: {} });
         });
         //
-        navigateToPageA.listenEvent("navigateToPageA", (e)=>{
+        navigateToPageA.listenEvent("navigateToPageA", (e) => {
             if (e.payload === undefined) {
                 appNavigatorSetLocation.emitEvent({ page: "pageA", pathArguments: {}, to: "/pageA" });
             } else {
                 const { a, b } = e.payload;
                 appNavigatorSetLocation.emitEvent({ page: "pageA", pathArguments: {}, to: `/pageA/${a}/${b}` });
             }
-            });
+        });
         //
-        navigateToPageB.listenEvent("navigateToPageB", (e)=>{
+        navigateToPageB.listenEvent("navigateToPageB", (e) => {
             if (e.payload === undefined) {
                 appNavigatorSetLocation.emitEvent({ page: "pageB", pathArguments: {}, to: "/pageB" });
             } else {
                 const { a, b } = e.payload;
                 appNavigatorSetLocation.emitEvent({ page: "pageB", pathArguments: {}, to: `/pageB/${a}/${b}` });
             }
-            });
+        });
         //
     }
 }

@@ -19,8 +19,8 @@ import { NavigatorValue } from './components/Navigator/NavigatorValue';
 function main() {
     // initialize log
     dsLog.initialize("enabled");
-    dsLog.enableTiming=true;
-    if (dsLog.enabled){
+    dsLog.enableTiming = true;
+    if (dsLog.enabled) {
         dsLog.info("main()");
     }
 
@@ -39,10 +39,10 @@ function main() {
         pageBStore
     );
     setAppStoreManager(appStoreManager);
-    dsLog.attach(appStoreManager);    
-    appStoreManager.enableTiming=true;
+    dsLog.attach(appStoreManager);
+    appStoreManager.enableTiming = true;
     appStoreManager.initialize();
-    appStoreManager.warnEventsOutOfProcess=false;
+    appStoreManager.warnEventsOutOfProcess = false;
 
     const rootElement = React.createElement(
         AppUIView,

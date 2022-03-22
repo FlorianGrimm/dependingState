@@ -83,7 +83,7 @@ export class NavigatorStore extends DSNavigatorStore<NavigatorValue, NavigatorPa
         {
             const result = this.matchPaths(location);
             if (result !== null) {
-                const [pathName,m] = result;
+                const [pathName, m] = result;
                 /*
                 if (pathName==="pageB")
                 */

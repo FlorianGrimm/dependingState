@@ -61,7 +61,7 @@ try {
 
 // hint2
 // in
-// SumStore initializeStore 
+// SumStore initializeStore
 // add this 2 lines
 // const counterStore = (this.storeManager! as IAppStoreManager).counterStore;
 // counterStore.listenCleanedUpRelated(this.storeName, this);

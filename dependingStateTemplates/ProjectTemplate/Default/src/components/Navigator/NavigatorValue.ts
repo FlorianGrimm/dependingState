@@ -1,13 +1,13 @@
 import { IDSNavigatorValue, RouteDefinition } from "dependingStateRouter";
 
 export type NavigatorPaths = {
-    home:string;
-    pageA:string;
-    pageB:string[];
+    home: string;
+    pageA: string;
+    pageB: string[];
 };
 
 export type NavigatorPathName = (keyof NavigatorPaths);
-export type NavigatorPageName = "home"|"pageA"|"pageB"|"pageError";
+export type NavigatorPageName = "home" | "pageA" | "pageB" | "pageError";
 
 export type NavigatorPages = {
     [K in NavigatorPathName]: NavigatorPageName;

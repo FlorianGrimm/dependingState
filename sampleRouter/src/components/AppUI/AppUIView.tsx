@@ -9,7 +9,7 @@ import { AppUIValue } from "./AppUIValue";
 import { routerPush } from "dependingStateRouter";
 import NavigatorView from "../Navigator/NavigatorView";
 import { getAppStoreManager } from "~/singletonAppStoreManager";
-import { navigateToHome,navigateToPageA,navigateToPageB } from "../Navigator/NavigatorActions";
+import { navigateToHome, navigateToPageA, navigateToPageB } from "../Navigator/NavigatorActions";
 
 type AppUIViewProps = {
     //stateRoot: TStateRootAppStates;
@@ -19,19 +19,19 @@ type AppUIViewState = {
 
 } & DSUIViewStateBase;
 
-const navigationStyles:React.CSSProperties={
-    padding:10
+const navigationStyles: React.CSSProperties = {
+    padding: 10
 };
 
 export default class AppUIView extends React.Component<AppUIViewProps, AppUIViewState>{
     constructor(props: AppUIViewProps) {
         super(props);
-        this.state = 
+        this.state =
             bindUIComponent(this, props)
                 .add("stateVersion1", getAppStoreManager().navigatorStore.stateValue.getViewProps())
                 .bindHandleAll()
                 .setComponentWillUnmount()
-                .getState();       
+                .getState();
     }
 
     handleClickPageA() {

@@ -85,7 +85,7 @@ export class DSUIStateValue<Value = any> implements IDSUIStateValue<Value>{
         return this._ViewProps!;
     }
 
-    
+
     triggerUIUpdate(stateVersion: number): void {
         this.triggerScheduled = false;
         // const stateVersion = this.stateValue.stateVersion;

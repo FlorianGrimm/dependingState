@@ -85,7 +85,7 @@ export type PathArgumentsAny = {
     [key in string]: any | undefined
 }
 
-export type ConvertPageParametersResult<NavigatorPageName extends string = string, PathArguments extends PathArgumentsAny = PathArgumentsAny> = { 
+export type ConvertPageParametersResult<NavigatorPageName extends string = string, PathArguments extends PathArgumentsAny = PathArgumentsAny> = {
     pageName: NavigatorPageName;
-    pathArguments: PathArguments ;
+    pathArguments: PathArguments;
 }

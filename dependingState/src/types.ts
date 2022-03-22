@@ -321,8 +321,8 @@ export type ConfigurationDSMapValueStore<
     Value = any
     > = ConfigurationDSValueStore<Value> & {
         create?: ((value: Value) => IDSStateValue<Value>);
-        emitAttachDetachEvent?:boolean;
-        emitAttachDetachSetDirty?:boolean;
+        emitAttachDetachEvent?: boolean;
+        emitAttachDetachSetDirty?: boolean;
         // processDirtyEntity?: (dirtyEntity: IDSStateValue<Value>, properties?: Set<keyof Value>) => boolean;
     }
 
@@ -332,8 +332,8 @@ export type ConfigurationDSEntityValueStore<
     > = ConfigurationDSValueStore<Value> & {
         create?: (value: Value) => IDSStateValue<Value>;
         getKey?: (value: Value) => Key;
-        emitAttachDetachEvent?:boolean;
-        emitAttachDetachSetDirty?:boolean;
+        emitAttachDetachEvent?: boolean;
+        emitAttachDetachSetDirty?: boolean;
     }
 
 export interface IDSStateValue<Value> {
@@ -481,7 +481,7 @@ export type DSUIProps<Value = any> = {
     getRenderProps: () => Value;
     wireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(
         component: React.Component<Props, State>,
-        stateVersionName?: string|undefined
+        stateVersionName?: string | undefined
     ): number;
     unwireStateVersion<Props extends DSUIProps<Value> = any, State extends DSUIViewStateBase = any>(
         component: React.Component<Props, State>

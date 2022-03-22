@@ -10,7 +10,7 @@ import type { CalculatorStyleStore } from "~/components/CalculatorStyle/Calculat
 
 export interface IAppStoreManager extends IDSStoreManager {
     appStore: AppStore;
-    appUIStore:AppUIStore;
+    appUIStore: AppUIStore;
     calculatorStore: CalculatorStore;
     calculatorStyleStore: CalculatorStyleStore;
 }
@@ -18,7 +18,7 @@ export interface IAppStoreManager extends IDSStoreManager {
 export class AppStoreManager extends DSStoreManager implements IAppStoreManager {
     constructor(
         public appStore: AppStore,
-        public appUIStore:AppUIStore,
+        public appUIStore: AppUIStore,
         public calculatorStore: CalculatorStore,
         public calculatorStyleStore: CalculatorStyleStore,
     ) {

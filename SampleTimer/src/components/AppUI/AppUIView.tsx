@@ -36,7 +36,7 @@ export default class AppUIView extends React.Component<AppViewProps, AppViewStat
     }
 
     handleClickStop() {
-        getAppStoreManager().process("handleClickStop", ()=>{
+        getAppStoreManager().process("handleClickStop", () => {
             timerStopGo.emitEvent(false);
         });
     }

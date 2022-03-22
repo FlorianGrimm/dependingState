@@ -1,4 +1,4 @@
-import{
+import {
     navigatorBuilder
 } from 'dependingStateRouter'
 

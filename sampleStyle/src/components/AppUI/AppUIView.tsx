@@ -26,14 +26,14 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
         };
         this.props.wireStateVersion(this);
 
-        this.handleRotateColors=this.handleRotateColors.bind(this);
+        this.handleRotateColors = this.handleRotateColors.bind(this);
     }
 
     componentWillUnmount() {
         this.props.unwireStateVersion(this);
     }
 
-    handleRotateColors(){
+    handleRotateColors() {
         rotateColors.emitEventAndProcess("handleRotateColors", undefined);
     }
 
@@ -69,7 +69,7 @@ export default class AppView extends React.Component<AppViewProps, AppViewState>
 
             <div>
                 <button onClick={this.handleRotateColors}>rotateColors</button>
-                </div>
+            </div>
 
         </div>);
     }

@@ -1,10 +1,10 @@
 import React from "react";
 
-import { 
+import {
     bindUIComponent,
     dsLog,
-    DSUIProps, 
-    DSUIViewStateBase 
+    DSUIProps,
+    DSUIViewStateBase
 } from "dependingState";
 
 import { getAppStoreManager } from "../../singletonAppStoreManager";
@@ -36,7 +36,7 @@ export default class AppViewProjects extends React.Component<AppViewProjectsProp
         const { compAVSs: compAUIStates } = viewProps;
 
         return (<>
-        <div>list</div>
+            <div>list</div>
             {compAUIStates.map((compAUIState) => React.createElement(CompAView, compAUIState.getViewProps()))}
         </>);
     }

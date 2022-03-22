@@ -6,13 +6,13 @@ import {
 
 const cache: IDSPropertiesChanged<any>[] = [];
 
-export function getPropertiesSet<Value>(keys:(keyof Value)[]):Set<keyof Value>{
+export function getPropertiesSet<Value>(keys: (keyof Value)[]): Set<keyof Value> {
     return new Set<keyof Value>(keys);
 }
 
 export function getPropertiesChanged<
-        Value
-    >(that: IDSStateValue<Value>): IDSPropertiesChanged<Value> {
+    Value
+>(that: IDSStateValue<Value>): IDSPropertiesChanged<Value> {
     const result = cache.pop() as (DSPropertiesChanged<Value> | undefined);
     if (result === undefined) {
         return new DSPropertiesChanged<Value>(that);
@@ -23,7 +23,7 @@ export function getPropertiesChanged<
 }
 
 export class DSPropertiesChanged<
-        Value
+    Value
     > implements IDSPropertiesChanged<Value> {
     properties: Set<keyof Value>;
 
@@ -61,7 +61,7 @@ export class DSPropertiesChanged<
         cache.push(this as any);
     }
 
-    public valueChangedIfNeeded(msg:string): boolean {
+    public valueChangedIfNeeded(msg: string): boolean {
         if (this.properties.size === 0) {
             this.instance = null! as any;
             cache.push(this as any);
@@ -69,7 +69,7 @@ export class DSPropertiesChanged<
         } else {
             const instance = this.instance;
             this.instance = null! as any;
-            if (dsLog.isEnabled("valueChangedIfNeeded")){
+            if (dsLog.isEnabled("valueChangedIfNeeded")) {
                 dsLog.infoACME("DS", "DSPropertiesChanged", "valueChangedIfNeeded", msg);
             }
             instance.valueChanged(msg, this.properties);
@@ -82,12 +82,12 @@ export class DSPropertiesChanged<
     }
 }
 
-export function hasChangedProperty<Value>(    properties: Set<keyof Value>|undefined, property1:keyof Value, property2?:keyof Value, property3?:keyof Value, property4?:keyof Value){
-    return ((properties===undefined) 
-        || ((property1===undefined) || (properties.has(property1)))
-        || ((property2===undefined) || (properties.has(property2)))
-        || ((property3===undefined) || (properties.has(property3)))
-        || ((property4===undefined) || (properties.has(property4)))
-        ); 
+export function hasChangedProperty<Value>(properties: Set<keyof Value> | undefined, property1: keyof Value, property2?: keyof Value, property3?: keyof Value, property4?: keyof Value) {
+    return ((properties === undefined)
+        || ((property1 === undefined) || (properties.has(property1)))
+        || ((property2 === undefined) || (properties.has(property2)))
+        || ((property3 === undefined) || (properties.has(property3)))
+        || ((property4 === undefined) || (properties.has(property4)))
+    );
 }
 //

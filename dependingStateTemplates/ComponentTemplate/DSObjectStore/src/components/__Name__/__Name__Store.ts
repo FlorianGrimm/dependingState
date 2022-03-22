@@ -17,7 +17,7 @@ export class __Name__Store extends DSObjectStore<__Name__Value, "__Name__Store">
         super.initializeStore();
 
         // this.bindEventAll(__name__StoreBuilder);
-        
+
         // const appStoreManager = (this.storeManager! as IAppStoreManager);
         // appStoreManager.appStore.lookupTableStore.listenCleanedUpRelated(this.storeName, this);
 
